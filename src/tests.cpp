@@ -7,6 +7,7 @@
 //
 
 #include "tests.hpp"
+#include "simple_cp.hpp"
 
 #include "params.hpp"
 #include "priority_scheduler.hpp"
@@ -528,5 +529,47 @@ void run(ContentionPoint* cp,
     cout << "search setup: " << (get_diff_millisec(start_time, noww())) << " ms" << endl;
     search.run();
 
+}
+
+void simple_test(){
+  cout << "Simple" << endl;
+
+  unsigned int total_time = 5;
+
+  SimpleCP* scp = new SimpleCP(total_time);
+
+  cid_t query_qid = scp->get_in_queues()[0]->get_id();
+  Query query(query_quant_t::EXISTS,
+              time_range_t(0, scp->get_total_time() - 1),
+              query_qid,
+              metric_t::CBLOCKED, comp_t::GT, 5);
+
+  scp->set_query(query);
+
+
+  IndexedExample* base_eg = new IndexedExample();
+  qset_t target_queues;
+
+  bool res = scp->generate_base_example(base_eg, target_queues, 1);
+
+  if (!res){
+    cout << "ERROR: couldn't generate base example" << endl;
+    return;
+  }
+
+  // Set shared config
+  DistsParams dists_params;
+  dists_params.in_queue_cnt = scp->in_queue_cnt();
+  dists_params.total_time = total_time;
+  dists_params.pkt_meta1_val_max = 2;
+  dists_params.pkt_meta2_val_max = 2;
+
+  Dists* dists = new Dists(dists_params);
+  SharedConfig* config = new SharedConfig(total_time,
+                                          scp->in_queue_cnt(),
+                                          target_queues,
+                                          dists);
+  bool config_set = scp->set_shared_config(config);
+  if (!config_set) return;
 }
 

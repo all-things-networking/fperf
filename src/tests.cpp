@@ -8,14 +8,15 @@
 
 #include "tests.hpp"
 
-#include "params.hpp"
-#include "priority_scheduler.hpp"
-#include "rr_scheduler.hpp"
-#include "loom_mqprio.hpp"
 #include "buggy_2l_rr_scheduler.hpp"
 #include "leaf_spine.hpp"
-#include "search.hpp"
+#include "loom_mqprio.hpp"
+#include "params.hpp"
+#include "priority_scheduler.hpp"
 #include "query.hpp"
+#include "rr_scheduler.hpp"
+#include "search.hpp"
+#include "tbf_scheduler.hpp"
 
 void run(ContentionPoint* cp,
          IndexedExample* base_eg,
@@ -530,3 +531,27 @@ void run(ContentionPoint* cp,
 
 }
 
+void tbf(std::string good_examples_file, std::string bad_examples_file) {
+  cout << "TBF" << endl;
+
+  unsigned int total_time = 6;
+
+  TBFScheduler *tbf = new TBFScheduler(total_time);
+
+  // Base workload
+  Workload wl(100, 1, total_time);
+
+  wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, 0), comp_t::GE, TIME(1)),
+                           time_range_t(0, total_time - 1), total_time));
+  tbf->set_base_workload(wl);
+
+  //  // Query
+  cid_t queue1_id = tbf->get_in_queues()[0]->get_id();
+
+  Query query(query_quant_t::FORALL, time_range_t(0, total_time - 1), queue1_id,
+              metric_t::CENQ, comp_t::GE, 1);
+
+  tbf->set_query(query);
+
+  cout << tbf->satisfy_query() << endl;
+}

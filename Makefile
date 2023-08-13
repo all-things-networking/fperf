@@ -11,7 +11,7 @@ SRC      :=	$(wildcard src/*.cpp) \
 						$(wildcard src/cps/*.cpp) \
 						$(wildcard src/qms/*.cpp)
 TEST_SRC := $(wildcard tests/*.cpp)
-TEST_EXE := $(APP_DIR)/tests
+TEST_EXE := $(APP_DIR)/$(TARGET)_test
 			
 
 
@@ -37,10 +37,10 @@ run:
 	./build/autoperf
 
 $(TEST_EXE): $(OBJECTS) $(TEST_SRC)
-	$(CXX) $(CXXFLAGS) $(INCLUDE) -o build/tests $(TEST_SRC) $(filter-out ./build/objects/src/main.o, $(OBJECTS)) $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $@ $(TEST_SRC) $(filter-out ./build/objects/src/main.o, $(OBJECTS)) $(LDFLAGS)
 
 test: $(TEST_EXE)
-	$(TEST_EXE)
+	$^
 
 clean:
 	-@rm -rvf $(OBJ_DIR)/*

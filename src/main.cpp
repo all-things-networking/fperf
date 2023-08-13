@@ -25,8 +25,7 @@ int main(int argc, const char * argv[]) {
     (void) argc;
     (void) argv;
    
-    simple_test();
-    //prio();
+    prio();
     //rr();
     //fq_codel();
     //loom();  

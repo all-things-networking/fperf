@@ -37,7 +37,7 @@ run:
 	./build/autoperf
 
 $(TEST_EXE): $(OBJECTS) $(TEST_SRC)
-	$(CXX) $(CXXFLAGS) $(INCLUDE) $(LDFLAGS) -o build/tests $(TEST_SRC) $(filter-out ./build/objects/src/main.o, $(OBJECTS))
+	$(CXX) $(CXXFLAGS) $(INCLUDE) -o build/tests $(TEST_SRC) $(filter-out ./build/objects/src/main.o, $(OBJECTS)) $(LDFLAGS)
 
 test: $(TEST_EXE)
 	$(TEST_EXE)

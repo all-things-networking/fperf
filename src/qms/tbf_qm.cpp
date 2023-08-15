@@ -1,17 +1,13 @@
 #include "tbf_qm.hpp"
-#include <format>
-
-int TOKEN_QUEUE_SIZE = 50;
-int LINK_RATE = 5;
 
 using namespace std;
 
-TBFQM::TBFQM(cid_t id, unsigned int total_time,
-             std::vector<QueueInfo> in_queue_info, QueueInfo out_queue_info,
-             NetContext &net_ctx)
-    : QueuingModule(id, total_time, in_queue_info,
+TBFQM::TBFQM(cid_t id, unsigned int total_time, QueueInfo in_queue_info,
+             QueueInfo out_queue_info, NetContext &net_ctx, TBFInfo info)
+    : QueuingModule(id, total_time, std::vector<QueueInfo>{in_queue_info},
                     std::vector<QueueInfo>{out_queue_info}, net_ctx) {
   init(net_ctx);
+  this->info = info;
 }
 
 template <typename... Args>
@@ -60,8 +56,8 @@ void TBFQM::add_constrs(NetContext &net_ctx,
     else
       constr_expr =
           token_queue[t] ==
-          max(net_ctx.int_val(0), min(net_ctx.int_val(TOKEN_QUEUE_SIZE),
-                                      token_queue[t - 1] + (int)LINK_RATE -
+          max(net_ctx.int_val(0), min(net_ctx.int_val(info.max_tokens),
+                                      token_queue[t - 1] + (int)info.link_rate -
                                           in_queue->deq_cnt(t - 1)));
     constr_map.insert(named_constr(constr_name, constr_expr));
   }
@@ -70,8 +66,10 @@ void TBFQM::add_constrs(NetContext &net_ctx,
     for (int i = 0; i < out_queue->max_enq(); ++i) {
       string constr_name =
           format_string("%s_output_from_%d_%d", id.c_str(), i, t);
-      expr constr_expr = implies(in_queue->deq_cnt(t) >= i + 1,
-                                 out_queue->enqs(i)[t] == in_queue->elem(i)[t]);
+      expr constr_expr = net_ctx.bool_val(true);
+      constr_expr = ite(in_queue->deq_cnt(t) >= i + 1,
+                        out_queue->enqs(i)[t] == in_queue->elem(i)[t],
+                        out_queue->enqs(i)[t] == net_ctx.null_pkt());
       constr_map.insert(named_constr(constr_name, constr_expr));
     }
   }

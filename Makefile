@@ -1,18 +1,19 @@
 CXX      := g++
-CXXFLAGS := -pedantic-errors -Wno-unknown-pragmas -Wall -Wextra -Werror -std=c++17 -O3 
+CXXFLAGS := -g -std=c++17 -O0 -w
 LDFLAGS  := -L/usr/lib -L/usr/local/lib/ -lstdc++ -lm -lz3
 BUILD    := ./build
 OBJ_DIR  := $(BUILD)/objects
-APP_DIR  := $(BUILD)/
+APP_DIR  := $(BUILD)
 TARGET   := autoperf
 INCLUDE  := -I/usr/local/include -Ilib/ -Ilib/metrics/ -Ilib/cps -Ilib/qms
 SRC      :=	$(wildcard src/*.cpp) \
 					  $(wildcard src/metrics/*.cpp) \
 						$(wildcard src/cps/*.cpp) \
 						$(wildcard src/qms/*.cpp)
+TEST_SRC := $(wildcard tests/*.cpp)
+TEST_EXE := $(APP_DIR)/$(TARGET)_test
 			
 
-OS_NAME := $(shell uname -s | tr A-Z a-z)
 
 OBJECTS := $(SRC:%.cpp=$(OBJ_DIR)/%.o)
 
@@ -26,7 +27,7 @@ $(APP_DIR)/$(TARGET): $(OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) -o $(APP_DIR)/$(TARGET) $^ $(LDFLAGS)
 
-.PHONY: all build clean
+.PHONY: all build clean test
 
 build:
 	@mkdir -p $(APP_DIR)
@@ -34,7 +35,13 @@ build:
 
 run:
 	./build/autoperf
-	
+
+$(TEST_EXE): $(OBJECTS) $(TEST_SRC)
+	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $@ $(TEST_SRC) $(filter-out ./build/objects/src/main.o, $(OBJECTS)) $(LDFLAGS)
+
+test: $(TEST_EXE)
+	$^
+
 clean:
 	-@rm -rvf $(OBJ_DIR)/*
 	-@rm -rvf $(APP_DIR)/*

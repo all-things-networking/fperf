@@ -25,5 +25,4 @@ void loom(std::string good_examples_file="",
 
 void leaf_spine_bw(std::string good_examples_file="",
                    std::string bad_examples_file="");
-
 #endif /* tests_hpp */

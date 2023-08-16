@@ -529,4 +529,3 @@ void run(ContentionPoint* cp,
     search.run();
 
 }
-

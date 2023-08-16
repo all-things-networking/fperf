@@ -11,6 +11,7 @@
 
 #include <random>
 #include <vector>
+#include <iostream>
 
 #include "params.hpp"
 #include "metric.hpp"

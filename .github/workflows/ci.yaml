@@ -1,0 +1,27 @@
+name: CI Workflow
+on: [ push ]
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+      - name: Make
+        run: make -j2 clean all test
+      - name: Upload test executable
+        uses: actions/upload-artifact@v3
+        with:
+          name: autoperf_test
+          path: build/autoperf_test
+  test:
+    runs-on: self-hosted
+    needs: [ build ]
+    steps:
+      - name: Download test artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: autoperf_test
+      - name: Making test artifact executable
+        run: chmod +x autoperf_test
+      - name: Run tests
+        run: ./autoperf_test

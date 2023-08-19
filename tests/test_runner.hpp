@@ -15,8 +15,11 @@ public:
 
   bool run(std::vector<std::string> test_names);
 
+  std::string get_report();
+
 private:
   std::map<std::string, test_case_t *> test_cases;
+  std::map<std::string, bool> results;
 };
 
 #endif

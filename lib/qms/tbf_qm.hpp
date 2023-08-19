@@ -3,6 +3,7 @@
 struct TBFInfo {
   unsigned int max_tokens;
   unsigned int link_rate;
+  unsigned int max_enq;
 };
 
 class TBFQM : public QueuingModule {
@@ -12,7 +13,7 @@ public:
 
   void add_constrs(NetContext &net_ctx,
                    std::map<std::string, expr> &constr_map);
-  vector<expr> token_queue;
+  std::vector<expr> token_queue;
 
 private:
   TBFInfo info;

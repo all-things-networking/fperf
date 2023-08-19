@@ -1,6 +1,7 @@
 #include "cdeq.hpp"
 #include "cenq.hpp"
 #include "contention_point.hpp"
+#include "deq.hpp"
 #include "qsize.hpp"
 #include "tbf_qm.hpp"
 
@@ -13,7 +14,7 @@ public:
 private:
   std::vector<CEnq *> cenq;
   std::vector<CDeq *> cdeq;
-  std::vector<QSize *> qsize;
+  std::vector<Deq *> deq;
 
   void add_nodes();
   void add_edges();

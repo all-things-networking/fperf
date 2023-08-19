@@ -13,7 +13,7 @@ void TBF::add_nodes() {
   // add a rr qm
   QueueInfo in_queue_info;
   in_queue_info.size = MAX_QUEUE_SIZE;
-  in_queue_info.max_enq = MAX_ENQ;
+  in_queue_info.max_enq = info.max_enq;
   in_queue_info.max_deq = MAX_QUEUE_SIZE;
   in_queue_info.type = queue_t::QUEUE;
 
@@ -48,10 +48,11 @@ void TBF::add_metrics() {
   metrics[metric_t::CDEQ][get_out_queue()->get_id()] = cd;
   get_out_queue()->add_metric(metric_t::CDEQ, cd);
 
-  QSize *s = new QSize(get_out_queue(), total_time, net_ctx);
-  qsize.push_back(s);
-  metrics[metric_t::QSIZE][get_out_queue()->get_id()] = s;
-  get_out_queue()->add_metric(metric_t::QSIZE, s);
+  // Deq
+  Deq *d = new Deq(get_in_queue(), total_time, net_ctx);
+  deq.push_back(d);
+  metrics[metric_t::DEQ][get_in_queue()->get_id()] = d;
+  get_in_queue()->add_metric(metric_t::DEQ, d);
 }
 
 std::string TBF::cp_model_str(model &m, NetContext &net_ctx, unsigned int t) {

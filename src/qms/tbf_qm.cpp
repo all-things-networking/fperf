@@ -1,7 +1,5 @@
 #include "tbf_qm.hpp"
 
-using namespace std;
-
 TBFQM::TBFQM(cid_t id, unsigned int total_time, QueueInfo in_queue_info,
              QueueInfo out_queue_info, NetContext &net_ctx, TBFInfo info)
     : QueuingModule(id, total_time, std::vector<QueueInfo>{in_queue_info},

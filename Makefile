@@ -1,5 +1,5 @@
 CXX      := g++
-CXXFLAGS := -g -std=c++17 -O0 -w
+CXXFLAGS := -g -std=c++17 -O0
 LDFLAGS  := -L/usr/lib -L/usr/local/lib/ -lstdc++ -lm -lz3
 BUILD    := ./build
 OBJ_DIR  := $(BUILD)/objects
@@ -7,14 +7,11 @@ APP_DIR  := $(BUILD)
 TARGET   := autoperf
 INCLUDE  := -I/usr/local/include -Ilib/ -Ilib/metrics/ -Ilib/cps -Ilib/qms
 SRC      :=	$(wildcard src/*.cpp) \
-					  $(wildcard src/metrics/*.cpp) \
-						$(wildcard src/cps/*.cpp) \
-						$(wildcard src/qms/*.cpp)
+						 $(wildcard src/*/*.cpp)
 TEST_SRC := $(wildcard tests/*.cpp)
 TEST_EXE := $(APP_DIR)/$(TARGET)_test
 			
-
-
+HEADERS := $(patsubst src/%.cpp,lib/%.hpp, $(filter-out src/main.cpp, $(SRC)))
 OBJECTS := $(SRC:%.cpp=$(OBJ_DIR)/%.o)
 
 all: build $(APP_DIR)/$(TARGET)
@@ -41,6 +38,9 @@ $(TEST_EXE): $(OBJECTS) $(TEST_SRC)
 
 test: $(TEST_EXE)
 	$^
+
+format: $(HEADERS) $(SRC)
+	clang-format --dry-run $^
 
 clean:
 	-@rm -rvf $(OBJ_DIR)/*

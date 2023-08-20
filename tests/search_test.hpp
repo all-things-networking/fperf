@@ -1,0 +1,4 @@
+class SearchTest {
+public:
+  SearchTest();
+};

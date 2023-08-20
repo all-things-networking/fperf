@@ -8,12 +8,17 @@ jobs:
         uses: actions/checkout@v3
       - name: Make
         run: make -j2 clean all test
-      - name: Upload test executable
+      - name: Upload autoperf executable
+        uses: actions/upload-artifact@v3
+        with:
+          name: autoperf
+          path: build/autoperf
+      - name: Upload unit test executable
         uses: actions/upload-artifact@v3
         with:
           name: autoperf_test
           path: build/autoperf_test
-  test:
+  unit-test:
     runs-on: self-hosted
     needs: [ build ]
     steps:
@@ -25,3 +30,16 @@ jobs:
         run: chmod +x autoperf_test
       - name: Run tests
         run: ./autoperf_test
+  cp-test:
+    runs-on: self-hosted
+    needs: [ build ]
+    steps:
+      - name: Download autoperf artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: autoperf
+      - name: Making autoperf artifact executable
+        run: chmod +x autoperf
+      - name: Run the autoperf
+        run: ./autoperf rr
+

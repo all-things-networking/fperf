@@ -32,7 +32,7 @@ jobs:
         run: ./autoperf_test
   cp-test:
     runs-on: self-hosted
-    needs: [ build ]
+    needs: [ build, unit-test ]
     steps:
       - name: Download autoperf artifact
         uses: actions/download-artifact@v3

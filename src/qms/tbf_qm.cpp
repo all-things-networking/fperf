@@ -1,4 +1,6 @@
 #include "tbf_qm.hpp"
+#include "util.hpp"
+#include <string>
 
 TBFQM::TBFQM(cid_t id, unsigned int total_time, QueueInfo in_queue_info,
              QueueInfo out_queue_info, NetContext &net_ctx, TBFInfo info)
@@ -6,14 +8,6 @@ TBFQM::TBFQM(cid_t id, unsigned int total_time, QueueInfo in_queue_info,
                     std::vector<QueueInfo>{out_queue_info}, net_ctx) {
   init(net_ctx);
   this->info = info;
-}
-
-template <typename... Args>
-string format_string(const string &format, Args... args) {
-  char vname[100];
-  std::snprintf(vname, 100, format.c_str(), args...);
-  string s(vname);
-  return s;
 }
 
 void TBFQM::add_proc_vars(NetContext &net_ctx) {

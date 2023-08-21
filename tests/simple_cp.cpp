@@ -12,7 +12,7 @@ SimpleCP::SimpleCP(unsigned int total_time)
 void SimpleCP::add_nodes() {
   QueueInfo info;
   info.size = MAX_QUEUE_SIZE;
-  info.max_enq = 2;
+  info.max_enq = 4;
   info.max_deq = 2;
   info.type = queue_t::QUEUE;
 

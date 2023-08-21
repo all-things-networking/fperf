@@ -15,7 +15,9 @@ bool test_search() {
   SimpleCP *ss = new SimpleCP(total_time);
 
   Workload wl(100, 1, total_time);
-  wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, 0), comp_t::GE, TIME(2)),
+  wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, 0), comp_t::GE, TIME(1)),
+                           time_range_t(0, total_time - 1), total_time));
+  wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, 0), comp_t::LE, TIME(3)),
                            time_range_t(0, total_time - 1), total_time));
   ss->set_base_workload(wl);
 
@@ -27,7 +29,8 @@ bool test_search() {
 
   ss->set_query(query);
 
-  ss->satisfy_query();
+  solver_res_t res = ss->satisfy_query();
+
   IndexedExample *base_eg = new IndexedExample();
   qset_t target_queues;
 

@@ -1,4 +1,5 @@
-class SearchTest {
+#include "test_class.hpp"
+class SearchTest : TestClass {
 public:
-  SearchTest();
+  void add_to_runner(TestRunner *runner) override;
 };

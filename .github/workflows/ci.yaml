@@ -30,7 +30,7 @@ jobs:
         run: chmod +x autoperf_test
       - name: Run tests
         run: ./autoperf_test
-  cp-test:
+  e2e-test:
     runs-on: self-hosted
     needs: [ build, unit-test ]
     steps:

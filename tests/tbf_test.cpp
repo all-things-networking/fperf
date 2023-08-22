@@ -3,17 +3,18 @@
 #include "tbf.hpp"
 
 /* r : link rate, T: total time
- * WL: cenq(t) > 4r
- * QR: cdeq(10) <= r*T
+ * WL: cenq(t) >= r * t
+ * QR: cdeq(T) <= r * T
  * We want to ensure that the average dequeue count is at most r
  */
 bool test_deq_avg() {
 
+  unsigned int link_rate = 4;
   unsigned int total_time = 10;
   unsigned int last_t = total_time - 1;
 
   TBFInfo info;
-  info.link_rate = 4;
+  info.link_rate = link_rate;
   info.max_tokens = 10;
   info.max_enq = 10;
 
@@ -22,17 +23,25 @@ bool test_deq_avg() {
   // Base workload
   Workload wl(100, 1, total_time);
 
-  wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, 0), comp_t::GE, TIME(1)),
+  wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, 0), comp_t::GE, TIME(4)),
                            time_range_t(0, last_t), total_time));
   tbf->set_base_workload(wl);
 
   // Query
-  cid_t queue_id = tbf->get_out_queue()->get_id();
+  cid_t queue_id = tbf->get_in_queue()->get_id();
 
-  Query query(query_quant_t::FORALL, time_range_t(last_t, last_t), queue_id,
-              metric_t::CDEQ, comp_t::GT, 40);
+  Query sat_query(query_quant_t::FORALL, time_range_t(last_t, last_t), queue_id,
+                  metric_t::CDEQ, comp_t::EQ, last_t * link_rate);
 
-  tbf->set_query(query);
+  tbf->set_query(sat_query);
+
+  if (tbf->satisfy_query() != solver_res_t::SAT)
+    return false;
+
+  Query unsat_query(query_quant_t::FORALL, time_range_t(last_t, last_t),
+                    queue_id, metric_t::CDEQ, comp_t::GT, last_t * link_rate);
+
+  tbf->set_query(unsat_query);
 
   return tbf->satisfy_query() == solver_res_t::UNSAT;
 }

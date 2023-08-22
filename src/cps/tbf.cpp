@@ -43,10 +43,10 @@ void TBF::add_metrics() {
   get_in_queue()->add_metric(metric_t::CENQ, ce);
 
   // CDeq
-  CDeq *cd = new CDeq(get_out_queue(), total_time, net_ctx);
+  CDeq *cd = new CDeq(get_in_queue(), total_time, net_ctx);
   cdeq.push_back(cd);
-  metrics[metric_t::CDEQ][get_out_queue()->get_id()] = cd;
-  get_out_queue()->add_metric(metric_t::CDEQ, cd);
+  metrics[metric_t::CDEQ][get_in_queue()->get_id()] = cd;
+  get_in_queue()->add_metric(metric_t::CDEQ, cd);
 
   // Deq
   Deq *d = new Deq(get_in_queue(), total_time, net_ctx);

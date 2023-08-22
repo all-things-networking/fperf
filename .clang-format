@@ -1,18 +1,31 @@
 ---
+#Reference: https://clang.llvm.org/docs/ClangFormatStyleOptions.html
 Language: Cpp
 IndentWidth: 4
 TabWidth: 4
 PointerAlignment: Left
 AccessModifierOffset: -4
-Cpp11BracedListStyle: false
+Cpp11BracedListStyle: true
 BinPackArguments: false
 BinPackParameters: false
-ColumnLimit: 0
+ColumnLimit: 80
 SpaceBeforeCpp11BracedList: false
 ConstructorInitializerIndentWidth: 0
 AllowShortIfStatementsOnASingleLine: WithoutElse
 BreakConstructorInitializers: AfterColon
 SpaceBeforeInheritanceColon: true
 SpaceBeforeCtorInitializerColon: false
+AlwaysBreakAfterDefinitionReturnType: None
+PenaltyReturnTypeOnItsOwnLine: 100
+AllowShortFunctionsOnASingleLine: None
+SpaceBeforeParens: Custom
+SpaceBeforeParensOptions:
+  AfterOverloadedOperator: true
+SpaceAfterCStyleCast: true
+BreakBeforeBraces: Custom
+BraceWrapping:
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
 ...
+
 

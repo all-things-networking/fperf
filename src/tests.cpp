@@ -8,15 +8,14 @@
 
 #include "tests.hpp"
 
-#include "buggy_2l_rr_scheduler.hpp"
-#include "leaf_spine.hpp"
-#include "loom_mqprio.hpp"
 #include "params.hpp"
 #include "priority_scheduler.hpp"
-#include "query.hpp"
 #include "rr_scheduler.hpp"
+#include "loom_mqprio.hpp"
+#include "buggy_2l_rr_scheduler.hpp"
+#include "leaf_spine.hpp"
 #include "search.hpp"
-#include "tbf.hpp"
+#include "query.hpp"
 
 void run(ContentionPoint* cp,
          IndexedExample* base_eg,
@@ -529,35 +528,4 @@ void run(ContentionPoint* cp,
     cout << "search setup: " << (get_diff_millisec(start_time, noww())) << " ms" << endl;
     search.run();
 
-}
-
-void tbf() {
-  cout << "TBF" << endl;
-
-  unsigned int total_time = 10;
-
-  TBFInfo info;
-  info.link_rate = 4;
-  info.max_tokens = 10;
-
-  TBF *tbf = new TBF(total_time, info);
-
-  // Base workload
-  Workload wl(100, 1, total_time);
-
-  wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, 0), comp_t::GE, TIME(1)),
-                           time_range_t(0, total_time - 1), total_time));
-  wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, 0), comp_t::LE, 3),
-                           time_range_t(0, total_time - 1), total_time));
-  tbf->set_base_workload(wl);
-
-  // Query
-  cid_t queue_id = tbf->get_out_queue()->get_id();
-
-  Query query(query_quant_t::FORALL, time_range_t(0, total_time - 1), queue_id,
-              metric_t::QSIZE, comp_t::LE, 3);
-
-  tbf->set_query(query);
-
-  cout << tbf->satisfy_query() << endl;
 }

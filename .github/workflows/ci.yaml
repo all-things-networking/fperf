@@ -1,6 +1,13 @@
 name: CI Workflow
 on: [ push ]
 jobs:
+  format:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+      - name: Check format
+        run: make check-format
   build:
     runs-on: self-hosted
     steps:

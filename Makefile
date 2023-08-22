@@ -39,7 +39,7 @@ $(TEST_EXE): $(OBJECTS) $(TEST_SRC)
 test: $(TEST_EXE)
 	$^
 
-format: $(HEADERS) $(SRC)
+check-format: $(HEADERS) $(SRC)
 	clang-format --dry-run $^
 
 clean:

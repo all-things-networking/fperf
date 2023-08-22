@@ -10,22 +10,21 @@
 using namespace std;
 
 bool test_search() {
-  uint total_time = 10;
+  uint total_time = 5;
+  uint last_t = total_time - 1;
 
   SimpleCP *ss = new SimpleCP(total_time);
 
   Workload wl(100, 1, total_time);
-  wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, 0), comp_t::GE, TIME(1)),
-                           time_range_t(0, total_time - 1), total_time));
-  wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, 0), comp_t::LE, TIME(3)),
-                           time_range_t(0, total_time - 1), total_time));
+  wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, 0), comp_t::LE, (uint)1),
+                           time_range_t(last_t, last_t), total_time));
   ss->set_base_workload(wl);
 
   // Query
   cid_t queue_id = ss->get_in_queue()->get_id();
 
-  Query query(query_quant_t::FORALL, time_range_t(0, total_time - 1), queue_id,
-              metric_t::CENQ, comp_t::GT, 1);
+  Query query(query_quant_t::FORALL, time_range_t(last_t, last_t), queue_id,
+              metric_t::CDEQ, comp_t::GE, 1);
 
   ss->set_query(query);
 
@@ -38,8 +37,12 @@ bool test_search() {
     return false;
 
   DistsParams dists_params;
+  dists_params.in_queue_cnt = ss->in_queue_cnt();
+  dists_params.total_time = total_time;
+  dists_params.pkt_meta1_val_max = 1;
+  dists_params.pkt_meta2_val_max = 1;
   Dists *dists = new Dists(dists_params);
-  SharedConfig *config = new SharedConfig(10, 1, target_queues, dists);
+  SharedConfig *config = new SharedConfig(total_time, 1, target_queues, dists);
 
   if (!ss->set_shared_config(config))
     return false;
@@ -52,7 +55,7 @@ bool test_search() {
 
   Search search(ss, query, 10, config, good_examples, bad_examples);
   search.run();
-
+  //
   return true;
 }
 

@@ -4,8 +4,7 @@
 
 #include <sstream>
 
-SimpleCP::SimpleCP(unsigned int total_time)
-    : ContentionPoint(total_time) {
+SimpleCP::SimpleCP(unsigned int total_time) : ContentionPoint(total_time) {
   init();
 }
 
@@ -49,7 +48,7 @@ void SimpleCP::add_metrics() {
 }
 
 std::string SimpleCP::cp_model_str(model &m, NetContext &net_ctx,
-                                          unsigned int t) {
+                                   unsigned int t) {
   return "";
 }
 
@@ -70,7 +69,13 @@ void SimpleQM::add_constrs(NetContext &net_ctx,
 
   for (unsigned int t = 0; t < total_time; t++) {
     string constr_name = format_string("%s_deq_count_%d", id.c_str(), t);
-    expr constr_expr = in_queue->deq_cnt(t) == (t == 0 ? 0 : 1);
+    expr constr_expr = net_ctx.bool_val(true);
+    if (t == 0)
+      constr_expr = in_queue->deq_cnt(t) == 0;
+    else
+      constr_expr =
+          in_queue->deq_cnt(t) == ite(net_ctx.pkt2val(in_queue->elem(0)[t]),
+                                      net_ctx.int_val(1), net_ctx.int_val(0));
     constr_map.insert(named_constr(constr_name, constr_expr));
   }
 

@@ -4,7 +4,8 @@
 
 /* r : link rate, T: total time
  * WL: cenq(t) >= r * t
- * QR: cdeq(T) <= r * T
+ * QR: cdeq(T) > r * T
+ *
  * We want to ensure that the average dequeue count is at most r
  */
 bool test_deq_avg() {
@@ -20,14 +21,12 @@ bool test_deq_avg() {
 
   TBF *tbf = new TBF(total_time, info);
 
-  // Base workload
   Workload wl(100, 1, total_time);
 
   wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, 0), comp_t::GE, TIME(4)),
                            time_range_t(0, last_t), total_time));
   tbf->set_base_workload(wl);
 
-  // Query
   cid_t queue_id = tbf->get_in_queue()->get_id();
 
   Query sat_query(query_quant_t::FORALL, time_range_t(last_t, last_t), queue_id,
@@ -46,79 +45,85 @@ bool test_deq_avg() {
   return tbf->satisfy_query() == solver_res_t::UNSAT;
 }
 
-/*
- * Here we are enqueueing with higher than link_rate and check whether
- * burst is limited to the token queue size
+/* m: token bucket size, r: link rate, T: total time
+ * WL: cenq(T) > r * T
+ * QR: exists t: deq(t) > m
+ *
+ * In average we are enqueueing more than the token bucket size, and we want to
+ * ensure that bursts do not exceed the token bucket size
  */
 bool test_max_burst() {
-  cout << "TBF" << endl;
-
+  unsigned int link_rate = 3;
+  unsigned int max_tokens = 5;
   unsigned int total_time = 10;
   unsigned int last_t = total_time - 1;
 
   TBFInfo info;
-  info.link_rate = 3;
-  info.max_tokens = 5;
+  info.link_rate = link_rate;
+  info.max_tokens = max_tokens;
   info.max_enq = 10;
 
   TBF *tbf = new TBF(total_time, info);
 
-  // Base workload
   Workload wl(100, 1, total_time);
 
-  wl.add_wl_spec(
-      TimedSpec(WlSpec(TONE(metric_t::CENQ, 0), comp_t::GE, (unsigned int)30),
-                time_range_t(last_t, last_t), total_time));
+  wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, 0), comp_t::GT,
+                                  (unsigned int)total_time * max_tokens),
+                           time_range_t(last_t, last_t), total_time));
 
   tbf->set_base_workload(wl);
 
-  // Query
   cid_t queue_id = tbf->get_in_queue()->get_id();
 
   Query sat_query(query_quant_t::EXISTS, time_range_t(0, last_t), queue_id,
-                  metric_t::DEQ, comp_t::GT, 4);
+                  metric_t::DEQ, comp_t::EQ, max_tokens);
   tbf->set_query(sat_query);
 
   if (tbf->satisfy_query() != solver_res_t::SAT)
     return false;
 
   Query unsat_query(query_quant_t::EXISTS, time_range_t(0, last_t), queue_id,
-                    metric_t::DEQ, comp_t::GT, 5);
+                    metric_t::DEQ, comp_t::GT, max_tokens);
   tbf->set_query(unsat_query);
 
   return tbf->satisfy_query() == solver_res_t::UNSAT;
 }
 
+/*
+ * m: token bucket size
+ * WL: cenq(T) >= m
+ * QR: exists t: deq(t) == m
+ *
+ * Here we are enqueueing at least m packets and we want to ensure that
+ * a maximum burst is possible
+ */
 bool test_burst() {
   cout << "TBF" << endl;
 
+  unsigned int max_tokens = 6;
   unsigned int total_time = 10;
   unsigned int last_t = total_time - 1;
 
   TBFInfo info;
   info.link_rate = 3;
-  info.max_tokens = 6;
+  info.max_tokens = max_tokens;
   info.max_enq = 10;
 
   TBF *tbf = new TBF(total_time, info);
 
-  // Base workload
   Workload wl(100, 1, total_time);
 
-  wl.add_wl_spec(
-      TimedSpec(WlSpec(TONE(metric_t::CENQ, 0), comp_t::GE, (unsigned int)6),
-                time_range_t(last_t, last_t), total_time));
+  wl.add_wl_spec(TimedSpec(
+      WlSpec(TONE(metric_t::CENQ, 0), comp_t::GE, (unsigned int)max_tokens),
+      time_range_t(last_t, last_t), total_time));
 
   tbf->set_base_workload(wl);
 
-  // Query
   cid_t queue_id = tbf->get_in_queue()->get_id();
 
   Query sat_query(query_quant_t::EXISTS, time_range_t(0, last_t), queue_id,
-                  metric_t::DEQ, comp_t::GE, 6);
+                  metric_t::DEQ, comp_t::EQ, max_tokens);
   tbf->set_query(sat_query);
-
-  auto res = tbf->satisfy_query();
 
   return tbf->satisfy_query() == solver_res_t::SAT;
 }

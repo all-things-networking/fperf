@@ -10,6 +10,7 @@ jobs:
         run: make check-format
   build:
     runs-on: self-hosted
+    needs: [ format ]
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3

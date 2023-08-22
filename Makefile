@@ -40,7 +40,7 @@ test: $(TEST_EXE)
 	$^
 
 check-format: $(HEADERS) $(SRC)
-	clang-format --dry-run $^
+	clang-format --dry-run -Werror $^
 
 clean:
 	-@rm -rvf $(OBJ_DIR)/*

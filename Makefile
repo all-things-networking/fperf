@@ -4,14 +4,14 @@ LDFLAGS  := -L/usr/lib -L/usr/local/lib/ -lstdc++ -lm -lz3
 BUILD    := ./build
 OBJ_DIR  := $(BUILD)/objects
 APP_DIR  := $(BUILD)
-TARGET   := autoperf
+TARGET   := fperf
 INCLUDE  := -I/usr/local/include -Ilib/ -Ilib/metrics/ -Ilib/cps -Ilib/qms
 SRC      :=	$(wildcard src/*.cpp) \
 					  $(wildcard src/metrics/*.cpp) \
 						$(wildcard src/cps/*.cpp) \
 						$(wildcard src/qms/*.cpp)
 TEST_SRC := $(wildcard tests/*.cpp)
-TEST_EXE := $(APP_DIR)/$(TARGET)_test
+TEST_TARGET_PATH := $(APP_DIR)/$(TARGET)_test
 			
 
 
@@ -34,12 +34,12 @@ build:
 	@mkdir -p $(OBJ_DIR)
 
 run:
-	./build/autoperf
+	./$(APP_DIR)/$(TARGET)
 
-$(TEST_EXE): $(OBJECTS) $(TEST_SRC)
+$(TEST_TARGET_PATH): $(OBJECTS) $(TEST_SRC)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $@ $(TEST_SRC) $(filter-out ./build/objects/src/main.o, $(OBJECTS)) $(LDFLAGS)
 
-test: $(TEST_EXE)
+test: $(TEST_TARGET_PATH)
 	$^
 
 clean:

@@ -11,8 +11,8 @@ jobs:
       - name: Upload test executable
         uses: actions/upload-artifact@v3
         with:
-          name: autoperf_test
-          path: build/autoperf_test
+          name: fperf_test
+          path: build/fperf_test
   test:
     runs-on: self-hosted
     needs: [ build ]
@@ -20,8 +20,8 @@ jobs:
       - name: Download test artifact
         uses: actions/download-artifact@v3
         with:
-          name: autoperf_test
+          name: fperf_test
       - name: Making test artifact executable
-        run: chmod +x autoperf_test
+        run: chmod +x fperf_test
       - name: Run tests
-        run: ./autoperf_test
+        run: ./fperf_test

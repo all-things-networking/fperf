@@ -20,12 +20,13 @@ PenaltyReturnTypeOnItsOwnLine: 100
 AllowShortFunctionsOnASingleLine: None
 SpaceBeforeParens: Custom
 SpaceBeforeParensOptions:
-  AfterOverloadedOperator: true
+  AfterOverloadedOperator: false
 SpaceAfterCStyleCast: true
 BreakBeforeBraces: Custom
 BraceWrapping:
   SplitEmptyFunction: false
   SplitEmptyRecord: false
+PenaltyBreakComment: 1000000
 ...
 
 

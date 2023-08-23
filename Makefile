@@ -24,7 +24,7 @@ $(APP_DIR)/$(TARGET): $(OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) -o $(APP_DIR)/$(TARGET) $^ $(LDFLAGS)
 
-.PHONY: all build clean test
+.PHONY: all build clean test check-format format
 
 build:
 	@mkdir -p $(APP_DIR)
@@ -41,6 +41,9 @@ test: $(TEST_EXE)
 
 check-format: $(HEADERS) $(SRC)
 	clang-format --dry-run -Werror $^
+
+format: $(HEADERS) $(SRC)
+	clang-format -i $^
 
 clean:
 	-@rm -rvf $(OBJ_DIR)/*

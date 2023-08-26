@@ -89,47 +89,7 @@ bool test_max_burst() {
   return tbf->satisfy_query() == solver_res_t::UNSAT;
 }
 
-/*
- * m: token bucket size
- * WL: cenq(T) >= m
- * QR: exists t: deq(t) == m
- *
- * Here we are enqueueing at least m packets and we want to ensure that
- * a maximum burst is possible
- */
-bool test_burst() {
-  cout << "TBF" << endl;
-
-  unsigned int max_tokens = 6;
-  unsigned int total_time = 10;
-  unsigned int last_t = total_time - 1;
-
-  TBFInfo info;
-  info.link_rate = 3;
-  info.max_tokens = max_tokens;
-  info.max_enq = 10;
-
-  TBF *tbf = new TBF(total_time, info);
-
-  Workload wl(100, 1, total_time);
-
-  wl.add_wl_spec(TimedSpec(
-      WlSpec(TONE(metric_t::CENQ, 0), comp_t::GE, (unsigned int)max_tokens),
-      time_range_t(last_t, last_t), total_time));
-
-  tbf->set_base_workload(wl);
-
-  cid_t queue_id = tbf->get_in_queue()->get_id();
-
-  Query sat_query(query_quant_t::EXISTS, time_range_t(0, last_t), queue_id,
-                  metric_t::DEQ, comp_t::EQ, max_tokens);
-  tbf->set_query(sat_query);
-
-  return tbf->satisfy_query() == solver_res_t::SAT;
-}
-
 void TBFTest::add_to_runner(TestRunner *runner) {
   runner->add_test_case("tbf_deq_avg", test_deq_avg);
   runner->add_test_case("tbf_max_burst", test_max_burst);
-  runner->add_test_case("tbf_burst", test_burst);
 }

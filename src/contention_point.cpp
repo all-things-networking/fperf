@@ -446,37 +446,43 @@ solver_res_t ContentionPoint::satisfy_query(){
     return res;
 }
 
-solver_res_t ContentionPoint::check_workload_without_query(Workload wl){
-    time_typ start_time = noww();
-    
-    z3_solver->push();
-    z3_solver->add(base_wl_expr, "base_wl");
-    
+solver_res_t ContentionPoint::check_workload_without_query(Workload wl) {
+  time_typ start_time = noww();
+
+  z3_solver->push();
+  z3_solver->add(base_wl_expr, "base_wl");
+
+  try {
     expr wl_expr = get_expr(wl);
     z3_solver->add(wl_expr, "workload");
-   
-    //solver_res_t res = solve();
-    
-    check_result z3_res = z3_solver->check();
-    solver_res_t res = solver_res_t::UNKNOWN;
-    if (z3_res == sat) res = solver_res_t::SAT;
-    if (z3_res == unsat) res = solver_res_t::UNSAT;
-    
+  } catch (const runtime_error &error) {
     z3_solver->pop();
-    
-    //------------ Timing Stats
-    time_typ end_time = noww();
-    unsigned long long int milliseconds = get_diff_millisec(start_time, end_time);
-    
-    check_workload_without_query_total_invoc++;
-    check_workload_without_query_total_time += milliseconds;
-    if (milliseconds > check_workload_without_query_max_time){
-        check_workload_without_query_max_time = milliseconds;
-    }
-    //-------------------------
-    
-    return res;
+    return solver_res_t::UNKNOWN;
+  }
 
+  // solver_res_t res = solve();
+
+  check_result z3_res = z3_solver->check();
+  solver_res_t res = solver_res_t::UNKNOWN;
+  if (z3_res == sat)
+    res = solver_res_t::SAT;
+  if (z3_res == unsat)
+    res = solver_res_t::UNSAT;
+
+  z3_solver->pop();
+
+  //------------ Timing Stats
+  time_typ end_time = noww();
+  unsigned long long int milliseconds = get_diff_millisec(start_time, end_time);
+
+  check_workload_without_query_total_invoc++;
+  check_workload_without_query_total_time += milliseconds;
+  if (milliseconds > check_workload_without_query_max_time) {
+    check_workload_without_query_max_time = milliseconds;
+  }
+  //-------------------------
+
+  return res;
 }
 
 solver_res_t ContentionPoint::check_workload_with_query(Workload wl, IndexedExample* eg){
@@ -1465,34 +1471,37 @@ void ContentionPoint::generate_good_examples2(IndexedExample* base_eg,
     z3_optimizer->add(base_wl_expr, "base_wl");
     z3_optimizer->add(query_expr, "query");
 
-    // add constraints to ensure the queues that 
-    // are "zero" in the base example will stay 
-    // zero in the rest of the examples too.
-    char constr_name[100];
-    for (unsigned int q = 0; q < in_queues.size(); q++){
-        if (target_queues.find(q) != target_queues.end()) continue;
-        
-        Metric* cenq_metric = in_queues[q]->get_metric(metric_t::CENQ);
-        for (unsigned int t = 0; t < total_time; t++){
-            sprintf(constr_name, "%d_is_zerod_queue[%d}", q, t);
-            expr constr_expr = cenq_metric->val(t) == 0;
-            z3_optimizer->add(constr_expr, constr_name);
-        }
-    }
+  // add constraints to ensure the queues that
+  // are "zero" in the base example will stay
+  // zero in the rest of the examples too.
+  char constr_name[100];
+  for (unsigned int q = 0; q < in_queues.size(); q++) {
+    if (target_queues.find(q) != target_queues.end())
+      continue;
 
-    // Packets enqueued in the last time step will not 
-    // have enough time to be processed. To avoid arbitrary
-    // numbers, ensure enq_cnt in the last time step is zero
-    // in all examples. 
-    // Similarly, do not allow more than one packet in the 
-    // second to last time step (TODO: the exact constant
-    // may need to be generalized. 
-    for (unsigned int q = 0; q < in_queues.size(); q++){
-        sprintf(constr_name, "%d_example_trimming", q);
-        expr constr_expr = in_queues[q]->enq_cnt(total_time - 1) == 0 &&
-                           in_queues[q]->enq_cnt(total_time - 2) <= 1;
-        z3_optimizer->add(constr_expr, constr_name);
+    // TOASK: this enforces all queues to have CENQ metric
+    Metric *cenq_metric = in_queues[q]->get_metric(metric_t::CENQ);
+    for (unsigned int t = 0; t < total_time; t++) {
+      sprintf(constr_name, "%d_is_zerod_queue[%d}", q, t);
+      expr constr_expr = cenq_metric->val(t) == 0;
+      z3_optimizer->add(constr_expr, constr_name);
     }
+  }
+
+  // Packets enqueued in the last time step will not
+  // have enough time to be processed. To avoid arbitrary
+  // numbers, ensure enq_cnt in the last time step is zero
+  // in all examples.
+  // TOASK: Why?
+  // Similarly, do not allow more than one packet in the
+  // second to last time step (TODO: the exact constant
+  // may need to be generalized.
+  for (unsigned int q = 0; q < in_queues.size(); q++) {
+    sprintf(constr_name, "%d_example_trimming", q);
+    expr constr_expr = in_queues[q]->enq_cnt(total_time - 1) == 0 &&
+                       in_queues[q]->enq_cnt(total_time - 2) <= 1;
+    z3_optimizer->add(constr_expr, constr_name);
+  }
 
     expr_vector smooth_flow_vec(net_ctx.z3_ctx());
     for (qset_t::iterator it = target_queues.begin();
@@ -2173,8 +2182,11 @@ expr ContentionPoint::get_expr(TONE t_one, unsigned int t){
                    net_ctx.pkt2meta2(pkt),
                    net_ctx.int_val(UNDEFINED_METRIC_VAL)); 
 
-    }
-    else return queue->get_metric(metric)->val(t);
+  } else {
+    if (queue->get_metric(metric) == nullptr)
+      throw runtime_error("No such metric");
+    return queue->get_metric(metric)->val(t);
+  }
 }
 
 expr ContentionPoint::get_expr(TSUM t_sum, unsigned int t){
@@ -2280,28 +2292,28 @@ unsigned int ContentionPoint::eval_trf(TSUM tsum,
     return res;
 }
 
-unsigned int ContentionPoint::eval_trf(TONE tone,
-                                       IndexedExample* eg,
-                                       unsigned int time) const{
-    unsigned int queue = tone.get_queue();
-    metric_t metric = tone.get_metric();
-    // TODO: FIX THIS
-    if (metric == metric_t::META1){
-        if (eg->enqs_meta1[queue][time].size() > 0){
-            return eg->enqs_meta1[queue][time][0];
-        }
-        else return UNDEFINED_METRIC_VAL;
-    }
-    else if (metric == metric_t::META2){
-        if (eg->enqs_meta2[queue][time].size() > 0){
-            return eg->enqs_meta2[queue][time][0];
-        }
-        else return UNDEFINED_METRIC_VAL;
-    }
-    else {
-        unsigned int res = in_queues[queue]->get_metric(metric)->eval(eg, time, queue);
-        return res;
-    }
+unsigned int ContentionPoint::eval_trf(TONE tone, IndexedExample *eg,
+                                       unsigned int time) const {
+  unsigned int queue = tone.get_queue();
+  metric_t metric = tone.get_metric();
+  // TODO: FIX THIS
+  if (metric == metric_t::META1) {
+    if (eg->enqs_meta1[queue][time].size() > 0) {
+      return eg->enqs_meta1[queue][time][0];
+    } else
+      return UNDEFINED_METRIC_VAL;
+  } else if (metric == metric_t::META2) {
+    if (eg->enqs_meta2[queue][time].size() > 0) {
+      return eg->enqs_meta2[queue][time][0];
+    } else
+      return UNDEFINED_METRIC_VAL;
+  } else {
+    Metric *queue_metric = in_queues[queue]->get_metric(metric);
+    if (queue_metric != nullptr)
+      return queue_metric->eval(eg, time, queue);
+    else
+      return UNDEFINED_METRIC_VAL;
+  }
 }
 
 unsigned int ContentionPoint::eval_TIME(TIME time,

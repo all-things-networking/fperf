@@ -21,7 +21,7 @@ bool debug = false;
 
 using namespace std;
 
-map<string, cp_test_func_t *> cp_tests = {{"prio", prio},
+map<string, cp_test_func_t *> e2e_tests = {{"prio", prio},
                                           {"rr", rr},
                                           {"fq_codel", fq_codel},
                                           {"loom", loom},
@@ -41,10 +41,10 @@ int main(int argc, const char *argv[]) {
   }
 
   string test_name = arguments[0];
-  if (cp_tests.find(test_name) == cp_tests.end())
+  if (e2e_tests.find(test_name) == e2e_tests.end())
     throw invalid_argument("Unknown test: " + test_name);
 
-  cp_tests.find(test_name)->second("", "");
+  e2e_tests.find(test_name)->second("", "");
 
   return 0;
 }

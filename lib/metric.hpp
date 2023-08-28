@@ -11,10 +11,10 @@
 
 #include <map>
 
-#include "example.hpp"
 #include "net_context.hpp"
 #include "queue.hpp"
 #include "util.hpp"
+#include "example.hpp"
 
 class Queue;
 

@@ -9,8 +9,8 @@
 #ifndef solver_hpp
 #define solver_hpp
 
-#include "example.hpp"
 #include "workload.hpp"
+#include "example.hpp"
 
 enum class solver_res_t { SAT = 0, UNSAT, UNKNOWN };
 std::ostream& operator<<(std::ostream& os, const solver_res_t& res);

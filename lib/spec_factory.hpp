@@ -17,11 +17,11 @@
 #include <vector>
 
 #include "cost.hpp"
-#include "example.hpp"
 #include "metric.hpp"
 #include "shared_config.hpp"
 #include "util.hpp"
 #include "workload.hpp"
+#include "example.hpp"
 
 class SpecFactory {
 

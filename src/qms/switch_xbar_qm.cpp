@@ -165,9 +165,10 @@ void SwitchXBarQM::add_constrs(NetContext& net_ctx, std::map<std::string, expr>&
                         j_ind_of_i,
                         t);
 
-                expr constr_expr =
-                    (implies(in_to_out_[i][i_ind_of_j][t], out_from_in_[j][j_ind_of_i][t]) &&
-                     implies(!in_to_out_[i][i_ind_of_j][t], !out_from_in_[j][j_ind_of_i][t]));
+                expr constr_expr = (implies(in_to_out_[i][i_ind_of_j][t],
+                                            out_from_in_[j][j_ind_of_i][t]) &&
+                                    implies(!in_to_out_[i][i_ind_of_j][t],
+                                            !out_from_in_[j][j_ind_of_i][t]));
 
                 constr_map.insert(named_constr(constr_name, constr_expr));
             }

@@ -24,30 +24,30 @@ out_queue_info(out_queue_info) {
         QueueInfo qinfo = in_queue_info[i];
         Queue* q;
         switch (qinfo.type) {
-        case queue_t::LINK: {
-            q = new Link(base_in_id, std::to_string(qid), total_time, net_ctx);
-            break;
-        }
-        case queue_t::IMM_QUEUE: {
-            q = new ImmQueue(base_in_id,
-                             std::to_string(qid),
-                             qinfo.size,
-                             qinfo.max_enq,
-                             qinfo.max_deq,
-                             total_time,
-                             net_ctx);
-            break;
-        }
-        default: {
-            q = new Queue(base_in_id,
-                          std::to_string(qid),
-                          qinfo.size,
-                          qinfo.max_enq,
-                          qinfo.max_deq,
-                          total_time,
-                          net_ctx);
-            break;
-        }
+            case queue_t::LINK: {
+                q = new Link(base_in_id, std::to_string(qid), total_time, net_ctx);
+                break;
+            }
+            case queue_t::IMM_QUEUE: {
+                q = new ImmQueue(base_in_id,
+                                 std::to_string(qid),
+                                 qinfo.size,
+                                 qinfo.max_enq,
+                                 qinfo.max_deq,
+                                 total_time,
+                                 net_ctx);
+                break;
+            }
+            default: {
+                q = new Queue(base_in_id,
+                              std::to_string(qid),
+                              qinfo.size,
+                              qinfo.max_enq,
+                              qinfo.max_deq,
+                              total_time,
+                              net_ctx);
+                break;
+            }
         }
         in_queues.push_back(q);
         qid++;

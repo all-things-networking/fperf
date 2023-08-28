@@ -44,22 +44,22 @@ cid_t get_unique_id(cid_t module_id, cid_t queue_id) {
 
 std::ostream& operator<<(std::ostream& os, const comp_t& comp) {
     switch (comp) {
-    case (comp_t::GT): os << ">"; break;
-    case (comp_t::GE): os << ">="; break;
-    case (comp_t::LT): os << "<"; break;
-    case (comp_t::LE): os << "<="; break;
-    case (comp_t::EQ): os << "="; break;
+        case (comp_t::GT): os << ">"; break;
+        case (comp_t::GE): os << ">="; break;
+        case (comp_t::LT): os << "<"; break;
+        case (comp_t::LE): os << "<="; break;
+        case (comp_t::EQ): os << "="; break;
     }
     return os;
 }
 
 bool eval_comp(unsigned int lhs_val, comp_t comp, unsigned int rhs_val) {
     switch (comp) {
-    case (comp_t::GT): return lhs_val > rhs_val;
-    case (comp_t::GE): return lhs_val >= rhs_val;
-    case (comp_t::LT): return lhs_val < rhs_val;
-    case (comp_t::LE): return lhs_val <= rhs_val;
-    case (comp_t::EQ): return lhs_val == rhs_val;
+        case (comp_t::GT): return lhs_val > rhs_val;
+        case (comp_t::GE): return lhs_val >= rhs_val;
+        case (comp_t::LT): return lhs_val < rhs_val;
+        case (comp_t::LE): return lhs_val <= rhs_val;
+        case (comp_t::EQ): return lhs_val == rhs_val;
     }
     std::cout << "eval_comp: should not reach here" << std::endl;
     return false;
@@ -67,11 +67,11 @@ bool eval_comp(unsigned int lhs_val, comp_t comp, unsigned int rhs_val) {
 
 comp_t neg_comp(comp_t comp) {
     switch (comp) {
-    case (comp_t::GT): return comp_t::LT;
-    case (comp_t::GE): return comp_t::LE;
-    case (comp_t::LT): return comp_t::GT;
-    case (comp_t::LE): return comp_t::GE;
-    case (comp_t::EQ): return comp_t::EQ;
+        case (comp_t::GT): return comp_t::LT;
+        case (comp_t::GE): return comp_t::LE;
+        case (comp_t::LT): return comp_t::GT;
+        case (comp_t::LE): return comp_t::GE;
+        case (comp_t::EQ): return comp_t::EQ;
     }
     std::cout << "neg_comp: should not reach here" << std::endl;
     return comp;

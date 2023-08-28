@@ -16,15 +16,18 @@ AllowShortIfStatementsOnASingleLine: WithoutElse
 BreakConstructorInitializers: AfterColon
 SpaceBeforeInheritanceColon: true
 SpaceBeforeCtorInitializerColon: false
-
+#
 AllowShortFunctionsOnASingleLine: None
 SpaceBeforeParens: Custom
 SpaceBeforeParensOptions:
   AfterOverloadedOperator: false
 SpaceAfterCStyleCast: true
 MaxEmptyLinesToKeep: 3
-PenaltyBreakAssignment: 100
+PenaltyBreakAssignment: 200
+PenaltyBreakBeforeFirstCallParameter: 100
 AllowShortCaseLabelsOnASingleLine: true
+AlignAfterOpenBracket: Align
+IndentCaseLabels: true
 ...
 
 

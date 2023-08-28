@@ -30,9 +30,9 @@ unsigned long long int Solver::get_check_workload_with_query_avg_time() {
 
 std::ostream& operator<<(std::ostream& os, const solver_res_t& res) {
     switch (res) {
-    case solver_res_t::SAT: os << "SAT"; break;
-    case solver_res_t::UNSAT: os << "UNSAT"; break;
-    default: os << "UNKNOWN"; break;
+        case solver_res_t::SAT: os << "SAT"; break;
+        case solver_res_t::UNSAT: os << "UNSAT"; break;
+        default: os << "UNKNOWN"; break;
     }
     return os;
 }

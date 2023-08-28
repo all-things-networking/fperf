@@ -91,30 +91,30 @@ void ContentionPoint::setup_edges() {
                 QueueInfo qinfo = m->get_out_queue_info(q);
                 Queue* queue;
                 switch (qinfo.type) {
-                case queue_t::LINK: {
-                    queue = new Link(base_out_id, std::to_string(q), total_time, net_ctx);
-                    break;
-                }
-                case queue_t::IMM_QUEUE: {
-                    queue = new ImmQueue(base_out_id,
-                                         std::to_string(q),
-                                         qinfo.size,
-                                         qinfo.max_enq,
-                                         qinfo.max_deq,
-                                         total_time,
-                                         net_ctx);
-                    break;
-                }
-                default: {
-                    queue = new Queue(base_out_id,
-                                      std::to_string(q),
-                                      qinfo.size,
-                                      qinfo.max_enq,
-                                      qinfo.max_deq,
-                                      total_time,
-                                      net_ctx);
-                    break;
-                }
+                    case queue_t::LINK: {
+                        queue = new Link(base_out_id, std::to_string(q), total_time, net_ctx);
+                        break;
+                    }
+                    case queue_t::IMM_QUEUE: {
+                        queue = new ImmQueue(base_out_id,
+                                             std::to_string(q),
+                                             qinfo.size,
+                                             qinfo.max_enq,
+                                             qinfo.max_deq,
+                                             total_time,
+                                             net_ctx);
+                        break;
+                    }
+                    default: {
+                        queue = new Queue(base_out_id,
+                                          std::to_string(q),
+                                          qinfo.size,
+                                          qinfo.max_enq,
+                                          qinfo.max_deq,
+                                          total_time,
+                                          net_ctx);
+                        break;
+                    }
                 }
                 m->set_out_queue(q, queue);
             }
@@ -410,9 +410,9 @@ void ContentionPoint::set_query(Query& query) {
 solver_res_t ContentionPoint::solve() {
     check_result res = z3_solver->check();
     switch (res) {
-    case unsat: DEBUG_MSG("unsat\n"); break;
-    case sat: DEBUG_MSG("sat\n"); break;
-    case unknown: DEBUG_MSG("unknown\n"); break;
+        case unsat: DEBUG_MSG("unsat\n"); break;
+        case sat: DEBUG_MSG("sat\n"); break;
+        case unknown: DEBUG_MSG("unknown\n"); break;
     }
 
 #ifdef DEBUG
@@ -763,8 +763,9 @@ void ContentionPoint::generate_good_examples(IndexedExample* base_eg,
     // up to a cap.
     IndexedExample* eg = base_eg;
     unsigned int cap = EG_RANDOM_MOD_START;
-    unsigned int mod_thresh = min(
-        cap, (unsigned int) ceil(EG_RANDOM_MOD_PERCENT * target_queues.size() * total_time));
+    unsigned int mod_thresh = min(cap,
+                                  (unsigned int) ceil(EG_RANDOM_MOD_PERCENT * target_queues.size() *
+                                                      total_time));
 
     for (unsigned int i = 1; i < count; i++) {
         bool found = false;
@@ -898,8 +899,9 @@ void ContentionPoint::generate_bad_examples(unsigned int count, deque<IndexedExa
     // more random modification we want to try
     // up to a cap.
     unsigned int cap = EG_RANDOM_MOD_START;
-    unsigned int mod_thresh = min(
-        cap, (unsigned int) ceil(EG_RANDOM_MOD_PERCENT * target_queues.size() * total_time));
+    unsigned int mod_thresh = min(cap,
+                                  (unsigned int) ceil(EG_RANDOM_MOD_PERCENT * target_queues.size() *
+                                                      total_time));
 
 
     for (unsigned int i = 1; i < count; i++) {
@@ -1048,8 +1050,9 @@ void ContentionPoint::generate_good_examples_from_base_flow(deque<IndexedExample
 
     IndexedExample* eg = base_eg;
     unsigned int cap = EG_RANDOM_MOD_START;
-    unsigned int mod_thresh = min(
-        cap, (unsigned int) ceil(EG_RANDOM_MOD_PERCENT * non_zero_queues.size() * total_time));
+    unsigned int mod_thresh = min(cap,
+                                  (unsigned int) ceil(EG_RANDOM_MOD_PERCENT *
+                                                      non_zero_queues.size() * total_time));
 
     unsigned int moving_avg_window = 5;
     deque<unsigned int> past_thresh;
@@ -1347,8 +1350,9 @@ void ContentionPoint::generate_good_examples_flow(deque<IndexedExample*>& exampl
 
     IndexedExample* eg = base_eg;
     unsigned int cap = EG_RANDOM_MOD_START;
-    unsigned int mod_thresh = min(
-        cap, (unsigned int) ceil(EG_RANDOM_MOD_PERCENT * non_zero_queues.size() * total_time));
+    unsigned int mod_thresh = min(cap,
+                                  (unsigned int) ceil(EG_RANDOM_MOD_PERCENT *
+                                                      non_zero_queues.size() * total_time));
 
     unsigned int moving_avg_window = 5;
     deque<unsigned int> past_thresh;
@@ -1529,8 +1533,9 @@ void ContentionPoint::generate_good_examples2(IndexedExample* base_eg,
 
     IndexedExample* eg = base_eg;
     unsigned int cap = EG_RANDOM_MOD_START;
-    unsigned int mod_thresh = min(
-        cap, (unsigned int) ceil(EG_RANDOM_MOD_PERCENT * target_queues.size() * total_time));
+    unsigned int mod_thresh = min(cap,
+                                  (unsigned int) ceil(EG_RANDOM_MOD_PERCENT * target_queues.size() *
+                                                      total_time));
     // unsigned int mod_thresh = 2;
 
     unsigned int moving_avg_window = 5;
@@ -1833,11 +1838,11 @@ ostream& operator<<(ostream& os, const ContentionPoint& p) {
 
 expr ContentionPoint::mk_comp(expr lhs, comp_t comp, expr rhs) {
     switch (comp) {
-    case (comp_t::GT): return lhs > rhs;
-    case (comp_t::GE): return lhs >= rhs;
-    case (comp_t::LT): return lhs < rhs;
-    case (comp_t::LE): return lhs <= rhs;
-    case (comp_t::EQ): return lhs == rhs;
+        case (comp_t::GT): return lhs > rhs;
+        case (comp_t::GE): return lhs >= rhs;
+        case (comp_t::LT): return lhs < rhs;
+        case (comp_t::LE): return lhs <= rhs;
+        case (comp_t::EQ): return lhs == rhs;
     }
     std::cout << "AutoPerfModel::mk_comp: should not reach here" << std::endl;
     return lhs >= rhs;
@@ -1904,15 +1909,15 @@ unsigned int ContentionPoint::get_total_time() {
 
 solver_res_t ContentionPoint::get_solver_res_t(check_result z3_res) {
     switch (z3_res) {
-    case unsat: {
-        return solver_res_t::UNSAT;
-    }
-    case sat: {
-        return solver_res_t::SAT;
-    }
-    case unknown: {
-        return solver_res_t::UNKNOWN;
-    }
+        case unsat: {
+            return solver_res_t::UNSAT;
+        }
+        case sat: {
+            return solver_res_t::SAT;
+        }
+        case unknown: {
+            return solver_res_t::UNKNOWN;
+        }
     }
     std::cout << "get_solver_res_t:: Should not reach here" << endl;
     return solver_res_t::UNKNOWN;
@@ -1934,80 +1939,45 @@ expr ContentionPoint::get_expr(Query& query) {
     vector<Metric*> query_metrics;
 
     switch (query_lhs.index()) {
-    // one queue
-    case 0: {
-        cid_t qid = get<cid_t>(query_lhs);
-        if (metrics[m].find(qid) == metrics[m].end()) {
-            std::cout << "ContentionPoint::get_expr(Query): Invalid Query" << std::endl;
-            query_expr = net_ctx.bool_val(false);
-            return query_expr;
-        }
-        query_metrics.push_back(metrics[m][qid]);
-        break;
-    }
-    // qdiff
-    case 1: {
-        qdiff_t ids = get<qdiff_t>(query_lhs);
-        cid_t qid1 = ids.first;
-        cid_t qid2 = ids.second;
-
-        if (metrics[m].find(qid1) == metrics[m].end() ||
-            metrics[m].find(qid2) == metrics[m].end()) {
-            std::cout << "ContentionPoint::get_expr(Query): Invalid Query" << std::endl;
-            query_expr = net_ctx.bool_val(false);
-            return query_expr;
-        }
-        query_metrics.push_back(metrics[m][qid1]);
-        query_metrics.push_back(metrics[m][qid2]);
-        break;
-    }
-
-    // qsum
-    case 2: {
-        qsum_t ids = get<qsum_t>(query_lhs);
-        for (unsigned int i = 0; i < ids.size(); i++) {
-            cid_t id = ids[i];
-            if (metrics[m].find(id) == metrics[m].end()) {
+        // one queue
+        case 0: {
+            cid_t qid = get<cid_t>(query_lhs);
+            if (metrics[m].find(qid) == metrics[m].end()) {
                 std::cout << "ContentionPoint::get_expr(Query): Invalid Query" << std::endl;
                 query_expr = net_ctx.bool_val(false);
                 return query_expr;
             }
-            query_metrics.push_back(metrics[m][id]);
-        }
-        break;
-    }
-
-    default: {
-        std::cout << "ContentionPoint::get_expr(Query): Invalid Query" << std::endl;
-        query_expr = net_ctx.bool_val(false);
-        return query_expr;
-    }
-    }
-
-    expr_vector query_vec(net_ctx.z3_ctx());
-    time_range_t time_range = query.get_time_range();
-    for (unsigned int t = time_range.first; t <= time_range.second; t++) {
-        expr rhs = net_ctx.int_val(query.get_thresh());
-        expr lhs(net_ctx.z3_ctx());
-
-        switch (query_lhs.index()) {
-        // one queue
-        case 0: {
-            lhs = query_metrics[0]->val(t);
+            query_metrics.push_back(metrics[m][qid]);
             break;
         }
-
         // qdiff
         case 1: {
-            lhs = query_metrics[0]->val(t) - query_metrics[1]->val(t);
+            qdiff_t ids = get<qdiff_t>(query_lhs);
+            cid_t qid1 = ids.first;
+            cid_t qid2 = ids.second;
+
+            if (metrics[m].find(qid1) == metrics[m].end() ||
+                metrics[m].find(qid2) == metrics[m].end()) {
+                std::cout << "ContentionPoint::get_expr(Query): Invalid Query" << std::endl;
+                query_expr = net_ctx.bool_val(false);
+                return query_expr;
+            }
+            query_metrics.push_back(metrics[m][qid1]);
+            query_metrics.push_back(metrics[m][qid2]);
             break;
         }
 
         // qsum
         case 2: {
-            lhs = query_metrics[0]->val(t);
-            for (unsigned int i = 1; i < query_metrics.size(); i++) {
-                lhs = lhs + query_metrics[i]->val(t);
+            qsum_t ids = get<qsum_t>(query_lhs);
+            for (unsigned int i = 0; i < ids.size(); i++) {
+                cid_t id = ids[i];
+                if (metrics[m].find(id) == metrics[m].end()) {
+                    std::cout << "ContentionPoint::get_expr(Query): Invalid Query" << std::endl;
+                    query_expr = net_ctx.bool_val(false);
+                    return query_expr;
+                }
+                query_metrics.push_back(metrics[m][id]);
             }
             break;
         }
@@ -2017,15 +1987,50 @@ expr ContentionPoint::get_expr(Query& query) {
             query_expr = net_ctx.bool_val(false);
             return query_expr;
         }
+    }
+
+    expr_vector query_vec(net_ctx.z3_ctx());
+    time_range_t time_range = query.get_time_range();
+    for (unsigned int t = time_range.first; t <= time_range.second; t++) {
+        expr rhs = net_ctx.int_val(query.get_thresh());
+        expr lhs(net_ctx.z3_ctx());
+
+        switch (query_lhs.index()) {
+            // one queue
+            case 0: {
+                lhs = query_metrics[0]->val(t);
+                break;
+            }
+
+            // qdiff
+            case 1: {
+                lhs = query_metrics[0]->val(t) - query_metrics[1]->val(t);
+                break;
+            }
+
+            // qsum
+            case 2: {
+                lhs = query_metrics[0]->val(t);
+                for (unsigned int i = 1; i < query_metrics.size(); i++) {
+                    lhs = lhs + query_metrics[i]->val(t);
+                }
+                break;
+            }
+
+            default: {
+                std::cout << "ContentionPoint::get_expr(Query): Invalid Query" << std::endl;
+                query_expr = net_ctx.bool_val(false);
+                return query_expr;
+            }
         }
 
         query_vec.push_back(mk_comp(lhs, query.get_comp(), rhs));
     }
 
     switch (query.get_quant()) {
-    case query_quant_t::FORALL: query_expr = mk_and(query_vec); break;
-    case query_quant_t::EXISTS: query_expr = mk_or(query_vec); break;
-    default: std::cout << "ContentionPoint::get_expr(Query): Invalid Query" << std::endl;
+        case query_quant_t::FORALL: query_expr = mk_and(query_vec); break;
+        case query_quant_t::EXISTS: query_expr = mk_or(query_vec); break;
+        default: std::cout << "ContentionPoint::get_expr(Query): Invalid Query" << std::endl;
     }
 
     return query_expr;
@@ -2140,12 +2145,14 @@ expr ContentionPoint::get_expr(TONE t_one, unsigned int t) {
     metric_t metric = t_one.get_metric();
     if (metric == metric_t::META1) {
         expr pkt = queue->enqs(0)[t];
-        return ite(
-            net_ctx.pkt2val(pkt), net_ctx.pkt2meta1(pkt), net_ctx.int_val(UNDEFINED_METRIC_VAL));
+        return ite(net_ctx.pkt2val(pkt),
+                   net_ctx.pkt2meta1(pkt),
+                   net_ctx.int_val(UNDEFINED_METRIC_VAL));
     } else if (metric == metric_t::META2) {
         expr pkt = queue->enqs(0)[t];
-        return ite(
-            net_ctx.pkt2val(pkt), net_ctx.pkt2meta2(pkt), net_ctx.int_val(UNDEFINED_METRIC_VAL));
+        return ite(net_ctx.pkt2val(pkt),
+                   net_ctx.pkt2meta2(pkt),
+                   net_ctx.int_val(UNDEFINED_METRIC_VAL));
 
     } else
         return queue->get_metric(metric)->val(t);
@@ -2218,8 +2225,9 @@ unsigned int ContentionPoint::eval_lhs(lhs_t lhs, IndexedExample* eg, unsigned i
 }
 
 unsigned int ContentionPoint::eval_trf(trf_t trf, IndexedExample* eg, unsigned int time) const {
-    unsigned int res = visit(
-        [&eg, time, this](auto const& sf) { return this->eval_trf(sf, eg, time); }, trf);
+    unsigned int res = visit([&eg, time, this](
+                                 auto const& sf) { return this->eval_trf(sf, eg, time); },
+                             trf);
     return res;
 }
 

@@ -165,9 +165,9 @@ rhs_t SpecFactory::random_rhs() {
         rhs_type = dists->rhs();
     }
     switch (rhs_type) {
-    case 0: return random_trf();
-    case 1: return random_time();
-    default: return dists->rhs_const();
+        case 0: return random_trf();
+        case 1: return random_time();
+        default: return dists->rhs_const();
     }
     return 0;
 }
@@ -187,38 +187,38 @@ rhs_t SpecFactory::random_rhs(bool time_valid,
 
 void SpecFactory::pick_rhs_neighbors(rhs_t rhs, vector<rhs_t>& neighbors) {
     switch (rhs.index()) {
-    // trf
-    case 0: {
-        trf_t trf = get<trf_t>(rhs);
-        vector<trf_t> trf_neighbors;
-        pick_trf_neighbors(trf, trf_neighbors);
-        neighbors.insert(neighbors.end(), trf_neighbors.begin(), trf_neighbors.end());
-        break;
-    }
-    // TIME
-    case 1: {
-        TIME time = get<TIME>(rhs);
-        TIME time_neighbor = random_time();
-        while (time_neighbor == time) {
-            time_neighbor = random_time();
+        // trf
+        case 0: {
+            trf_t trf = get<trf_t>(rhs);
+            vector<trf_t> trf_neighbors;
+            pick_trf_neighbors(trf, trf_neighbors);
+            neighbors.insert(neighbors.end(), trf_neighbors.begin(), trf_neighbors.end());
+            break;
         }
-        neighbors.push_back(time_neighbor);
-        neighbors.push_back(time.get_coeff());
-        break;
-    }
-    // C
-    case 2: {
-        unsigned int c = get<unsigned int>(rhs);
-        unsigned int c_neighbor = dists->rhs_const();
-        while (c_neighbor == c) {
-            c_neighbor = dists->rhs_const();
+        // TIME
+        case 1: {
+            TIME time = get<TIME>(rhs);
+            TIME time_neighbor = random_time();
+            while (time_neighbor == time) {
+                time_neighbor = random_time();
+            }
+            neighbors.push_back(time_neighbor);
+            neighbors.push_back(time.get_coeff());
+            break;
         }
-        neighbors.push_back(c_neighbor);
+        // C
+        case 2: {
+            unsigned int c = get<unsigned int>(rhs);
+            unsigned int c_neighbor = dists->rhs_const();
+            while (c_neighbor == c) {
+                c_neighbor = dists->rhs_const();
+            }
+            neighbors.push_back(c_neighbor);
 
-        neighbors.push_back(TIME(1u));
-        break;
-    }
-    default: break;
+            neighbors.push_back(TIME(1u));
+            break;
+        }
+        default: break;
     }
 }
 
@@ -227,46 +227,46 @@ void SpecFactory::pick_rhs_neighbors(rhs_t rhs,
                                      bool time_valid,
                                      std::uniform_int_distribution<unsigned int> const_dist) {
     switch (rhs.index()) {
-    // trf
-    case 0: {
-        trf_t trf = get<trf_t>(rhs);
-        vector<trf_t> trf_neighbors;
-        pick_trf_neighbors(trf, trf_neighbors);
-        neighbors.insert(neighbors.end(), trf_neighbors.begin(), trf_neighbors.end());
-        break;
-    }
-    // TIME
-    case 1: {
-        TIME time = get<TIME>(rhs);
-        TIME time_neighbor = random_time();
-        while (time_neighbor == time) {
-            time_neighbor = random_time();
+        // trf
+        case 0: {
+            trf_t trf = get<trf_t>(rhs);
+            vector<trf_t> trf_neighbors;
+            pick_trf_neighbors(trf, trf_neighbors);
+            neighbors.insert(neighbors.end(), trf_neighbors.begin(), trf_neighbors.end());
+            break;
         }
-        neighbors.push_back(time_neighbor);
+        // TIME
+        case 1: {
+            TIME time = get<TIME>(rhs);
+            TIME time_neighbor = random_time();
+            while (time_neighbor == time) {
+                time_neighbor = random_time();
+            }
+            neighbors.push_back(time_neighbor);
 
-        unsigned int c = time.get_coeff();
-        if (c > const_dist.max()) c = const_dist.max();
-        if (c < const_dist.min()) c = const_dist.min();
-        neighbors.push_back(c);
-        break;
-    }
-    // C
-    case 2: {
-        std::mt19937& gen = dists->get_gen();
-        unsigned int c = get<unsigned int>(rhs);
-        unsigned int c_neighbor = const_dist(gen);
-        while (c_neighbor == c) {
-            c_neighbor = const_dist(gen);
+            unsigned int c = time.get_coeff();
+            if (c > const_dist.max()) c = const_dist.max();
+            if (c < const_dist.min()) c = const_dist.min();
+            neighbors.push_back(c);
+            break;
         }
-        neighbors.push_back(c_neighbor);
+        // C
+        case 2: {
+            std::mt19937& gen = dists->get_gen();
+            unsigned int c = get<unsigned int>(rhs);
+            unsigned int c_neighbor = const_dist(gen);
+            while (c_neighbor == c) {
+                c_neighbor = const_dist(gen);
+            }
+            neighbors.push_back(c_neighbor);
 
-        if (time_valid) {
-            neighbors.push_back(TIME(1u));
+            if (time_valid) {
+                neighbors.push_back(TIME(1u));
+            }
+
+            break;
         }
-
-        break;
-    }
-    default: break;
+        default: break;
     }
 }
 
@@ -285,24 +285,24 @@ void SpecFactory::pick_lhs_neighbors(lhs_t lhs, vector<lhs_t>& neighbors) {
 trf_t SpecFactory::random_trf() {
     unsigned int trf_type = dists->trf();
     switch (trf_type) {
-    case 0: return random_tsum();
-    default: return random_tone();
+        case 0: return random_tsum();
+        default: return random_tone();
     }
 }
 
 void SpecFactory::pick_trf_neighbors(trf_t trf, vector<trf_t>& neighbors) {
     switch (trf.index()) {
-    // TSUM
-    case 0: {
-        pick_neighbors(get<TSUM>(trf), neighbors);
-        break;
-    }
-    // TONE
-    case 1: {
-        pick_neighbors(get<TONE>(trf), neighbors);
-        break;
-    }
-    default: break;
+        // TSUM
+        case 0: {
+            pick_neighbors(get<TSUM>(trf), neighbors);
+            break;
+        }
+        // TONE
+        case 1: {
+            pick_neighbors(get<TONE>(trf), neighbors);
+            break;
+        }
+        default: break;
     }
 }
 

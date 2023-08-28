@@ -55,13 +55,13 @@ metric_t Metric::get_type() {
 
 std::ostream& operator<<(std::ostream& os, const metric_t& metric) {
     switch (metric) {
-    case (metric_t::CENQ): os << "cenq"; break;
-    case (metric_t::QSIZE): os << "qsize"; break;
-    case (metric_t::CDEQ): os << "cdeq"; break;
-    case (metric_t::CBLOCKED): os << "cblocked"; break;
-    case (metric_t::AIPG): os << "aipg"; break;
-    case (metric_t::META1): os << "meta1"; break;
-    case (metric_t::META2): os << "meta2"; break;
+        case (metric_t::CENQ): os << "cenq"; break;
+        case (metric_t::QSIZE): os << "qsize"; break;
+        case (metric_t::CDEQ): os << "cdeq"; break;
+        case (metric_t::CBLOCKED): os << "cblocked"; break;
+        case (metric_t::AIPG): os << "aipg"; break;
+        case (metric_t::META1): os << "meta1"; break;
+        case (metric_t::META2): os << "meta2"; break;
     }
     return os;
 }

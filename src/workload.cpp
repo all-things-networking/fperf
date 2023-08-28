@@ -106,15 +106,15 @@ bool operator<(const TIME& t1, const TIME& t2) {
 
 bool trf_applies_to_queue(const trf_t trf, unsigned int queue) {
     switch (trf.index()) {
-    // TSUM
-    case 0: {
-        return get<TSUM>(trf).applies_to_queue(queue);
-    }
-    // TONE
-    case 1: {
-        return get<TONE>(trf).applies_to_queue(queue);
-    }
-    default: break;
+        // TSUM
+        case 0: {
+            return get<TSUM>(trf).applies_to_queue(queue);
+        }
+        // TONE
+        case 1: {
+            return get<TONE>(trf).applies_to_queue(queue);
+        }
+        default: break;
     }
     cout << "trf_applies_to_queue: should not reach here" << endl;
     return false;
@@ -129,11 +129,11 @@ unsigned int trf_ast_size(const trf_t trf) {
 
 std::ostream& operator<<(std::ostream& os, const trf_t& trf) {
     switch (trf.index()) {
-    // TSUM
-    case 0: os << get<TSUM>(trf); break;
-    // TONE
-    case 1: os << get<TONE>(trf); break;
-    default: break;
+        // TSUM
+        case 0: os << get<TSUM>(trf); break;
+        // TONE
+        case 1: os << get<TONE>(trf); break;
+        default: break;
     }
     return os;
 }
@@ -202,22 +202,22 @@ unsigned int rhs_ast_size(const rhs_t rhs) {
 
 std::ostream& operator<<(std::ostream& os, const rhs_t& rhs) {
     switch (rhs.index()) {
-    // trf
-    case 0: {
-        os << get<trf_t>(rhs);
-        break;
-    }
-    // TIME
-    case 1: {
-        os << get<TIME>(rhs);
-        break;
-    }
-    // C
-    case 2: {
-        os << get<unsigned int>(rhs);
-        break;
-    }
-    default: break;
+        // trf
+        case 0: {
+            os << get<trf_t>(rhs);
+            break;
+        }
+        // TIME
+        case 1: {
+            os << get<TIME>(rhs);
+            break;
+        }
+        // C
+        case 2: {
+            os << get<unsigned int>(rhs);
+            break;
+        }
+        default: break;
     }
     return os;
 }

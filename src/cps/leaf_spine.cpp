@@ -196,16 +196,16 @@ void LeafSpine::add_nodes() {
             for (unsigned int k = 0; k < spine_voq_ind; k++) {
                 if (spine_voq_input_map[k] == j) spine_in_queue_cnt += 1;
             }
-            SpineForwardingQM* fw_qm = new SpineForwardingQM(
-                m_id,
-                total_time,
-                i,
-                leaf_cnt,
-                servers_per_leaf,
-                output_voq_map,
-                link_info,
-                vector<QueueInfo>(spine_in_queue_cnt, imm_info),
-                net_ctx);
+            SpineForwardingQM* fw_qm = new SpineForwardingQM(m_id,
+                                                             total_time,
+                                                             i,
+                                                             leaf_cnt,
+                                                             servers_per_leaf,
+                                                             output_voq_map,
+                                                             link_info,
+                                                             vector<QueueInfo>(spine_in_queue_cnt,
+                                                                               imm_info),
+                                                             net_ctx);
             nodes.push_back(m_id);
             id_to_qm[m_id] = fw_qm;
         }

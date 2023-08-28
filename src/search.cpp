@@ -136,52 +136,16 @@ bool Search::check(Workload wl) {
     bool used_example = false;
 
     switch (input_only_res) {
-    case solver_res_t::SAT: {
-        input_only_solver_call++;
-        query_only_solver_call++;
-
-        solver_res_t query_only_res = cp->check_workload_with_query(wl, counter_eg);
-
-        // add counter example
-        if (query_only_res == solver_res_t::SAT) {
-            bad_examples.push_back(counter_eg);
-            used_example = true;
-        }
-        if (query_only_res == solver_res_t::UNKNOWN) {
-            std::cout << "UNKNOWN from full solver::check_without_query for workload: "
-                      << std::endl;
-            std::cout << wl << std::endl;
-        }
-
-        res = query_only_res == solver_res_t::UNSAT;
-        break;
-    }
-    case solver_res_t::UNSAT: {
-        input_only_solver_call++;
-        infeasible_input_cnt++;
-        last_input_infeasible = true;
-        res = false;
-
-        break;
-    }
-    case solver_res_t::UNKNOWN: {
-        full_solver_call++;
-
-        solver_res_t input_feasible = cp->check_workload_without_query(wl);
-
-        DEBUG_MSG("input feasible: " << input_feasible << endl);
-
-        switch (input_feasible) {
         case solver_res_t::SAT: {
-            solver_res_t query_only_res = cp->check_workload_with_query(wl, counter_eg);
+            input_only_solver_call++;
+            query_only_solver_call++;
 
-            DEBUG_MSG("query satisfied " << query_only_res << endl);
+            solver_res_t query_only_res = cp->check_workload_with_query(wl, counter_eg);
 
             // add counter example
             if (query_only_res == solver_res_t::SAT) {
                 bad_examples.push_back(counter_eg);
                 used_example = true;
-                DEBUG_MSG(*counter_eg << endl);
             }
             if (query_only_res == solver_res_t::UNKNOWN) {
                 std::cout << "UNKNOWN from full solver::check_without_query for workload: "
@@ -193,21 +157,57 @@ bool Search::check(Workload wl) {
             break;
         }
         case solver_res_t::UNSAT: {
+            input_only_solver_call++;
             infeasible_input_cnt++;
             last_input_infeasible = true;
             res = false;
+
             break;
         }
         case solver_res_t::UNKNOWN: {
-            res = false;
-            std::cout << "UNKNOWN from full solver::check_without_query for workload: "
-                      << std::endl;
-            std::cout << wl << std::endl;
+            full_solver_call++;
+
+            solver_res_t input_feasible = cp->check_workload_without_query(wl);
+
+            DEBUG_MSG("input feasible: " << input_feasible << endl);
+
+            switch (input_feasible) {
+                case solver_res_t::SAT: {
+                    solver_res_t query_only_res = cp->check_workload_with_query(wl, counter_eg);
+
+                    DEBUG_MSG("query satisfied " << query_only_res << endl);
+
+                    // add counter example
+                    if (query_only_res == solver_res_t::SAT) {
+                        bad_examples.push_back(counter_eg);
+                        used_example = true;
+                        DEBUG_MSG(*counter_eg << endl);
+                    }
+                    if (query_only_res == solver_res_t::UNKNOWN) {
+                        std::cout << "UNKNOWN from full solver::check_without_query for workload: "
+                                  << std::endl;
+                        std::cout << wl << std::endl;
+                    }
+
+                    res = query_only_res == solver_res_t::UNSAT;
+                    break;
+                }
+                case solver_res_t::UNSAT: {
+                    infeasible_input_cnt++;
+                    last_input_infeasible = true;
+                    res = false;
+                    break;
+                }
+                case solver_res_t::UNKNOWN: {
+                    res = false;
+                    std::cout << "UNKNOWN from full solver::check_without_query for workload: "
+                              << std::endl;
+                    std::cout << wl << std::endl;
+                    break;
+                }
+            }
             break;
         }
-        }
-        break;
-    }
     }
 
     if (!used_example) {

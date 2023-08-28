@@ -58,15 +58,15 @@ void LoomDemuxQM::add_constrs(NetContext& net_ctx, std::map<std::string, expr>& 
         constr_map.insert(named_constr(constr_name, constr_expr));
 
         sprintf(constr_name, "%s_tenant2_pkt_%d", id.c_str(), t);
-        constr_expr = implies(
-            not_empty && (pkt_class == (int) tenant2_spark || pkt_class == (int) tenant2_memcached),
-            out_queues[1]->enqs(0)[t] == head_pkt);
+        constr_expr = implies(not_empty && (pkt_class == (int) tenant2_spark ||
+                                            pkt_class == (int) tenant2_memcached),
+                              out_queues[1]->enqs(0)[t] == head_pkt);
         constr_map.insert(named_constr(constr_name, constr_expr));
 
         sprintf(constr_name, "%s_not_tenant2_pkt_%d", id.c_str(), t);
-        constr_expr = implies(
-            not_empty && (pkt_class != (int) tenant2_spark && pkt_class != (int) tenant2_memcached),
-            out_queues[1]->enqs(0)[t] == net_ctx.null_pkt());
+        constr_expr = implies(not_empty && (pkt_class != (int) tenant2_spark &&
+                                            pkt_class != (int) tenant2_memcached),
+                              out_queues[1]->enqs(0)[t] == net_ctx.null_pkt());
         constr_map.insert(named_constr(constr_name, constr_expr));
 
         // Take care of the case where the input queue is empty

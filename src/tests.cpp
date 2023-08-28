@@ -205,8 +205,9 @@ void fq_codel(std::string good_examples_file, std::string bad_examples_file) {
     // Base Workload
     Workload wl(in_queue_cnt * 5, in_queue_cnt, total_time);
     for (unsigned int q = 0; q < last_queue; q++) {
-        wl.add_wl_spec(TimedSpec(
-            WlSpec(TONE(metric_t::CENQ, q), comp_t::GE, TIME(1)), total_time, total_time));
+        wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, q), comp_t::GE, TIME(1)),
+                                 total_time,
+                                 total_time));
     }
 
     cp->set_base_workload(wl);
@@ -293,10 +294,12 @@ void loom(std::string good_examples_file, std::string bad_examples_file) {
     // Base Workload
 
     Workload wl(20, cp->in_queue_cnt(), total_time);
-    wl.add_wl_spec(TimedSpec(
-        WlSpec(TSUM(tenant1_qset, metric_t::CENQ), comp_t::GE, TIME(1)), total_time, total_time));
-    wl.add_wl_spec(TimedSpec(
-        WlSpec(TSUM(tenant2_qset, metric_t::CENQ), comp_t::GE, TIME(1)), total_time, total_time));
+    wl.add_wl_spec(TimedSpec(WlSpec(TSUM(tenant1_qset, metric_t::CENQ), comp_t::GE, TIME(1)),
+                             total_time,
+                             total_time));
+    wl.add_wl_spec(TimedSpec(WlSpec(TSUM(tenant2_qset, metric_t::CENQ), comp_t::GE, TIME(1)),
+                             total_time,
+                             total_time));
 
     for (unsigned int q = 0; q < cp->in_queue_cnt(); q++) {
         if (q % 3 == 2) {
@@ -385,8 +388,9 @@ void leaf_spine_bw(std::string good_examples_file, std::string bad_examples_file
     // Base Workload
     Workload wl(in_queue_cnt, in_queue_cnt, total_time);
 
-    wl.add_wl_spec(TimedSpec(
-        WlSpec(TONE(metric_t::CENQ, src_server), comp_t::GE, TIME(1)), total_time - 1, total_time));
+    wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, src_server), comp_t::GE, TIME(1)),
+                             total_time - 1,
+                             total_time));
 
     wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::META1, src_server), comp_t::EQ, dst_server),
                              total_time - 1,

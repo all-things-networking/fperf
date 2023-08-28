@@ -17,9 +17,9 @@
 #include <vector>
 
 #include "cost.hpp"
+#include "example.hpp"
 #include "metric.hpp"
 #include "util.hpp"
-#include "example.hpp"
 
 /* --------------------------------------------------------------
 The Grammar:

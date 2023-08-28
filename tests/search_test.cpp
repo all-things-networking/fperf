@@ -48,14 +48,14 @@ bool test_search() {
     return false;
 
   deque<IndexedExample *> good_examples;
-  ss->generate_good_examples2(base_eg, 5, good_examples);
+  ss->generate_good_examples2(base_eg, 50, good_examples);
 
   deque<IndexedExample *> bad_examples;
-  ss->generate_bad_examples(5, bad_examples);
+  ss->generate_bad_examples(50, bad_examples);
 
   Search search(ss, query, 10, config, good_examples, bad_examples);
   search.run();
-  //
+
   return true;
 }
 

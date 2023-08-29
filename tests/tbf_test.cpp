@@ -90,7 +90,7 @@ bool test_max_burst() {
   return tbf->satisfy_query() == solver_res_t::UNSAT;
 }
 
-bool test_search() {
+bool test_tbf_search() {
   unsigned int link_rate = 4;
   unsigned int total_time = 8;
   unsigned int last_t = total_time - 1;
@@ -161,5 +161,5 @@ bool test_search() {
 void TBFTest::add_to_runner(TestRunner *runner) {
   runner->add_test_case("tbf_deq_avg", test_deq_avg);
   runner->add_test_case("tbf_max_burst", test_max_burst);
-//  runner->add_test_case("tbf_search", test_search);
+//  runner->add_test_case("tbf_search", test_tbf_search);
 }

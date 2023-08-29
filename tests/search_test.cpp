@@ -28,7 +28,7 @@ bool test_search() {
 
   ss->set_query(query);
 
-  solver_res_t res = ss->satisfy_query();
+  ss->satisfy_query();
 
   IndexedExample *base_eg = new IndexedExample();
   qset_t target_queues;

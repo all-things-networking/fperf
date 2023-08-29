@@ -49,6 +49,9 @@ void SimpleCP::add_metrics() {
 
 std::string SimpleCP::cp_model_str(model &m, NetContext &net_ctx,
                                    unsigned int t) {
+  (void) m;
+    (void) net_ctx;
+    (void) t;
   return "";
 }
 
@@ -59,7 +62,7 @@ SimpleQM::SimpleQM(cid_t id, unsigned int total_time, QueueInfo queue_info,
   init(net_ctx);
 }
 
-void SimpleQM::add_proc_vars(NetContext &net_ctx) {}
+void SimpleQM::add_proc_vars(NetContext &net_ctx) { (void) net_ctx; }
 
 void SimpleQM::add_constrs(NetContext &net_ctx,
                            std::map<std::string, expr> &constr_map) {
@@ -80,7 +83,7 @@ void SimpleQM::add_constrs(NetContext &net_ctx,
   }
 
   for (unsigned int t = 0; t < total_time; t++) {
-    for (int i = 0; i < out_queue->max_enq(); i++) {
+    for (unsigned int i = 0; i < out_queue->max_enq(); i++) {
       string constr_name =
           format_string("%s_output_from_%d_%d", id.c_str(), t, i);
       expr constr_expr =

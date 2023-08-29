@@ -146,7 +146,6 @@ void SpecFactory::pick_neighbors(WlSpec& spec, vector<WlSpec>& neighbors) {
         } else {
             pick_rhs_neighbors(rhs, rhs_neighbors);
         }
-
     } else {
         pick_rhs_neighbors(rhs, rhs_neighbors);
     }

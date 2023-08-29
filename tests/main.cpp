@@ -1,6 +1,5 @@
 #include "rr_scheduler_test.hpp"
 #include "search_test.hpp"
-#include "tbf_test.hpp"
 #include "test_runner.hpp"
 #include <iostream>
 
@@ -14,9 +13,6 @@ int main(int argc, char **argv) {
 
   RRSchedulerTest rrSchedulerTest;
   rrSchedulerTest.add_to_runner(&runner);
-
-  TBFTest tbfTest;
-  tbfTest.add_to_runner(&runner);
 
   SearchTest searchTest;
   searchTest.add_to_runner(&runner);

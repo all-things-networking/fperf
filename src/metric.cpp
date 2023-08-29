@@ -69,6 +69,9 @@ std::ostream& operator<<(std::ostream& os, const metric_t& metric){
         case (metric_t::CDEQ):
             os << "cdeq";
             break;
+        case (metric_t::DEQ):
+            os << "deq";
+            break;
         case (metric_t::CBLOCKED):
             os << "cblocked";
             break;

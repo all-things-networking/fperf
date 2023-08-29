@@ -1,6 +1,6 @@
 //
 //  contention_point.cpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 11/12/20.
 //  Copyright © 2020 Mina Tahmasbi Arashloo. All rights reserved.
@@ -1858,7 +1858,7 @@ expr ContentionPoint::mk_comp(expr lhs, comp_t comp, expr rhs){
         case (comp_t::EQ):
             return lhs == rhs;
     }
-    std::cout << "AutoPerfModel::mk_comp: should not reach here" << std::endl;
+    std::cout << "FPerfModel::mk_comp: should not reach here" << std::endl;
     return lhs >= rhs;
 }
 

@@ -1,6 +1,6 @@
 //
 //  shared_config.hpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 12/07/22.
 //  Copyright © 2022 Mina Tahmasbi Arashloo. All rights reserved.

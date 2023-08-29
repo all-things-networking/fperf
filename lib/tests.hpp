@@ -25,7 +25,6 @@ void leaf_spine_bw(std::string good_examples_file = "", std::string bad_examples
 
 void tbf(std::string good_examples_file = "", std::string bad_examples_file = "");
 
-void leaf_spine_bw(std::string good_examples_file = "",
-                   std::string bad_examples_file = "");
+void leaf_spine_bw(std::string good_examples_file = "", std::string bad_examples_file = "");
 >>>>>>>>> Temporary merge branch 2
 #endif /* tests_hpp */

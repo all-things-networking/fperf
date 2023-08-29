@@ -61,11 +61,11 @@ void TBFQM::add_constrs(NetContext &net_ctx,
   }
 
   for (unsigned int t = 0; t < total_time; t++) {
-    for (int i = 0; i < out_queue->max_enq(); ++i) {
+    for (unsigned int i = 0; i < out_queue->max_enq(); ++i) {
       string constr_name =
           format_string("%s_output_from_%d_%d", id.c_str(), i, t);
       expr constr_expr = net_ctx.bool_val(true);
-      constr_expr = ite(in_queue->deq_cnt(t) >= i + 1,
+      constr_expr = ite(in_queue->deq_cnt(t) >= net_ctx.int_val(i + 1),
                         out_queue->enqs(i)[t] == in_queue->elem(i)[t],
                         out_queue->enqs(i)[t] == net_ctx.null_pkt());
       constr_map.insert(named_constr(constr_name, constr_expr));

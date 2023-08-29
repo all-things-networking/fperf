@@ -1,6 +1,6 @@
 //
 //  workload.hpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 11/19/20.
 //  Copyright © 2020 Mina Tahmasbi Arashloo. All rights reserved.
@@ -9,17 +9,17 @@
 #ifndef workload_hpp
 #define workload_hpp
 
+#include <iostream>
+#include <map>
+#include <set>
+#include <tuple>
 #include <variant>
 #include <vector>
-#include <map>
-#include <iostream>
-#include <tuple>
-#include <set>
 
-#include "util.hpp"
-#include "metric.hpp"
-#include "example.hpp"
 #include "cost.hpp"
+#include "example.hpp"
+#include "metric.hpp"
+#include "util.hpp"
 
 /* --------------------------------------------------------------
 The Grammar:
@@ -36,12 +36,11 @@ The Grammar:
 
 //************************************* TSUM *************************************//
 
-class TSUM{
+class TSUM {
 
 public:
-
     TSUM(qset_t qset, metric_t metric);
-    
+
     unsigned int ast_size() const;
     bool applies_to_queue(unsigned int queue) const;
 
@@ -49,22 +48,20 @@ public:
     metric_t get_metric() const;
 
 private:
-    
     qset_t qset;
-    metric_t metric; 
-   
+    metric_t metric;
+
     friend std::ostream& operator<<(std::ostream& os, const TSUM& tsum);
-    friend bool operator== (const TSUM& s1, const TSUM& s2);
-    friend bool operator< (const TSUM& s1, const TSUM& s2);
-    friend class SpecFactory;  
+    friend bool operator==(const TSUM& s1, const TSUM& s2);
+    friend bool operator<(const TSUM& s1, const TSUM& s2);
+    friend class SpecFactory;
 };
 
 //************************************* TONE *************************************//
 
-class TONE{
+class TONE {
 
 public:
-    
     TONE(metric_t metric, unsigned int queue);
 
     bool applies_to_queue(unsigned int queue) const;
@@ -73,31 +70,28 @@ public:
     metric_t get_metric() const;
 
 private:
-    
     metric_t metric;
-    unsigned int queue; 
-    
+    unsigned int queue;
+
     friend std::ostream& operator<<(std::ostream& os, const TONE& tone);
-    friend bool operator== (const TONE& s1, const TONE& s2);
-    friend bool operator< (const TONE& s1, const TONE& s2);
+    friend bool operator==(const TONE& s1, const TONE& s2);
+    friend bool operator<(const TONE& s1, const TONE& s2);
 };
 
 //************************************* TIME *************************************//
 
-class TIME{
+class TIME {
 
 public:
-    
     TIME(unsigned int coeff);
-    unsigned int get_coeff() const;    
+    unsigned int get_coeff() const;
 
 private:
-    
     unsigned int coeff;
-    
+
     friend std::ostream& operator<<(std::ostream& os, const TIME& time);
-    friend bool operator== (const TIME& t1, const TIME& t2);
-    friend bool operator< (const TIME& t1, const TIME& t2);
+    friend bool operator==(const TIME& t1, const TIME& t2);
+    friend bool operator<(const TIME& t1, const TIME& t2);
 };
 
 //************************************* TRF/LHS *************************************//
@@ -113,8 +107,8 @@ bool trf_applies_to_queue(const trf_t trf, unsigned int queue);
 
 std::ostream& operator<<(std::ostream& os, const trf_t& trf);
 
-bool operator== (const trf_t& trf1, const trf_t& trf2);
-bool operator< (const trf_t& trf1, const trf_t& trf2);
+bool operator==(const trf_t& trf1, const trf_t& trf2);
+bool operator<(const trf_t& trf1, const trf_t& trf2);
 
 //************************************* RHS *************************************//
 
@@ -129,10 +123,9 @@ bool operator==(const rhs_t& rhs1, const rhs_t& rhs2);
 bool operator<(const rhs_t& rhs1, const rhs_t& rhs2);
 
 //************************************* Same *************************************//
-class Same{
+class Same {
 
 public:
-    
     Same(metric_t metric, unsigned int queue);
 
     bool applies_to_queue(unsigned int queue) const;
@@ -141,22 +134,20 @@ public:
     metric_t get_metric() const;
 
 private:
-    
     metric_t metric;
-    unsigned int queue; 
-    
+    unsigned int queue;
+
     friend std::ostream& operator<<(std::ostream& os, const Same& tone);
-    friend bool operator== (const Same& s1, const Same& s2);
-    friend bool operator< (const Same& s1, const Same& s2);
+    friend bool operator==(const Same& s1, const Same& s2);
+    friend bool operator<(const Same& s1, const Same& s2);
 };
 
 //************************************* Unique *************************************//
-class Unique{
+class Unique {
 
 public:
-
     Unique(qset_t qset, metric_t metric);
-    
+
     unsigned int ast_size() const;
     bool applies_to_queue(unsigned int queue) const;
 
@@ -164,14 +155,13 @@ public:
     metric_t get_metric() const;
 
 private:
-    
     qset_t qset;
-    metric_t metric; 
-   
+    metric_t metric;
+
     friend std::ostream& operator<<(std::ostream& os, const Unique& tsum);
-    friend bool operator== (const Unique& s1, const Unique& s2);
-    friend bool operator< (const Unique& s1, const Unique& s2);
-    friend class SpecFactory;  
+    friend bool operator==(const Unique& s1, const Unique& s2);
+    friend bool operator<(const Unique& s1, const Unique& s2);
+    friend class SpecFactory;
 };
 
 
@@ -179,9 +169,8 @@ private:
 
 class WlSpec {
 public:
-
     WlSpec(lhs_t lhs, comp_t comp, rhs_t rhs);
-    
+
     bool spec_is_empty() const;
     bool spec_is_all() const;
     unsigned int ast_size() const;
@@ -193,16 +182,15 @@ public:
     rhs_t get_rhs() const;
 
 private:
-   
     lhs_t lhs;
     comp_t comp;
     rhs_t rhs;
-    
+
     bool is_empty = false;
-    bool is_all = false; 
+    bool is_all = false;
 
     void normalize();
-    
+
     friend std::ostream& operator<<(std::ostream& os, const WlSpec& spec);
     friend std::ostream& operator<<(std::ostream& os, const WlSpec* spec);
     friend bool operator==(const WlSpec& spec1, const WlSpec& spec2);
@@ -212,33 +200,31 @@ private:
 
 //************************************* Timed WlSpec *************************************//
 
-class TimedSpec{
+class TimedSpec {
 
 public:
-
     TimedSpec(WlSpec wl_spec, time_range_t time_range, unsigned int total_time);
     TimedSpec(WlSpec wl_spec, unsigned int until_time, unsigned int total_time);
 
     bool spec_is_empty() const;
     bool spec_is_all() const;
     bool applies_to_queue(unsigned int queue) const;
-    
+
     time_range_t get_time_range() const;
     WlSpec get_wl_spec() const;
-   
+
     void set_time_range_ub(unsigned int ub);
 
 private:
-
     WlSpec wl_spec;
     time_range_t time_range;
     unsigned int total_time;
-    
+
     bool is_empty = false;
     bool is_all = false;
 
     void normalize();
-    
+
     friend std::ostream& operator<<(std::ostream& os, const TimedSpec& spec);
     friend std::ostream& operator<<(std::ostream& os, const TimedSpec* spec);
     friend bool operator==(const TimedSpec& spec1, const TimedSpec& spec2);
@@ -250,17 +236,15 @@ private:
 //************************************* Workload *************************************//
 typedef map<time_range_t, std::set<WlSpec>> timeline_t;
 
-class Workload{
+class Workload {
 public:
-    Workload(unsigned int max_size,
-             unsigned int queue_cnt,
-             unsigned int total_time);
-    
+    Workload(unsigned int max_size, unsigned int queue_cnt, unsigned int total_time);
+
     void clear();
     void add_wl_spec(TimedSpec spec);
     void rm_wl_spec(TimedSpec spec);
     void mod_wl_spec(TimedSpec old_spec, TimedSpec new_spec);
-    
+
     unsigned long size() const;
 
     unsigned int get_max_size() const;
@@ -268,34 +252,34 @@ public:
     unsigned int get_total_time() const;
     timeline_t get_timeline() const;
     set<TimedSpec> get_all_specs() const;
-    
+
     bool is_empty() const;
     bool is_all() const;
-    
+
     wl_cost_t cost() const;
-    
+
     friend std::ostream& operator<<(std::ostream& os, const Workload& wl);
     friend std::ostream& operator<<(std::ostream& os, const Workload* wl);
-    
+
 private:
     unsigned int max_size;
     unsigned int queue_cnt;
     unsigned int total_time;
     std::set<WlSpec> empty_set;
-    
+
     set<TimedSpec> all_specs;
     timeline_t timeline;
-    
+
     bool empty = false;
     bool all = false;
-    
+
     void normalize();
     void normalize(time_range_t time_range);
     void regenerate_spec_set();
-    
+
     unsigned int ast_size() const;
     string get_timeline_str();
-    
+
     set<time_range_t> add_time_range(time_range_t time_range);
 };
 

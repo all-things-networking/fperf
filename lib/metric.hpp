@@ -18,7 +18,7 @@
 
 class Queue;
 
-enum class metric_t { CENQ = 0, AIPG, META1, META2, QSIZE, CDEQ, CBLOCKED , DEQ};
+enum class metric_t { CENQ = 0, AIPG, META1, META2, QSIZE, CDEQ, CBLOCKED, DEQ };
 
 enum class metric_granularity_t { PACKET = 0, TIMESTEP };
 

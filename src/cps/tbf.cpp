@@ -56,6 +56,7 @@ void TBF::add_metrics() {
 }
 
 std::string TBF::cp_model_str(model &m, NetContext &net_ctx, unsigned int t) {
+  (void) net_ctx;
   stringstream ss;
   ss << "Token Queue: " << m.eval(qm->token_queue[t]) << endl;
   return ss.str();

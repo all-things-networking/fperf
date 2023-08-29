@@ -1,6 +1,6 @@
 //
 //  solver.hpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 12/10/20.
 //  Copyright © 2020 Mina Tahmasbi Arashloo. All rights reserved.

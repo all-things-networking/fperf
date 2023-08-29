@@ -1,6 +1,6 @@
 //
 //  main.cpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 3/2/20.
 //  Copyright © 2020 Mina Tahmasbi Arashloo. All rights reserved.
@@ -27,7 +27,7 @@ map<string, e2e_test_func_t*> e2e_tests = {{"prio", prio},
                                            {"loom", loom},
                                            {"leaf_spine_bw", leaf_spine_bw}};
 
-const string help_message = "Usage: ./autoperf TEST_NAME";
+const string help_message = "Usage: ./fperf TEST_NAME";
 
 int main(int argc, const char* argv[]) {
     vector<string> arguments(argv + 1, argv + argc);

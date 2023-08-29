@@ -4,13 +4,9 @@
 #include "rr_scheduler_test.hpp"
 
 bool test_unsat_query() {
-  cout << "rr" << endl;
-  time_typ start_time = noww();
-
   unsigned int in_queue_cnt = 5;
   unsigned int period = 5;
   unsigned int recur = 2;
-  unsigned int rate = 4;
 
   unsigned int total_time = recur * period;
 
@@ -54,9 +50,6 @@ bool test_unsat_query() {
 }
 
 bool test_sat_query() {
-  cout << "rr" << endl;
-  time_typ start_time = noww();
-
   unsigned int in_queue_cnt = 5;
   unsigned int period = 5;
   unsigned int recur = 2;

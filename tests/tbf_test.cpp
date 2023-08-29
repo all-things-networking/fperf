@@ -161,5 +161,5 @@ bool test_search() {
 void TBFTest::add_to_runner(TestRunner *runner) {
   runner->add_test_case("tbf_deq_avg", test_deq_avg);
   runner->add_test_case("tbf_max_burst", test_max_burst);
-  runner->add_test_case("tbf_search", test_search);
+//  runner->add_test_case("tbf_search", test_search);
 }

@@ -11,6 +11,8 @@
 
 #include <string>
 
+typedef void e2e_test_func_t(std::string, std::string);
+
 void prio(std::string good_examples_file = "", std::string bad_examples_file = "");
 
 void rr(std::string good_examples_file = "", std::string bad_examples_file = "");

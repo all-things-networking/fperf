@@ -4,17 +4,14 @@ LDFLAGS  := -L/usr/lib -L/usr/local/lib/ -lstdc++ -lm -lz3
 BUILD    := ./build
 OBJ_DIR  := $(BUILD)/objects
 APP_DIR  := $(BUILD)
-TARGET   := autoperf
+TARGET   := fperf
 INCLUDE  := -I/usr/local/include -Ilib/ -Ilib/metrics/ -Ilib/cps -Ilib/qms
 SRC      :=	$(wildcard src/*.cpp) \
-					  $(wildcard src/metrics/*.cpp) \
-						$(wildcard src/cps/*.cpp) \
-						$(wildcard src/qms/*.cpp)
+						 $(wildcard src/*/*.cpp)
 TEST_SRC := $(wildcard tests/*.cpp)
-TEST_EXE := $(APP_DIR)/$(TARGET)_test
+TEST_TARGET_PATH := $(APP_DIR)/$(TARGET)_test
 			
-
-
+HEADERS := $(patsubst src/%.cpp,lib/%.hpp, $(filter-out src/main.cpp, $(SRC)))
 OBJECTS := $(SRC:%.cpp=$(OBJ_DIR)/%.o)
 
 all: build $(APP_DIR)/$(TARGET)
@@ -27,20 +24,26 @@ $(APP_DIR)/$(TARGET): $(OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) -o $(APP_DIR)/$(TARGET) $^ $(LDFLAGS)
 
-.PHONY: all build clean test
+.PHONY: all build clean test check-format format
 
 build:
 	@mkdir -p $(APP_DIR)
 	@mkdir -p $(OBJ_DIR)
 
 run:
-	./build/autoperf
+	./$(APP_DIR)/$(TARGET)
 
-$(TEST_EXE): $(OBJECTS) $(TEST_SRC)
+$(TEST_TARGET_PATH): $(OBJECTS) $(TEST_SRC)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $@ $(TEST_SRC) $(filter-out ./build/objects/src/main.o, $(OBJECTS)) $(LDFLAGS)
 
-test: $(TEST_EXE)
+test: $(TEST_TARGET_PATH)
 	$^
+
+check-format: $(HEADERS) $(SRC)
+	clang-format --dry-run -Werror $^
+
+format: $(HEADERS) $(SRC)
+	clang-format -i $^
 
 clean:
 	-@rm -rvf $(OBJ_DIR)/*

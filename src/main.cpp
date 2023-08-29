@@ -1,6 +1,6 @@
 //
 //  main.cpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 3/2/20.
 //  Copyright © 2020 Mina Tahmasbi Arashloo. All rights reserved.
@@ -21,31 +21,30 @@ bool debug = false;
 
 using namespace std;
 
-map<string, cp_test_func_t *> e2e_tests = {{"prio", prio},
-                                          {"rr", rr},
-                                          {"fq_codel", fq_codel},
-                                          {"loom", loom},
-                                          {"leaf_spine_bw", leaf_spine_bw},
+map<string, e2e_test_func_t*> e2e_tests = {{"prio", prio},
+                                           {"rr", rr},
+                                           {"fq_codel", fq_codel},
+                                           {"loom", loom},
+                                           {"leaf_spine_bw", leaf_spine_bw},
                                           {"tbf", tbf}};
 
-const string help_message = "Usage: ./autoperf TEST_NAME";
+const string help_message = "Usage: ./fperf TEST_NAME";
 
-int main(int argc, const char *argv[]) {
-  vector<string> arguments(argv + 1, argv + argc);
+int main(int argc, const char* argv[]) {
+    vector<string> arguments(argv + 1, argv + argc);
 
-  if (arguments.size() != 1)
-    throw invalid_argument("Invalid number of arguments");
+    if (arguments.size() != 1) throw invalid_argument("Invalid number of arguments");
 
-  if (arguments[0] == "--help") {
-    cout << help_message << endl;
+    if (arguments[0] == "--help") {
+        cout << help_message << endl;
+        return 0;
+    }
+
+    string test_name = arguments[0];
+    if (e2e_tests.find(test_name) == e2e_tests.end())
+        throw invalid_argument("Unknown test: " + test_name);
+
+    e2e_tests.find(test_name)->second("", "");
+
     return 0;
-  }
-
-  string test_name = arguments[0];
-  if (e2e_tests.find(test_name) == e2e_tests.end())
-    throw invalid_argument("Unknown test: " + test_name);
-
-  e2e_tests.find(test_name)->second("", "");
-
-  return 0;
 }

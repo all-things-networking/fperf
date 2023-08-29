@@ -1,6 +1,6 @@
 //
 //  util.hpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 11/9/20.
 //  Copyright © 2020 Mina Tahmasbi Arashloo. All rights reserved.
@@ -16,10 +16,10 @@
 
 #pragma clang diagnostic pop
 
-#include <string>
-#include <set>
 #include <chrono>
 #include <random>
+#include <set>
+#include <string>
 
 #include "params.hpp"
 
@@ -40,11 +40,10 @@ bool satisfies(unsigned int q, qset_t qset);
 typedef std::string cid_t;
 typedef std::pair<cid_t, cid_t> cid_pair;
 
-cid_t get_unique_id(cid_t module_id,
-                    cid_t queue_id);
+cid_t get_unique_id(cid_t module_id, cid_t queue_id);
 
 //************************************* COMP *************************************//
-enum class comp_t {GT = 0, GE, LT, LE, EQ};
+enum class comp_t { GT = 0, GE, LT, LE, EQ };
 std::ostream& operator<<(std::ostream& os, const comp_t& comp);
 bool eval_comp(unsigned int lhs_val, comp_t comp, unsigned int rhs_val);
 comp_t random_comp();
@@ -68,9 +67,14 @@ std::string banner(std::string b);
 
 #define DEBUG
 #ifdef DEBUG
-#define DEBUG_MSG(str) do { std::cout << str; } while( false )
+#define DEBUG_MSG(str)                                                                             \
+    do {                                                                                           \
+        std::cout << str;                                                                          \
+    } while (false)
 #else
-#define DEBUG_MSG(str) do { } while ( false )
+#define DEBUG_MSG(str)                                                                             \
+    do {                                                                                           \
+    } while (false)
 #endif
 
 #endif /* util_hpp */

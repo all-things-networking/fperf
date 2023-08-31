@@ -1,6 +1,6 @@
 //
 //  rr_scheduler.hpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 2/18/21.
 //  Copyright © 2021 Mina Tahmasbi Arashloo. All rights reserved.

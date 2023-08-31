@@ -1,6 +1,8 @@
+build
+*.log
 
+# For Windows/Visual Studio installations
 .vs/
 x64/
 fperf.*
 libz3.dll
-build

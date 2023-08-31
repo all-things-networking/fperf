@@ -1,6 +1,6 @@
 //
 //  cost.hpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 2/28/21.
 //  Copyright © 2021 Mina Tahmasbi Arashloo. All rights reserved.

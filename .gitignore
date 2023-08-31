@@ -1,1 +1,6 @@
+
+.vs/
+x64/
+fperf.*
+libz3.dll
 build

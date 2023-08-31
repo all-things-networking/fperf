@@ -11,20 +11,15 @@
 
 #include <string>
 
-typedef void cp_test_func_t(std::string, std::string);
+typedef void e2e_test_func_t(std::string, std::string);
 
-void prio(std::string good_examples_file = "",
-          std::string bad_examples_file = "");
+void prio(std::string good_examples_file = "", std::string bad_examples_file = "");
 
-void rr(std::string good_examples_file = "",
-        std::string bad_examples_file = "");
+void rr(std::string good_examples_file = "", std::string bad_examples_file = "");
 
-void fq_codel(std::string good_examples_file = "",
-              std::string bad_examples_file = "");
+void fq_codel(std::string good_examples_file = "", std::string bad_examples_file = "");
 
-void loom(std::string good_examples_file = "",
-          std::string bad_examples_file = "");
+void loom(std::string good_examples_file = "", std::string bad_examples_file = "");
 
-void leaf_spine_bw(std::string good_examples_file = "",
-                   std::string bad_examples_file = "");
+void leaf_spine_bw(std::string good_examples_file = "", std::string bad_examples_file = "");
 #endif /* tests_hpp */

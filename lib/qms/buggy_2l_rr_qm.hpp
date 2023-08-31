@@ -18,19 +18,18 @@ public:
                 std::vector<QueueInfo> in_queue_info,
                 QueueInfo out_queue_info,
                 NetContext& net_ctx);
-    
-    void add_constrs(NetContext& net_ctx,
-                     std::map<std::string, expr>& constr_map);
-    
+
+    void add_constrs(NetContext& net_ctx, std::map<std::string, expr>& constr_map);
+
     Queue* new_fifo();
     Queue* old_fifo();
     expr inactive(unsigned int q, unsigned int t);
-    
+
 private:
     Queue* new_queues;
     Queue* old_queues;
     vector<expr>* inactive_;
-    
+
     void add_proc_vars(NetContext& net_ctx);
 };
 

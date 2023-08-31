@@ -9,21 +9,21 @@
 #ifndef spec_factory_hpp
 #define spec_factory_hpp
 
+#include <iostream>
+#include <map>
+#include <set>
+#include <tuple>
 #include <variant>
 #include <vector>
-#include <map>
-#include <iostream>
-#include <tuple>
-#include <set>
 
-#include "util.hpp"
-#include "metric.hpp"
-#include "example.hpp"
 #include "cost.hpp"
+#include "example.hpp"
+#include "metric.hpp"
 #include "shared_config.hpp"
+#include "util.hpp"
 #include "workload.hpp"
 
-class SpecFactory{
+class SpecFactory {
 
 public:
     SpecFactory(SharedConfig* shared_config);
@@ -38,27 +38,28 @@ public:
 
     //**** rhs_t ****//
     rhs_t random_rhs();
-    rhs_t random_rhs(bool time_valid, 
-                     std::uniform_int_distribution<unsigned int> const_dist);
+    rhs_t random_rhs(bool time_valid, std::uniform_int_distribution<unsigned int> const_dist);
     void pick_rhs_neighbors(rhs_t rhs, vector<rhs_t>& neighbors);
-    void pick_rhs_neighbors(rhs_t rhs, vector<rhs_t>& neighbors,
-                        bool time_valid, std::uniform_int_distribution<unsigned int> const_dist);
-    
+    void pick_rhs_neighbors(rhs_t rhs,
+                            vector<rhs_t>& neighbors,
+                            bool time_valid,
+                            std::uniform_int_distribution<unsigned int> const_dist);
+
     //**** lhs_t ****//
     lhs_t random_lhs();
     void pick_lhs_neighbors(lhs_t lhs, vector<lhs_t>& neighbors);
- 
+
     //**** trf_t ****//
     trf_t random_trf();
     void pick_trf_neighbors(trf_t trf, vector<trf_t>& neighbors);
- 
+
     //**** TSUM ****//
-    qset_t random_tsum_qset(); 
+    qset_t random_tsum_qset();
     TSUM random_tsum();
     void pick_neighbors(TSUM& tsum, vector<trf_t>& neighbors);
-   
+
     //**** TONE ****//
-    TONE random_tone();  
+    TONE random_tone();
     void pick_neighbors(TONE& tone, vector<trf_t>& neighbors);
 
     //**** TIME ****//

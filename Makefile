@@ -7,14 +7,11 @@ APP_DIR  := $(BUILD)
 TARGET   := fperf
 INCLUDE  := -I/usr/local/include -Ilib/ -Ilib/metrics/ -Ilib/cps -Ilib/qms
 SRC      :=	$(wildcard src/*.cpp) \
-					  $(wildcard src/metrics/*.cpp) \
-						$(wildcard src/cps/*.cpp) \
-						$(wildcard src/qms/*.cpp)
+						 $(wildcard src/*/*.cpp)
 TEST_SRC := $(wildcard tests/*.cpp)
 TEST_TARGET_PATH := $(APP_DIR)/$(TARGET)_test
 			
-
-
+HEADERS := $(patsubst src/%.cpp,lib/%.hpp, $(filter-out src/main.cpp, $(SRC)))
 OBJECTS := $(SRC:%.cpp=$(OBJ_DIR)/%.o)
 
 all: build $(APP_DIR)/$(TARGET)
@@ -27,7 +24,7 @@ $(APP_DIR)/$(TARGET): $(OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) -o $(APP_DIR)/$(TARGET) $^ $(LDFLAGS)
 
-.PHONY: all build clean test
+.PHONY: all build clean test check-format format
 
 build:
 	@mkdir -p $(APP_DIR)
@@ -41,6 +38,12 @@ $(TEST_TARGET_PATH): $(OBJECTS) $(TEST_SRC)
 
 test: $(TEST_TARGET_PATH)
 	$^
+
+check-format: $(HEADERS) $(SRC)
+	clang-format --dry-run -Werror $^
+
+format: $(HEADERS) $(SRC)
+	clang-format -i $^
 
 clean:
 	-@rm -rvf $(OBJ_DIR)/*

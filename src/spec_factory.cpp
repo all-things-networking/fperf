@@ -284,6 +284,7 @@ void SpecFactory::pick_lhs_neighbors(lhs_t lhs, vector<lhs_t>& neighbors) {
 
 trf_t SpecFactory::random_trf() {
     unsigned int trf_type = dists->trf();
+    if (target_queues.size() < 2) trf_type = 1;
     switch (trf_type) {
         case 0: return random_tsum();
         default: return random_tone();
@@ -387,7 +388,7 @@ void SpecFactory::pick_neighbors(TONE& tone, vector<trf_t>& neighbors) {
 
     // changing queue
     unsigned int queue_neighbor = dists->input_queue();
-    while (queue_neighbor == tone.get_queue() ||
+    while ((queue_neighbor == tone.get_queue() && target_queues.size() > 1) ||
            target_queues.find(queue_neighbor) == target_queues.end()) {
         queue_neighbor = dists->input_queue();
     }

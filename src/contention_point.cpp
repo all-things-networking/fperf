@@ -453,8 +453,13 @@ solver_res_t ContentionPoint::check_workload_without_query(Workload wl) {
     z3_solver->push();
     z3_solver->add(base_wl_expr, "base_wl");
 
-    expr wl_expr = get_expr(wl);
-    z3_solver->add(wl_expr, "workload");
+    try {
+        expr wl_expr = get_expr(wl);
+        z3_solver->add(wl_expr, "workload");
+    } catch (const runtime_error& error) {
+        z3_solver->pop();
+        return solver_res_t::UNKNOWN;
+    }
 
     // solver_res_t res = solve();
 
@@ -2154,8 +2159,10 @@ expr ContentionPoint::get_expr(TONE t_one, unsigned int t) {
                    net_ctx.pkt2meta2(pkt),
                    net_ctx.int_val(UNDEFINED_METRIC_VAL));
 
-    } else
+    } else {
+        if (queue->get_metric(metric) == nullptr) throw runtime_error("No such metric");
         return queue->get_metric(metric)->val(t);
+    }
 }
 
 expr ContentionPoint::get_expr(TSUM t_sum, unsigned int t) {
@@ -2257,8 +2264,11 @@ unsigned int ContentionPoint::eval_trf(TONE tone, IndexedExample* eg, unsigned i
         } else
             return UNDEFINED_METRIC_VAL;
     } else {
-        unsigned int res = in_queues[queue]->get_metric(metric)->eval(eg, time, queue);
-        return res;
+        Metric* queue_metric = in_queues[queue]->get_metric(metric);
+        if (queue_metric != nullptr)
+            return queue_metric->eval(eg, time, queue);
+        else
+            return UNDEFINED_METRIC_VAL;
     }
 }
 

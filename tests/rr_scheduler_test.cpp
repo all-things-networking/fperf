@@ -3,8 +3,6 @@
 #include "rr_scheduler.hpp"
 #include "rr_scheduler_test.hpp"
 
-using namespace std;
-
 bool test_unsat_query() {
   unsigned int in_queue_cnt = 5;
   unsigned int period = 5;
@@ -51,7 +49,7 @@ bool test_unsat_query() {
   return result == solver_res_t::UNSAT;
 }
 
-bool test_sat_query(){
+bool test_sat_query() {
   unsigned int in_queue_cnt = 5;
   unsigned int period = 5;
   unsigned int recur = 2;
@@ -66,14 +64,13 @@ bool test_sat_query(){
 
   Workload wl(100, in_queue_cnt, total_time);
 
-    for (unsigned int i = 1; i <= recur; i++) {
-      for (unsigned int q = 0; q < in_queue_cnt; q++) {
-        wl.add_wl_spec(
-            TimedSpec(WlSpec(TONE(metric_t::CENQ, q), comp_t::GE, i * rate),
-                      time_range_t(i * period - 1, i * period - 1),
-                      total_time));
-      }
+  for (unsigned int i = 1; i <= recur; i++) {
+    for (unsigned int q = 0; q < in_queue_cnt; q++) {
+      wl.add_wl_spec(
+          TimedSpec(WlSpec(TONE(metric_t::CENQ, q), comp_t::GE, i * rate),
+                    time_range_t(i * period - 1, i * period - 1), total_time));
     }
+  }
 
   wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, queue1), comp_t::GT,
                                   TONE(metric_t::CENQ, queue2)),
@@ -102,6 +99,6 @@ bool test_sat_query(){
 }
 
 void RRSchedulerTest::add_to_runner(TestRunner *runner) {
-  runner->add_test_case(test_sat_query);
-  runner->add_test_case(test_unsat_query);
+  runner->add_test_case("rr_unsat", test_sat_query);
+  runner->add_test_case("rr_sat", test_unsat_query);
 }

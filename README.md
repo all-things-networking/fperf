@@ -19,7 +19,7 @@ fperf currently runs on Z3 v4.8.11 [link](https://github.com/Z3Prover/z3/release
 	- Set "C++ Language Standard" to "C++ 17 Standard"
 6. Under the same "Configuration Properties" page, go to "C/C++" -> "General" -> "Include Additional Directories" and add the following:
 	- `[path to z3]\z3\src\api`
-	- `[path to z3]\z3\src\api\c++`
+	- `[path to z3]\z3\src\api\c++`<br>
 	  The following may be required if Visual Studio doesn't recognize the subfolders of fperf
 	- `[path to fperf]\fperf\src\qms`
 	- `[path to fperf]\fperf\src\metrics`

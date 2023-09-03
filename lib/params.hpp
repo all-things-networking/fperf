@@ -65,4 +65,6 @@ const unsigned int DEFAULT_COMP_RANGE_MAX = 4;
 const unsigned int DEFAULT_ENQ_RANGE_MIN = 1;
 const unsigned int DEFAULT_ENQ_RANGE_MAX = MAX_ENQ;
 
+const unsigned int DEFAULT_RANDOM_SEED = 1680979592;
+
 #endif /* params_hpp */

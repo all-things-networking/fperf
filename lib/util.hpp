@@ -1,6 +1,6 @@
 //
 //  util.hpp
-//  FPerf
+//  AutoPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 11/9/20.
 //  Copyright © 2020 Mina Tahmasbi Arashloo. All rights reserved.
@@ -16,10 +16,10 @@
 
 #pragma clang diagnostic pop
 
+#include <string>
+#include <set>
 #include <chrono>
 #include <random>
-#include <set>
-#include <string>
 
 #include "params.hpp"
 
@@ -40,14 +40,15 @@ bool satisfies(unsigned int q, qset_t qset);
 typedef std::string cid_t;
 typedef std::pair<cid_t, cid_t> cid_pair;
 
-cid_t get_unique_id(cid_t module_id, cid_t queue_id);
+cid_t get_unique_id(cid_t module_id,
+                    cid_t queue_id);
 
-//************************************* COMP *************************************//
-enum class comp_t { GT = 0, GE, LT, LE, EQ };
-std::ostream& operator<<(std::ostream& os, const comp_t& comp);
-bool eval_comp(unsigned int lhs_val, comp_t comp, unsigned int rhs_val);
-comp_t random_comp();
-comp_t neg_comp(comp_t comp);
+//************************************* OP *************************************//
+enum class op_t {GT = 0, GE, LT, LE, EQ};
+std::ostream& operator<<(std::ostream& os, const op_t& op);
+bool eval_op(unsigned int lhs_val, op_t op, unsigned int rhs_val);
+op_t random_op();
+op_t neg_op(op_t op);
 
 //************************************* TIME RANGE *************************************//
 typedef std::pair<unsigned int, unsigned int> time_range_t;
@@ -65,23 +66,11 @@ unsigned long long int get_diff_microsec(time_typ start, time_typ end);
 //************************************* OTHER *************************************//
 std::string banner(std::string b);
 
-template <typename... Args> std::string format_string(const std::string& format, Args... args) {
-    char vname[100];
-    std::snprintf(vname, 100, format.c_str(), args...);
-    std::string s(vname);
-    return s;
-}
-
 #define DEBUG
 #ifdef DEBUG
-#define DEBUG_MSG(str)                                                                             \
-    do {                                                                                           \
-        std::cout << str;                                                                          \
-    } while (false)
+#define DEBUG_MSG(str) do { std::cout << str; } while( false )
 #else
-#define DEBUG_MSG(str)                                                                             \
-    do {                                                                                           \
-    } while (false)
+#define DEBUG_MSG(str) do { } while ( false )
 #endif
 
 #endif /* util_hpp */

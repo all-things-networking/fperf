@@ -1,6 +1,6 @@
 //
 //  params.hpp
-//  FPerf
+//  AutoPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 12/5/20.
 //  Copyright © 2020 Mina Tahmasbi Arashloo. All rights reserved.

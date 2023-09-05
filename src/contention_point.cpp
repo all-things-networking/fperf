@@ -1459,7 +1459,6 @@ void ContentionPoint::generate_good_examples2(IndexedExample* base_eg,
     for (unsigned int q = 0; q < in_queues.size(); q++) {
         if (target_queues.find(q) != target_queues.end()) continue;
 
-        // TOASK: this enforces all queues to have CENQ metric
         Metric* cenq_metric = in_queues[q]->get_metric(metric_t::CENQ);
         for (unsigned int t = 0; t < total_time; t++) {
             sprintf(constr_name, "%d_is_zerod_queue[%d}", q, t);
@@ -1472,7 +1471,6 @@ void ContentionPoint::generate_good_examples2(IndexedExample* base_eg,
     // have enough time to be processed. To avoid arbitrary
     // numbers, ensure enq_cnt in the last time step is zero
     // in all examples.
-    // TOASK: Why?
     // Similarly, do not allow more than one packet in the
     // second to last time step (TODO: the exact constant
     // may need to be generalized.

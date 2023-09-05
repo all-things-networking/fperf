@@ -15,13 +15,6 @@ QueuingModule(id,
     this->info = info;
 }
 
-template <typename... Args> string format_string(const string& format, Args... args) {
-    char vname[100];
-    std::snprintf(vname, 100, format.c_str(), args...);
-    string s(vname);
-    return s;
-}
-
 void TBFQM::add_proc_vars(NetContext& net_ctx) {
     for (unsigned int t = 0; t < total_time; t++) {
         string vname = format_string("%s_token_queue[%d]", id.c_str(), t);

@@ -400,8 +400,7 @@ bool operator== (const Decr& decr1, const Decr& decr2){
 
 bool operator<(const Decr& decr1, const Decr& decr2){
     return (decr1.metric < decr2.metric ||
-            (decr1.metric == decr2.metric &&
-             incr1.queue < incr2.queue));
+            (decr1.metric == decr2.metric && decr1.queue < decr2.queue));
 }
 
 //************************************* Comp *************************************//
@@ -747,8 +746,18 @@ bool operator<(const Comp& comp1, const Comp& comp2){
 unsigned int wl_spec_ast_size(const wl_spec_t wl_spec){
     if (holds_alternative<Comp>(wl_spec)){
         return get<Comp>(wl_spec).ast_size();
+    } else
+        return 1u;
+}
+
+bool wl_spec_applies_to_queue(wl_spec_t spec, unsigned int queue) {
+    switch (spec.index()) {
+        case 0: return get<Comp>(spec).applies_to_queue(queue);
+        case 1: return get<Same>(spec).applies_to_queue(queue);
+        case 2: return get<Incr>(spec).applies_to_queue(queue);
+        case 3: return get<Decr>(spec).applies_to_queue(queue);
+        default: return false;
     }
-    else return 1u;
 }
 
 std::ostream& operator<<(std::ostream& os, const wl_spec_t& wl_spec){
@@ -775,9 +784,8 @@ std::ostream& operator<<(std::ostream& os, const wl_spec_t& wl_spec){
     return os;
 }
 
-bool operator==(const wl_spec_t& wl_spec1, const wl_spec_t& wl_spec2){
-    if (std::holds_alternative<Comp>(spec1) &&
-        std::holds_alternative<Comp>(spec2)){
+bool operator==(const wl_spec_t& spec1, const wl_spec_t& spec2) {
+    if (std::holds_alternative<Comp>(spec1) && std::holds_alternative<Comp>(spec2)) {
         return std::get<Comp>(spec1) == std::get<Comp>(spec2);
     }
     if (std::holds_alternative<Same>(spec1) &&
@@ -795,7 +803,7 @@ bool operator==(const wl_spec_t& wl_spec1, const wl_spec_t& wl_spec2){
     return false;
 }
 
-bool operator<(const wl_spec_t& wl_spec1, const wl_spec_t& wl_spec2){
+bool operator<(const wl_spec_t& spec1, const wl_spec_t& spec2) {
     // Comp < Same < Incr < Decr
     
     if (std::holds_alternative<Comp>(spec1)){
@@ -868,8 +876,8 @@ total_time(total_time)
 }
 
 
-bool TimedSpec::applies_to_queue(unsigned int queue) const{
-    return wl_spec.applies_to_queue(queue);
+bool TimedSpec::applies_to_queue(unsigned int queue) const {
+    return wl_spec_applies_to_queue(wl_spec, queue);
 }
 
 void TimedSpec::set_time_range_ub(unsigned int ub){
@@ -1091,8 +1099,8 @@ void Workload::normalize(){
     // check that first?
     if (timeline.size() > 1){
         vector<time_range_t> to_erase;
-        
-        typedef pair<time_range_t, set<WlSpec>> timeline_entry;
+
+        typedef pair<time_range_t, set<wl_spec_t>> timeline_entry;
         vector<timeline_entry> to_add;
         
         bool valid_last_new_entry = false;
@@ -1160,9 +1168,8 @@ void Workload::normalize(time_range_t time_range){
     set<wl_spec_t> specs = timeline[time_range];
     
     // if one is empty, the entire thing is empty
-    for (set<wl_spec_t>::iterator it = specs.begin();
-         it != specs.end(); it++){
-        if (it->spec_is_empty()){
+    for (set<wl_spec_t>::iterator it = specs.begin(); it != specs.end(); it++) {
+        if (wl_spec_is_empty(*it)) {
             wl_spec_t spec = *it;
             timeline[time_range].clear();
             timeline[time_range].insert(spec);
@@ -1175,11 +1182,10 @@ void Workload::normalize(time_range_t time_range){
     // TODO: implement with the std utilities like sort and remove_if
     
     set<wl_spec_t> filtered_specs;
-    for (set<WlSpec>::iterator it = specs.begin();
-         it != specs.end(); it++){
-        
-        if (it->spec_is_all()) continue;
-        
+    for (set<wl_spec_t>::iterator it = specs.begin(); it != specs.end(); it++) {
+
+        if (wl_spec_is_all(*it)) continue;
+
         filtered_specs.insert(*it);
     }
     specs = filtered_specs;
@@ -1223,11 +1229,12 @@ void Workload::normalize(time_range_t time_range){
                 zero_pair p(metric, q);
                 zeros.push_back(p);
             }
-            
-            zero_comps.push_back(spec);
+
+            zero_comps.push_back(get<Comp>(spec));
         }
-        
-        else non_zero_comps.push_back(spec);
+
+        else
+            non_zero_comps.push_back(get<Comp>(spec));
     }
     
     bool changed = true;
@@ -1393,8 +1400,8 @@ void Workload::normalize(time_range_t time_range){
         
     final_specs.insert(zero_comps.begin(), zero_comps.end());
     final_specs.insert(non_zero_comps.begin(), non_zero_comps.end());
-    final_specs.insert(non_comp_specs.begin(), non_comp_specs.end());
-    
+    final_specs.insert(non_op_specs.begin(), non_op_specs.end());
+
     timeline[time_range] = final_specs;
 }
 
@@ -1465,15 +1472,13 @@ set<time_range_t> Workload::add_time_range(time_range_t time_range){
     }
     
     time_range_t beginning_time_range = beginning->first;
-    set<WlSpec> beginning_set = beginning->second;
-    
-    if (time_range.first > beginning_time_range.first){
-        timeline[time_range_t(beginning_time_range.first,
-                              time_range.first - 1)] = beginning_set;
-        
-        timeline[time_range_t(time_range.first,
-                              beginning_time_range.second)] = beginning_set;
-        
+    set<wl_spec_t> beginning_set = beginning->second;
+
+    if (time_range.first > beginning_time_range.first) {
+        timeline[time_range_t(beginning_time_range.first, time_range.first - 1)] = beginning_set;
+
+        timeline[time_range_t(time_range.first, beginning_time_range.second)] = beginning_set;
+
         timeline.erase(beginning_time_range);
     }
 

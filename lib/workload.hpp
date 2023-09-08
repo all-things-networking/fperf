@@ -237,6 +237,12 @@ private:
 //************************************* WlSpec *************************************//
 typedef std::variant<Comp, Same, Incr, Decr> wl_spec_t;
 
+bool wl_spec_applies_to_queue(wl_spec_t spec, unsigned int queue);
+
+bool wl_spec_is_empty(wl_spec_t spec);
+
+bool wl_spec_is_all(wl_spec_t spec);
+
 unsigned int wl_spec_ast_size(const wl_spec_t wl_spec);
 
 std::ostream& operator<<(std::ostream& os, const wl_spec_t& wl_spec);
@@ -291,10 +297,10 @@ public:
              unsigned int total_time);
     
     void clear();
-    void add_wl_spec(TimedSpec spec);
-    void rm_wl_spec(TimedSpec spec);
-    void mod_wl_spec(TimedSpec old_spec, TimedSpec new_spec);
-    
+    void add_spec(TimedSpec spec);
+    void rm_spec(TimedSpec spec);
+    void mod_spec(TimedSpec old_spec, TimedSpec new_spec);
+
     unsigned long size() const;
 
     unsigned int get_max_size() const;

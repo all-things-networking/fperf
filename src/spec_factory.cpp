@@ -93,7 +93,7 @@ WlSpec SpecFactory::random_wl_spec(){
         }
     }
 
-    comp_t comp = random_comp();
+    op_t comp = random_comp();
     WlSpec res = WlSpec(lhs, comp, rhs);
     while (res.spec_is_empty() || res.spec_is_all()){
         lhs = random_lhs();
@@ -115,7 +115,7 @@ WlSpec SpecFactory::random_wl_spec(){
 
 void SpecFactory::pick_neighbors(WlSpec& spec, vector<WlSpec>& neighbors){
     lhs_t lhs = spec.get_lhs();
-    comp_t comp = spec.get_comp();
+    op_t comp = spec.get_comp();
     rhs_t rhs = spec.get_rhs();
  
     // Changing lhs
@@ -129,7 +129,7 @@ void SpecFactory::pick_neighbors(WlSpec& spec, vector<WlSpec>& neighbors){
     }
     
     // Changing comp
-    comp_t new_comp = random_comp();
+    op_t new_comp = random_comp();
     while (new_comp == comp){
         new_comp = random_comp();
     }
@@ -414,7 +414,7 @@ TIME SpecFactory::random_time(){
 }
 
 //************************************* COMP *************************************//
-comp_t SpecFactory::random_comp(){
+op_t SpecFactory::random_comp(){
     return dists->comp();
 }
 

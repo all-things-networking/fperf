@@ -44,7 +44,8 @@ void prio(std::string good_examples_file,
     Query query(query_quant_t::EXISTS,
                 time_range_t(0, prio->get_total_time() - 1),
                 query_qid,
-                metric_t::CBLOCKED, comp_t::GT, query_thresh);
+                metric_t::CBLOCKED,
+                op_t::GT, query_thresh);
     
     prio->set_query(query);
        
@@ -115,13 +116,13 @@ void rr(std::string good_examples_file,
     
     for (unsigned int i = 1; i <= recur; i++){
         for (unsigned int q = 0; q < in_queue_cnt; q++){
-            wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, q), comp_t::GE, i * rate),
+            wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, q), op_t::GE, i * rate),
                                      time_range_t(i * period - 1, i * period - 1),
                                      total_time));
         }
     }
     
-    wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, queue1), comp_t::GT, TONE(metric_t::CENQ, queue2)),
+    wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, queue1), op_t::GT, TONE(metric_t::CENQ, queue2)),
                              time_range_t(total_time - 1, total_time - 1),
                              total_time));
     
@@ -136,7 +137,8 @@ void rr(std::string good_examples_file,
     Query query(query_quant_t::FORALL,
                 time_range_t(total_time - 1 - (period - 1), total_time - 1),
                 qdiff_t(queue2_id, queue1_id),
-                metric_t::CDEQ, comp_t::GE, 3);
+                metric_t::CDEQ,
+                op_t::GE, 3);
     
     rr->set_query(query);
  
@@ -201,8 +203,7 @@ void fq_codel(std::string good_examples_file,
     // Base Workload
     Workload wl(in_queue_cnt * 5, in_queue_cnt, total_time);
     for (unsigned int q = 0; q < last_queue; q++){
-        wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, q),
-                                        comp_t::GE, TIME(1)),
+        wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, q), op_t::GE, TIME(1)),
                                  total_time,
                                  total_time));
     }
@@ -214,7 +215,8 @@ void fq_codel(std::string good_examples_file,
     Query query(query_quant_t::FORALL,
                 time_range_t(total_time - 1, total_time - 1),
                 query_qid,
-                metric_t::CDEQ, comp_t::GE, query_thresh);
+                metric_t::CDEQ,
+                op_t::GE, query_thresh);
     
     cp->set_query(query);
 
@@ -290,19 +292,16 @@ void loom(std::string good_examples_file,
     // Base Workload
     
     Workload wl(20, cp->in_queue_cnt(), total_time);
-    wl.add_wl_spec(TimedSpec(WlSpec(TSUM(tenant1_qset, metric_t::CENQ),
-                                    comp_t::GE, TIME(1)),
+    wl.add_wl_spec(TimedSpec(WlSpec(TSUM(tenant1_qset, metric_t::CENQ), op_t::GE, TIME(1)),
                              total_time,
                              total_time));
-    wl.add_wl_spec(TimedSpec(WlSpec(TSUM(tenant2_qset, metric_t::CENQ),
-                                    comp_t::GE, TIME(1)),
+    wl.add_wl_spec(TimedSpec(WlSpec(TSUM(tenant2_qset, metric_t::CENQ), op_t::GE, TIME(1)),
                              total_time,
                              total_time));
 
     for (unsigned int q = 0; q < cp->in_queue_cnt(); q++){
         if (q % 3 == 2){
-            wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, q),
-                                            comp_t::LE, 0u),
+            wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, q), op_t::LE, 0u),
                                      total_time,
                                      total_time));
         }
@@ -316,7 +315,7 @@ void loom(std::string good_examples_file,
                 qdiff_t(cp->get_out_queue(1)->get_id(),
                         cp->get_out_queue(0)->get_id()),
                 metric_t::CENQ,
-                comp_t::GT, 3u);
+                op_t::GT, 3u);
     
     cp->set_query(query);
    
@@ -392,13 +391,11 @@ void leaf_spine_bw(std::string good_examples_file,
     // Base Workload
     Workload wl(in_queue_cnt, in_queue_cnt, total_time);
     
-    wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, src_server),
-                                    comp_t::GE, TIME(1)),
+    wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, src_server), op_t::GE, TIME(1)),
                              total_time - 1,
                              total_time));
 
-    wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::META1, src_server),
-                                    comp_t::EQ, dst_server),
+    wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::META1, src_server), op_t::EQ, dst_server),
                              total_time - 1,
                              total_time));
 
@@ -422,7 +419,8 @@ void leaf_spine_bw(std::string good_examples_file,
     Query query(query_quant_t::FORALL,
                 time_range_t(total_time - 1, total_time - 1),
                 query_qid,
-                metric_t::CENQ, comp_t::LE, query_thresh);
+                metric_t::CENQ,
+                op_t::LE, query_thresh);
     
     cp->set_query(query);
    

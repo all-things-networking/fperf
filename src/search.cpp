@@ -260,7 +260,7 @@ void Search::search(Workload wl){
         for (unsigned int q = 0; q < cp->in_queue_cnt(); q++){
             if (target_queues.find(q) == target_queues.end()){
                 TONE n_tone = TONE(metric_t::CENQ, q);
-                WlSpec n_wl_spec = WlSpec(n_tone, comp_t::LE, 0u);
+                WlSpec n_wl_spec = WlSpec(n_tone, op_t::LE, 0u);
                 TimedSpec n_spec = TimedSpec(n_wl_spec, total_time, total_time);
                 to_check.add_wl_spec(n_spec);
             }
@@ -387,7 +387,7 @@ Workload Search::refine(Workload wl){
     for (unsigned int q = 0; q < cp->in_queue_cnt(); q++){
         if (target_queues.find(q) == target_queues.end()){
             TONE n_tone = TONE(metric_t::CENQ, q);
-            WlSpec n_wl_spec = WlSpec(n_tone, comp_t::LE, 0u);
+            WlSpec n_wl_spec = WlSpec(n_tone, op_t::LE, 0u);
             wl.add_wl_spec(TimedSpec(n_wl_spec, total_time, total_time));
         }
     }
@@ -446,7 +446,7 @@ Workload Search::refine(Workload wl){
                  
                 candidate = wl;
                 TONE n_tone = TONE(metric_t::CENQ, q);
-                WlSpec n_wl_spec = WlSpec(n_tone, comp_t::GE, TIME(c)); 
+                WlSpec n_wl_spec = WlSpec(n_tone, op_t::GE, TIME(c));
                 TimedSpec new_spec = TimedSpec(n_wl_spec, tspec.get_time_range(), total_time);
                 candidate.mod_wl_spec(*it, new_spec);
             
@@ -473,8 +473,8 @@ Workload Search::refine(Workload wl){
         TimedSpec tspec = *it;
         WlSpec wspec = tspec.get_wl_spec();
         rhs_t rhs = wspec.get_rhs();
-        comp_t comp = wspec.get_comp();
-        if (comp == comp_t::GT || comp == comp_t::GE){
+        op_t comp = wspec.get_comp();
+        if (comp == op_t::GT || comp == op_t::GE){
             if (holds_alternative<TIME>(rhs)){
                 TIME time = get<TIME>(rhs);
                 unsigned int coeff = time.get_coeff();
@@ -576,7 +576,7 @@ Workload Search::refine(Workload wl){
         if (it->get_time_range() == time_range_t(0, cp->get_total_time()-1) &&
             holds_alternative<unsigned int>(rhs) &&
             get<unsigned int>(rhs) == 0 &&
-            spec.get_comp() == comp_t::LE){
+            spec.get_comp() == op_t::LE){
             if (holds_alternative<TONE>(lhs)){
                 zero_in_base.insert(get<TONE>(lhs).get_queue());
             }
@@ -606,7 +606,7 @@ Workload Search::refine(Workload wl){
 
             if (holds_alternative<unsigned int>(rhs) &&
                 get<unsigned int>(rhs) == 0 &&
-                wl_spec.get_comp() == comp_t::LE) continue;
+                wl_spec.get_comp() == op_t::LE) continue;
                 
             lhs_t lhs = wl_spec.get_lhs();
             lhs_t new_lhs = lhs;

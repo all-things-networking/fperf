@@ -65,7 +65,7 @@ public:
     TIME random_time();
 
     //**** COMP ****/
-    comp_t random_comp();
+    op_t random_comp();
 
 private:
     SharedConfig* shared_config = NULL;

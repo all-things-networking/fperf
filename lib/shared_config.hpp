@@ -40,6 +40,8 @@ struct DistsParams {
 
     unsigned int pkt_meta1_val_max = 0;
     unsigned int pkt_meta2_val_max = 0;
+
+    unsigned int random_seed = DEFAULT_RANDOM_SEED;
 };
 
 class Dists {

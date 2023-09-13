@@ -75,7 +75,7 @@ void prio(std::string good_examples_file, std::string bad_examples_file) {
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = 2;
     dists_params.pkt_meta2_val_max = 2;
-
+    dists_params.random_seed = 11464;
     Dists* dists = new Dists(dists_params);
     SharedConfig* config = new SharedConfig(total_time, prio->in_queue_cnt(), target_queues, dists);
     bool config_set = prio->set_shared_config(config);
@@ -169,7 +169,7 @@ void rr(std::string good_examples_file, std::string bad_examples_file) {
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = 2;
     dists_params.pkt_meta2_val_max = 2;
-
+    dists_params.random_seed = 5422;
     Dists* dists = new Dists(dists_params);
     SharedConfig* config = new SharedConfig(total_time, rr->in_queue_cnt(), target_queues, dists);
     bool config_set = rr->set_shared_config(config);
@@ -247,7 +247,7 @@ void fq_codel(std::string good_examples_file, std::string bad_examples_file) {
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = 2;
     dists_params.pkt_meta2_val_max = 2;
-
+    dists_params.random_seed = 26378;
     Dists* dists = new Dists(dists_params);
     SharedConfig* config = new SharedConfig(total_time, cp->in_queue_cnt(), target_queues, dists);
     bool config_set = cp->set_shared_config(config);
@@ -344,7 +344,7 @@ void loom(std::string good_examples_file, std::string bad_examples_file) {
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = 3;
     dists_params.pkt_meta2_val_max = 2;
-
+    dists_params.random_seed = 27508;
     Dists* dists = new Dists(dists_params);
     SharedConfig* config = new SharedConfig(total_time, cp->in_queue_cnt(), target_queues, dists);
     bool config_set = cp->set_shared_config(config);
@@ -446,7 +446,7 @@ void leaf_spine_bw(std::string good_examples_file, std::string bad_examples_file
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = server_cnt - 1;
     dists_params.pkt_meta2_val_max = spine_cnt - 1;
-
+    dists_params.random_seed = 4119;
     Dists* dists = new Dists(dists_params);
     SharedConfig* config = new SharedConfig(total_time, cp->in_queue_cnt(), target_queues, dists);
     bool config_set = cp->set_shared_config(config);

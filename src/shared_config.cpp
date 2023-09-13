@@ -10,8 +10,7 @@
 
 /******************************* Dists *****************************/
 Dists::Dists(DistsParams params) {
-    unsigned int seed = (unsigned int) time(NULL);
-    // unsigned int seed = 1680979592;
+    unsigned int seed = params.random_seed;
     std::cout << "seed is: " << seed << std::endl;
     gen.seed(seed);
 

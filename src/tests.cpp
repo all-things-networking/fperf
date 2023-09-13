@@ -16,6 +16,7 @@
 #include "query.hpp"
 #include "rr_scheduler.hpp"
 #include "search.hpp"
+#include "tbf.hpp"
 
 void run(ContentionPoint* cp,
          IndexedExample* base_eg,
@@ -461,6 +462,66 @@ void leaf_spine_bw(std::string good_examples_file, std::string bad_examples_file
         query,
         24,
         config);
+}
+
+void tbf(std::string good_examples_file, std::string bad_examples_file) {
+    unsigned int total_time = 6;
+    unsigned int start = 2;
+    unsigned int interval = 2;
+
+    unsigned int link_rate = 3;
+
+    TBFInfo info;
+    info.link_rate = link_rate;
+    info.max_tokens = 6;
+    info.max_enq = 10;
+
+    TBF* tbf = new TBF(total_time, info);
+
+    Workload wl(100, 1, total_time);
+
+    for (uint i = 0; i < interval; i++) {
+        wl.add_wl_spec(TimedSpec(
+            WlSpec(TONE(metric_t::CENQ, 0), comp_t::GE, (unsigned int) (i + 1) * link_rate),
+            time_range_t(start + i, start + i),
+            total_time));
+    }
+    tbf->set_base_workload(wl);
+
+    cid_t queue_id = tbf->get_in_queue()->get_id();
+
+    Query query(query_quant_t::EXISTS,
+                time_range_t(0, total_time - 1),
+                queue_id,
+                metric_t::DEQ,
+                comp_t::GT,
+                link_rate);
+
+    tbf->set_query(query);
+
+    IndexedExample* base_eg = new IndexedExample();
+    qset_t target_queues;
+
+    bool res = tbf->generate_base_example(base_eg, target_queues, 1);
+
+    if (!res) {
+        cout << "ERROR: couldn't generate base example" << endl;
+        return;
+    }
+
+    // Set shared config
+    DistsParams dists_params;
+    dists_params.in_queue_cnt = tbf->in_queue_cnt();
+    dists_params.total_time = total_time;
+    dists_params.pkt_meta1_val_max = 2;
+    dists_params.pkt_meta2_val_max = 2;
+
+    Dists* dists = new Dists(dists_params);
+    SharedConfig* config = new SharedConfig(total_time, tbf->in_queue_cnt(), target_queues, dists);
+    bool config_set = tbf->set_shared_config(config);
+    if (!config_set) return;
+
+    run(tbf, base_eg, 50, good_examples_file, 50, bad_examples_file, query, 8, config);
 }
 
 void run(ContentionPoint* cp,

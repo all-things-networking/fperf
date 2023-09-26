@@ -54,6 +54,6 @@ void QSize::populate_val_exprs(NetContext& net_ctx){
  
     // Valid
     for (unsigned int t = 0; t < total_time; t++){
-        valid_[t] = net_ctx.get_bool_val(true);
+        valid_[t] = net_ctx.bool_val(true);
     }
 }

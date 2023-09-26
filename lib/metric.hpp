@@ -23,9 +23,8 @@ enum class metric_t {CENQ = 0, AIPG, DST, ECMP, QSIZE, CDEQ, CBLOCKED};
 enum class metric_granularity_t {PACKET = 0, TIMESTEP};
 
 struct metric_properties{
-    metric_granularity_t granularity;
-    bool non_negative;
-    bool non_decreasing;
+    bool non_negative; // Used in normalization to distinguish zero and non-zero comparisons
+    bool non_decreasing; // Used in normalization to extend time range to 0 or T
     bool aggregatable;
 };
 

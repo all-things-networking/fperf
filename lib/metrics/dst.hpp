@@ -20,9 +20,10 @@ public:
     
     void populate_val_exprs(NetContext& net_ctx);
 
-    unsigned int eval(const IndexedExample* eg,
-                      unsigned int time,
-                      unsigned int qind);    
+    void eval(const IndexedExample* eg,
+              unsigned int time,
+              unsigned int qind,
+              metric_val& res);
 };
 
 #endif /* dst_hpp */

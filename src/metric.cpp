@@ -13,13 +13,13 @@
 #include <iostream>
 
 const map<metric_t, metric_properties> Metric::properties = {
-    {metric_t::CENQ, {metric_granularity_t::TIMESTEP, true, true, true}},
-    {metric_t::AIPG, {metric_granularity_t::TIMESTEP, true, false, false}},
-    {metric_t::DST, {metric_granularity_t::PACKET, true, false, false}},
-    {metric_t::ECMP, {metric_granularity_t::PACKET, true, false, false}},
-    {metric_t::QSIZE, {metric_granularity_t::TIMESTEP, true, false, false}},
-    {metric_t::CDEQ, {metric_granularity_t::TIMESTEP, true, true, true}},
-    {metric_t::CBLOCKED, {metric_granularity_t::TIMESTEP, true, false, false}}
+    {metric_t::CENQ, {true, true, true}},
+    {metric_t::AIPG, {true, false, false}},
+    {metric_t::DST, {true, false, false}},
+    {metric_t::ECMP, {true, false, false}},
+    {metric_t::QSIZE, {true, false, false}},
+    {metric_t::CDEQ, {true, true, true}},
+    {metric_t::CBLOCKED, {true, false, false}}
 };
 
 Metric::Metric(metric_t m,
@@ -46,7 +46,7 @@ m_val_expr_t Metric::val(unsigned int ind){
 }
 
 void Metric::init(NetContext& net_ctx){
-    populate_val_exprs();
+    populate_val_exprs(net_ctx);
 }
 
 cid_t Metric::get_id(){

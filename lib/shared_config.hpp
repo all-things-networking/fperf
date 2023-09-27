@@ -69,6 +69,7 @@ public:
 
     std::uniform_int_distribution<unsigned int>& get_pkt_meta1_val_dist();
     std::uniform_int_distribution<unsigned int>& get_pkt_meta2_val_dist();
+    std::uniform_int_distribution<unsigned int>& get_rhs_const_dist();
 
 private:
     std::mt19937 gen;

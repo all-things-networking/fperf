@@ -23,11 +23,19 @@ dists(shared_config->get_dists())
     target_queues = shared_config->get_target_queues();
 }
 
+RandomSpecGenerationParameters SpecFactory::get_metric_params(metric_t metric_type) {
+    switch (metric_type) {
+        case metric_t::DST: return {false, dists->get_pkt_meta1_val_dist()};
+        case metric_t::ECMP: return {false, dists->get_pkt_meta2_val_dist()};
+        default: return {true, dists->get_rhs_const_dist()};
+    }
+}
+
 //************************************* TimedSpec *************************************//
 
-TimedSpec SpecFactory::random_timed_spec(){
-    WlSpec wl_spec = random_wl_spec();
-        
+TimedSpec SpecFactory::random_timed_spec() {
+    wl_spec_t wl_spec = random_wl_spec();
+
     unsigned int time_range_lb = dists->timestep();
     unsigned int time_range_ub = dists->timestep();
     while (time_range_ub < time_range_lb){
@@ -39,12 +47,12 @@ TimedSpec SpecFactory::random_timed_spec(){
 }
 
 
-void SpecFactory::pick_neighbors(TimedSpec& spec, vector<TimedSpec>& neighbors){
-    WlSpec wl_spec = spec.get_wl_spec();
+void SpecFactory::pick_neighbors(TimedSpec& spec, vector<TimedSpec>& neighbors) {
+    wl_spec_t wl_spec = spec.get_wl_spec();
     time_range_t time_range = spec.get_time_range();
     
     // Changing wl_spec
-    vector<WlSpec> wl_spec_neighbors;
+    vector<wl_spec_t> wl_spec_neighbors;
     pick_neighbors(wl_spec, wl_spec_neighbors);
     for (unsigned int i = 0; i < wl_spec_neighbors.size(); i++){
         TimedSpec nei = TimedSpec(wl_spec_neighbors[i], time_range, total_time);
@@ -80,84 +88,73 @@ void SpecFactory::pick_neighbors(TimedSpec& spec, vector<TimedSpec>& neighbors){
 
 //************************************* WlSpec *************************************//
 
-WlSpec SpecFactory::random_wl_spec(){
-    lhs_t lhs = random_lhs();
-    rhs_t rhs = random_rhs();
-    if (holds_alternative<TONE>(lhs)){
-        metric_t metric = get<TONE>(lhs).get_metric();
-        if (metric == metric_t::META1){
-            rhs = random_rhs(false, dists->get_pkt_meta1_val_dist());
-        }
-        else if (metric == metric_t::META2){
-            rhs = random_rhs(false, dists->get_pkt_meta2_val_dist());
-        }
-    }
-
-    op_t comp = random_comp();
-    WlSpec res = WlSpec(lhs, comp, rhs);
-    while (res.spec_is_empty() || res.spec_is_all()){
-        lhs = random_lhs();
-        rhs = random_rhs();
-        if (holds_alternative<TONE>(lhs)){
-            metric_t metric = get<TONE>(lhs).get_metric();
-            if (metric == metric_t::META1){
-                rhs = random_rhs(false, dists->get_pkt_meta1_val_dist());
-            }
-            else if (metric == metric_t::META2){
-                rhs = random_rhs(false, dists->get_pkt_meta2_val_dist());
-            }
-        }
-        comp = random_comp();
-        res = WlSpec(lhs, comp, rhs);
-    }
-    return res;
+wl_spec_t SpecFactory::random_wl_spec() {
+    return random_comp();
 }
 
-void SpecFactory::pick_neighbors(WlSpec& spec, vector<WlSpec>& neighbors){
+void SpecFactory::pick_neighbors(wl_spec_t& spec, vector<wl_spec_t>& neighbors) {
+    if (holds_alternative<Comp>(spec)) {
+        vector<Comp> comp_neighbors;
+        pick_neighbors(get<Comp>(spec), comp_neighbors);
+        neighbors.insert(neighbors.end(), comp_neighbors.begin(), comp_neighbors.end());
+    }
+}
+
+//************************************* COMP *************************************//
+
+Comp SpecFactory::random_comp() {
+    Comp* res;
+
+    do{
+        lhs_t lhs = random_lhs();
+        rhs_t rhs = random_rhs();
+        if (holds_alternative<Indiv>(lhs)) {
+            metric_t metric = get<Indiv>(lhs).get_metric();
+            rhs = random_rhs(get_metric_params(metric));
+        }
+        op_t op = random_op();
+        res = new Comp(lhs, op, rhs);
+    } while (res->spec_is_empty() || res->spec_is_all()) ;
+
+    return *res;
+}
+
+void SpecFactory::pick_neighbors(Comp& spec, vector<Comp>& neighbors) {
     lhs_t lhs = spec.get_lhs();
-    op_t comp = spec.get_comp();
+    op_t op = spec.get_op();
     rhs_t rhs = spec.get_rhs();
  
     // Changing lhs
     vector<lhs_t> lhs_neighbors;
     pick_lhs_neighbors(lhs, lhs_neighbors);
-    for (unsigned int i = 0; i < lhs_neighbors.size(); i++){
-        WlSpec nei = WlSpec(lhs_neighbors[i], comp, rhs);
-        if (!nei.spec_is_empty() && !nei.spec_is_all()){
+    for (unsigned int i = 0; i < lhs_neighbors.size(); i++) {
+        Comp nei = Comp(lhs_neighbors[i], op, rhs);
+        if (!nei.spec_is_empty() && !nei.spec_is_all()) {
             neighbors.push_back(nei);
         }
     }
-    
-    // Changing comp
-    op_t new_comp = random_comp();
-    while (new_comp == comp){
-        new_comp = random_comp();
+
+    // Changing op
+    op_t new_op = random_op();
+    while (new_op == op) {
+        new_op = random_op();
     }
-    WlSpec nei = WlSpec(lhs, new_comp, rhs);
-    if (!nei.spec_is_empty() && !nei.spec_is_all()){
+    Comp nei = Comp(lhs, new_op, rhs);
+    if (!nei.spec_is_empty() && !nei.spec_is_all()) {
         neighbors.push_back(nei);
     }
     
     // Changing rhs
     vector<rhs_t> rhs_neighbors;
-    if (holds_alternative<TONE>(lhs)){
-        metric_t metric = get<TONE>(lhs).get_metric();
-        if (metric == metric_t::META1){
-            pick_rhs_neighbors(rhs, rhs_neighbors, false, dists->get_pkt_meta1_val_dist());
-        }
-        else if (metric == metric_t::META2){
-            pick_rhs_neighbors(rhs, rhs_neighbors, false, dists->get_pkt_meta2_val_dist());
-        }
-        else {
-            pick_rhs_neighbors(rhs, rhs_neighbors);
-        } 
-    }
-    else {
+    if (holds_alternative<Indiv>(lhs)) {
+        metric_t metric = get<Indiv>(lhs).get_metric();
+        pick_rhs_neighbors(rhs, rhs_neighbors, get_metric_params(metric));
+    } else {
         pick_rhs_neighbors(rhs, rhs_neighbors);
     }
-    for (unsigned int i = 0; i < rhs_neighbors.size(); i++){
-        WlSpec nei = WlSpec(lhs, comp, rhs_neighbors[i]);
-        if (!nei.spec_is_empty() && !nei.spec_is_all()){
+    for (unsigned int i = 0; i < rhs_neighbors.size(); i++) {
+        Comp nei = Comp(lhs, op, rhs_neighbors[i]);
+        if (!nei.spec_is_empty() && !nei.spec_is_all()) {
             neighbors.push_back(nei);
         }
     }
@@ -165,97 +162,52 @@ void SpecFactory::pick_neighbors(WlSpec& spec, vector<WlSpec>& neighbors){
 
 //************************************* RHS *************************************//
 
-rhs_t SpecFactory::random_rhs(){
-    unsigned int rhs_type = dists->rhs();
-    while (rhs_type == 0){
-        rhs_type = dists->rhs();
-    }
-    switch (rhs_type) {
-        case 0: return random_trf();
-        case 1: return random_time();
-        default: return dists->rhs_const();
-    }
-    return 0;
+rhs_t SpecFactory::random_rhs() {
+    return random_rhs({true, dists->get_rhs_const_dist()});
 }
 
-rhs_t SpecFactory::random_rhs(bool time_valid, 
-                              std::uniform_int_distribution<unsigned int> const_dist){
+rhs_t SpecFactory::random_rhs(RandomSpecGenerationParameters params) {
     unsigned int rhs_type = dists->rhs();
     while (rhs_type == 0){
         rhs_type = dists->rhs();
     }
 
-    if (time_valid && rhs_type == 1) return random_time();
+    if (params.time_valid && rhs_type == 1) return random_time();
 
     std::mt19937& gen = dists->get_gen();
-    return const_dist(gen);
+    return params.const_dist(gen);
 }
 
-void SpecFactory::pick_rhs_neighbors(rhs_t rhs, vector<rhs_t>& neighbors){
+void SpecFactory::pick_rhs_neighbors(rhs_t rhs, vector<rhs_t>& neighbors) {
+    pick_rhs_neighbors(rhs, neighbors, {true, dists->get_rhs_const_dist(), false});
+}
+
+void SpecFactory::pick_rhs_neighbors(rhs_t rhs,
+                                     vector<rhs_t>& neighbors,
+                                     RandomSpecGenerationParameters params) {
     switch (rhs.index()) {
         // trf
-        case 0:
-        {
-            trf_t trf = get<trf_t>(rhs);
-            vector<trf_t> trf_neighbors;
-            pick_trf_neighbors(trf, trf_neighbors);
+        case 0: {
+            m_expr_t trf = get<m_expr_t>(rhs);
+            vector<m_expr_t> trf_neighbors;
+            pick_m_expr_neighbors(trf, trf_neighbors);
             neighbors.insert(neighbors.end(), trf_neighbors.begin(), trf_neighbors.end());
             break;
         }
         // TIME
-        case 1:
-        {
-            TIME time = get<TIME>(rhs);
-            TIME time_neighbor = random_time();
-            while (time_neighbor == time){
-                time_neighbor = random_time();
-            }
-            neighbors.push_back(time_neighbor);
-            neighbors.push_back(time.get_coeff());
-            break;
-        }
-        // C
-        case 2:{
-            unsigned int c = get<unsigned int>(rhs);
-            unsigned int c_neighbor = dists->rhs_const();
-            while (c_neighbor == c){
-                c_neighbor = dists->rhs_const();
-            }
-            neighbors.push_back(c_neighbor);
-
-            neighbors.push_back(TIME(1u));
-            break;
-        }
-        default:
-            break;
-    }
-}
-
-void SpecFactory::pick_rhs_neighbors(rhs_t rhs, vector<rhs_t>& neighbors,
-                        bool time_valid, std::uniform_int_distribution<unsigned int> const_dist){
-    switch (rhs.index()) {
-        // trf
-        case 0:
-        {
-            trf_t trf = get<trf_t>(rhs);
-            vector<trf_t> trf_neighbors;
-            pick_trf_neighbors(trf, trf_neighbors);
-            neighbors.insert(neighbors.end(), trf_neighbors.begin(), trf_neighbors.end());
-            break;
-        }
-        // TIME
-        case 1:
-        {
-            TIME time = get<TIME>(rhs);
-            TIME time_neighbor = random_time();
-            while (time_neighbor == time){
+        case 1: {
+            Time time = get<Time>(rhs);
+            Time time_neighbor = random_time();
+            while (time_neighbor == time) {
                 time_neighbor = random_time();
             }
             neighbors.push_back(time_neighbor);
 
             unsigned int c = time.get_coeff();
-            if (c > const_dist.max()) c = const_dist.max();
-            if (c < const_dist.min()) c = const_dist.min();
+            if(params.bound_with_dist){
+                if (c > params.const_dist.max()) c = params.const_dist.max();
+                if (c < params.const_dist.min()) c = params.const_dist.min();
+            }
             neighbors.push_back(c);
             break;
         }
@@ -263,14 +215,14 @@ void SpecFactory::pick_rhs_neighbors(rhs_t rhs, vector<rhs_t>& neighbors,
         case 2:{
             std::mt19937& gen = dists->get_gen();
             unsigned int c = get<unsigned int>(rhs);
-            unsigned int c_neighbor = const_dist(gen);
-            while (c_neighbor == c){
-                c_neighbor = const_dist(gen);
+            unsigned int c_neighbor = params.const_dist(gen);
+            while (c_neighbor == c) {
+                c_neighbor = params.const_dist(gen);
             }
             neighbors.push_back(c_neighbor);
 
-            if (time_valid){
-                neighbors.push_back(TIME(1u));
+            if (params.time_valid) {
+                neighbors.push_back(Time(1u));
             }
 
             break;
@@ -283,33 +235,33 @@ void SpecFactory::pick_rhs_neighbors(rhs_t rhs, vector<rhs_t>& neighbors,
 //************************************* LHS *************************************//
 
 lhs_t SpecFactory::random_lhs(){
-    return random_trf();
+    return random_m_expr();
 }
 
 void SpecFactory::pick_lhs_neighbors(lhs_t lhs, vector<lhs_t>& neighbors){
-    pick_trf_neighbors(lhs, neighbors);
+    pick_m_expr_neighbors(lhs, neighbors);
 }
 
 //************************************* TRF *************************************//
 
-trf_t SpecFactory::random_trf(){
+m_expr_t SpecFactory::random_m_expr() {
     unsigned int trf_type = dists->trf();
     switch (trf_type) {
-        case 0: return random_tsum();
-        default: return random_tone();
+        case 0: return random_qsum();
+        default: return random_indiv();
     }
 }
 
-void SpecFactory::pick_trf_neighbors(trf_t trf, vector<trf_t>& neighbors){
-    switch (trf.index()) {
-        // TSUM
+void SpecFactory::pick_m_expr_neighbors(m_expr_t m_expr, vector<m_expr_t>& neighbors) {
+    switch (m_expr.index()) {
+        // QSUM
         case 0: {
-            pick_neighbors(get<TSUM>(trf), neighbors);
+            pick_neighbors(get<QSum>(m_expr), neighbors);
             break;
         }
-        // TONE
+        // INDIV
         case 1: {
-            pick_neighbors(get<TONE>(trf), neighbors);
+            pick_neighbors(get<Indiv>(m_expr), neighbors);
             break;
         }
         default:
@@ -317,9 +269,9 @@ void SpecFactory::pick_trf_neighbors(trf_t trf, vector<trf_t>& neighbors){
     }
 }
 
-//************************************* TSUM *************************************//
+//************************************* QSUM *************************************//
 
-qset_t SpecFactory::random_tsum_qset(){
+qset_t SpecFactory::random_qsum_qset(){
     qset_t res;
     unsigned int cnt = dists->input_queue_cnt();
     while (cnt < 2 || cnt > target_queues.size()){
@@ -338,19 +290,19 @@ qset_t SpecFactory::random_tsum_qset(){
     return res;
 }
 
-TSUM SpecFactory::random_tsum(){
+QSum SpecFactory::random_qsum() {
     // TODO: generalize this to aggregatable metrics
     metric_t metric = metric_t::CENQ;
-    qset_t qset = random_tsum_qset();
-    return TSUM(qset, metric);
+    qset_t qset = random_qsum_qset();
+    return QSum(qset, metric);
 }
 
 
-void SpecFactory::pick_neighbors(TSUM& tsum, vector<trf_t>& neighbors){
+void SpecFactory::pick_neighbors(QSum& qsum, vector<m_expr_t>& neighbors) {
     // TODO: change metric, when there is more than one aggregatable metric
 
     // changing qset
-    qset_t qset = tsum.qset;
+    qset_t qset = qsum.qset;
     // add one to qset
     unsigned int max_size = target_queues.size();
     if (qset.size() < max_size){
@@ -364,7 +316,7 @@ void SpecFactory::pick_neighbors(TSUM& tsum, vector<trf_t>& neighbors){
 
             qset_neighbor.insert(q);
         }
-        neighbors.push_back(TSUM(qset_neighbor, tsum.metric));
+        neighbors.push_back(QSum(qset_neighbor, qsum.metric));
     }
     
     // remove one from qset
@@ -372,50 +324,49 @@ void SpecFactory::pick_neighbors(TSUM& tsum, vector<trf_t>& neighbors){
     qset_t::iterator it = qset.begin();
     std::mt19937& gen = dists->get_gen();
     advance(it, dist(gen));
-    if (qset.size() == 2){
-        neighbors.push_back(TONE(tsum.metric, *it));
-    }
-    else {
+    if (qset.size() == 2) {
+        neighbors.push_back(Indiv(qsum.metric, *it));
+    } else {
         qset_t qset_neighbor = qset;
         qset_neighbor.erase(*it);
-        neighbors.push_back(TSUM(qset_neighbor, tsum.metric));
+        neighbors.push_back(QSum(qset_neighbor, qsum.metric));
     }
 }
 
-//************************************* TONE *************************************//
+//************************************* INDIV *************************************//
 
-TONE SpecFactory::random_tone(){
+Indiv SpecFactory::random_indiv() {
     metric_t metric = dists->wl_metric();
     unsigned int queue = dists->input_queue();
     
     while (target_queues.find(queue) == target_queues.end()){
         queue = dists->input_queue();
     }
-    return TONE(metric, queue);
+    return Indiv(metric, queue);
 }
 
-void SpecFactory::pick_neighbors(TONE& tone, vector<trf_t>& neighbors){
+void SpecFactory::pick_neighbors(Indiv& indiv, vector<m_expr_t>& neighbors) {
     // TODO: change metric?
     
     // changing queue
     unsigned int queue_neighbor = dists->input_queue();
-    while (queue_neighbor == tone.get_queue() ||
+    while (queue_neighbor == indiv.get_queue() ||
            target_queues.find(queue_neighbor) == target_queues.end()){
         queue_neighbor = dists->input_queue();
     }
-    neighbors.push_back(TONE(tone.get_metric(), queue_neighbor));
+    neighbors.push_back(Indiv(indiv.get_metric(), queue_neighbor));
 }
 
 //************************************* TIME *************************************//
 
-TIME SpecFactory::random_time(){
+Time SpecFactory::random_time() {
     unsigned int random_coeff = dists->rhs_time_coeff();
-    return TIME(random_coeff);
+    return Time(random_coeff);
 }
 
 //************************************* COMP *************************************//
-op_t SpecFactory::random_comp(){
-    return dists->comp();
+op_t SpecFactory::random_op() {
+    return dists->op();
 }
 
 

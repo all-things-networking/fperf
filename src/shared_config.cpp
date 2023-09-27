@@ -80,6 +80,10 @@ std::uniform_int_distribution<unsigned int>& Dists::get_pkt_meta2_val_dist(){
     return pkt_meta2_val_dist;
 }
 
+std::uniform_int_distribution<unsigned int>& Dists::get_rhs_const_dist(){
+    return rhs_const_dist;
+}
+
 /******************************* SharedConfig *****************************/
 
 SharedConfig::SharedConfig(unsigned int total_time,

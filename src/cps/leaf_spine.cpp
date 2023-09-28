@@ -399,7 +399,7 @@ std::string LeafSpine::cp_model_str(model& m,
     for (unsigned int q = 0; q < out_queues.size(); q++){
         ss << q << ": ";
         CEnq* ce = cenq[in_queues.size() + q];
-        expr val = m.eval(ce->val(t));
+        expr val = m.eval(ce->val(t).second);
         if (val.is_numeral()) ss << val.get_numeral_int();
         ss << endl;
     }    
@@ -415,17 +415,17 @@ std::string LeafSpine::cp_model_str(model& m,
     Metric* m3 = l2_queue->get_metric(metric_t::QSIZE);
 
     ss << m1->get_id() << ": ";
-    expr val1 = m.eval(m1->val(t));
+    expr val1 = m.eval(m1->val(t).second);
     if (val1.is_numeral()) ss << val1.get_numeral_int();
     ss << endl;
 
     ss << m2->get_id() << ": ";
-    expr val2 = m.eval(m2->val(t));
+    expr val2 = m.eval(m2->val(t).second);
     if (val2.is_numeral()) ss << val2.get_numeral_int();
     ss << endl;
  
     ss << m3->get_id() << ": ";
-    expr val3 = m.eval(m3->val(t));
+    expr val3 = m.eval(m3->val(t).second);
     if (val3.is_numeral()) ss << val3.get_numeral_int();
     ss << endl;
 

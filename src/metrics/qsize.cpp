@@ -17,7 +17,7 @@ Metric(metric_t::QSIZE, queue, total_time, net_ctx)
 }
 
 // TODO: FIX for leaf_spine_lat
-void CEnq::eval(const IndexedExample* eg,
+void QSize::eval(const IndexedExample* eg,
                 unsigned int time,
                 unsigned int qind,
                 metric_val& res){
@@ -32,11 +32,6 @@ void CEnq::eval(const IndexedExample* eg,
     // of the queue at any point in time
     res.value = enq_sum - deq_sum;
 }
-
-void QSize::add_vars(NetContext& net_ctx){
-  (void) net_ctx;
-}
-
 
 void QSize::populate_val_exprs(NetContext& net_ctx){
      

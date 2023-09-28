@@ -116,13 +116,13 @@ void rr(std::string good_examples_file,
     
     for (unsigned int i = 1; i <= recur; i++){
         for (unsigned int q = 0; q < in_queue_cnt; q++){
-            wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, q), op_t::GE, i * rate),
+            wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::GE, i * rate),
                                      time_range_t(i * period - 1, i * period - 1),
                                      total_time));
         }
     }
     
-    wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, queue1), op_t::GT, TONE(metric_t::CENQ, queue2)),
+    wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, queue1), op_t::GT, Indiv(metric_t::CENQ, queue2)),
                              time_range_t(total_time - 1, total_time - 1),
                              total_time));
     
@@ -203,7 +203,7 @@ void fq_codel(std::string good_examples_file,
     // Base Workload
     Workload wl(in_queue_cnt * 5, in_queue_cnt, total_time);
     for (unsigned int q = 0; q < last_queue; q++){
-        wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, q), op_t::GE, TIME(1)),
+        wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::GE, Time(1)),
                                  total_time,
                                  total_time));
     }
@@ -292,16 +292,16 @@ void loom(std::string good_examples_file,
     // Base Workload
     
     Workload wl(20, cp->in_queue_cnt(), total_time);
-    wl.add_wl_spec(TimedSpec(WlSpec(TSUM(tenant1_qset, metric_t::CENQ), op_t::GE, TIME(1)),
+    wl.add_spec(TimedSpec(Comp(QSum(tenant1_qset, metric_t::CENQ), op_t::GE, Time(1)),
                              total_time,
                              total_time));
-    wl.add_wl_spec(TimedSpec(WlSpec(TSUM(tenant2_qset, metric_t::CENQ), op_t::GE, TIME(1)),
+    wl.add_spec(TimedSpec(Comp(QSum(tenant2_qset, metric_t::CENQ), op_t::GE, Time(1)),
                              total_time,
                              total_time));
 
     for (unsigned int q = 0; q < cp->in_queue_cnt(); q++){
         if (q % 3 == 2){
-            wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, q), op_t::LE, 0u),
+            wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::LE, 0u),
                                      total_time,
                                      total_time));
         }

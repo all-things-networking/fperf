@@ -186,7 +186,7 @@ std::string LoomMQPrio::cp_model_str(model& m,
     stringstream ss;
     for (unsigned int q = 0; q < out_queues.size(); q++){
         Queue* queue = out_queues[q];
-        ss << queue->get_id() << ": " << m.eval(queue->get_metric(metric_t::CENQ)->val(t)).get_numeral_int() << std::endl;
+        ss << queue->get_id() << ": " << m.eval(queue->get_metric(metric_t::CENQ)->val(t).second).get_numeral_int() << std::endl;
     }
     return ss.str();
 }

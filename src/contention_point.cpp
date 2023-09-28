@@ -2272,8 +2272,9 @@ void ContentionPoint::eval_rhs(rhs_t rhs,
     else if (holds_alternative<unsigned int>(rhs)){
         res.valid = false;
         res.value = get<unsigned int>(rhs);
+    } else {
+        std::cout << "ContentionPoint::eval_rhs: invalid variant." << std::endl;
     }
-    std::cout << "ContentionPoint::eval_rhs: invalid variant." << std::endl;
 }
 
 void ContentionPoint::eval_lhs(lhs_t lhs,

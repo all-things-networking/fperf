@@ -66,8 +66,8 @@ std::ostream& operator<<(std::ostream& os, const op_t& comp){
     return os;
 }
 
-bool eval_comp(unsigned int lhs_val, op_t comp, unsigned int rhs_val){
-    switch (comp) {
+bool eval_op(unsigned int lhs_val, op_t op, unsigned int rhs_val){
+    switch (op) {
         case (op_t::GT): return lhs_val > rhs_val;
         case (op_t::GE): return lhs_val >= rhs_val;
         case (op_t::LT): return lhs_val < rhs_val;
@@ -78,8 +78,8 @@ bool eval_comp(unsigned int lhs_val, op_t comp, unsigned int rhs_val){
     return false;
 }
 
-op_t neg_comp(op_t comp){
-    switch (comp) {
+op_t neg_op(op_t op){
+    switch (op) {
         case (op_t::GT): return op_t::LT;
         case (op_t::GE): return op_t::LE;
         case (op_t::LT): return op_t::GT;
@@ -87,7 +87,7 @@ op_t neg_comp(op_t comp){
         case (op_t::EQ): return op_t::EQ;
     }
     std::cout << "neg_comp: should not reach here" << std::endl;
-    return comp;
+    return op;
 }
 
 //************************************* TIME RANGE *************************************//

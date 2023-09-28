@@ -102,8 +102,8 @@ std::string RRScheduler::cp_model_str(model& m,
     ss << "qid: cenq, cdeq, deq_cnt" << std::endl;
     for (unsigned int q = 0; q < in_queues.size(); q++){
         Queue* queue = in_queues[q];
-        ss << queue->get_id() << ": " << m.eval(cenq[q]->val(t)).get_numeral_int() << ", " <<
-                                         m.eval(cdeq[q]->val(t)).get_numeral_int() << ", " <<
+        ss << queue->get_id() << ": " << m.eval(cenq[q]->val(t).second).get_numeral_int() << ", " <<
+                                         m.eval(cdeq[q]->val(t).second).get_numeral_int() << ", " <<
                                          //m.eval(qsize[q]->val(t)).get_numeral_int() << ", " <<
                                          m.eval(queue->deq_cnt(t)).get_numeral_int() << std::endl;
     }

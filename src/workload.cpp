@@ -765,18 +765,22 @@ std::ostream& operator<<(std::ostream& os, const wl_spec_t& wl_spec){
         // Comp
         case 0: {
             os << get<Comp>(wl_spec);
+            break;
         }
         // Same
         case 1: {
             os << get<Same>(wl_spec);
+            break;
         }
         // Incr
         case 2: {
             os << get<Incr>(wl_spec);
+            break;
         }
         // Decr
         case 3: {
             os << get<Decr>(wl_spec);
+            break;
         }
         default:
             break;

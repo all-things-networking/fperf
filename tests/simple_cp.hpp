@@ -1,5 +1,6 @@
 #include "cdeq.hpp"
 #include "cenq.hpp"
+#include "aipg.hpp"
 #include "contention_point.hpp"
 
 class SimpleCP : public ContentionPoint {
@@ -11,6 +12,7 @@ public:
 private:
   std::vector<CEnq *> cenq;
   std::vector<CDeq *> cdeq;
+  std::vector<AIPG*> aipg;
 
   void add_nodes();
   void add_edges();

@@ -246,6 +246,8 @@ void SpecFactory::pick_lhs_neighbors(lhs_t lhs, vector<lhs_t>& neighbors){
 
 m_expr_t SpecFactory::random_m_expr() {
     unsigned int trf_type = dists->trf();
+    if(target_queues.size() < 2)
+        trf_type = 1;
     switch (trf_type) {
         case 0: return random_qsum();
         default: return random_indiv();
@@ -350,8 +352,9 @@ void SpecFactory::pick_neighbors(Indiv& indiv, vector<m_expr_t>& neighbors) {
     
     // changing queue
     unsigned int queue_neighbor = dists->input_queue();
-    while (queue_neighbor == indiv.get_queue() ||
-           target_queues.find(queue_neighbor) == target_queues.end()){
+    while (queue_neighbor == indiv.get_queue() && target_queues.size() > 1 ||
+           target_queues.find(queue_neighbor) == target_queues.end()
+           ){
         queue_neighbor = dists->input_queue();
     }
     neighbors.push_back(Indiv(indiv.get_metric(), queue_neighbor));

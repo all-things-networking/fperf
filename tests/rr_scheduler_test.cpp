@@ -18,13 +18,13 @@ bool test_unsat_query() {
   Workload wl(100, in_queue_cnt, total_time);
 
   for (unsigned int q = 0; q < in_queue_cnt; q++) {
-    wl.add_wl_spec(
-        TimedSpec(WlSpec(TONE(metric_t::CENQ, q), op_t::GE, TIME(1)),
+    wl.add_spec(
+        TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::GE, Time(1)),
                   time_range_t(0, total_time - 1), total_time));
   }
 
-  wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, queue1), op_t::GT,
-                                  TONE(metric_t::CENQ, queue2)),
+  wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, queue1), op_t::GT,
+                                  Indiv(metric_t::CENQ, queue2)),
                            time_range_t(total_time - 1, total_time - 1),
                            total_time));
 
@@ -66,14 +66,14 @@ bool test_sat_query() {
 
   for (unsigned int i = 1; i <= recur; i++) {
     for (unsigned int q = 0; q < in_queue_cnt; q++) {
-      wl.add_wl_spec(
-          TimedSpec(WlSpec(TONE(metric_t::CENQ, q), op_t::GE, i * rate),
+      wl.add_spec(
+          TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::GE, i * rate),
                     time_range_t(i * period - 1, i * period - 1), total_time));
     }
   }
 
-  wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, queue1), op_t::GT,
-                                  TONE(metric_t::CENQ, queue2)),
+  wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, queue1), op_t::GT,
+                                  Indiv(metric_t::CENQ, queue2)),
                            time_range_t(total_time - 1, total_time - 1),
                            total_time));
 

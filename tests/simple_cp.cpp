@@ -45,6 +45,14 @@ void SimpleCP::add_metrics() {
     metrics[metric_t::CDEQ][queue->get_id()] = cd;
     queue->add_metric(metric_t::CDEQ, cd);
   }
+
+  for (unsigned int q = 0; q < in_queues.size(); q++){
+      Queue* queue = in_queues[q];
+      AIPG* g = new AIPG(queue, total_time, net_ctx);
+      aipg.push_back(g);
+      metrics[metric_t::AIPG][queue->get_id()] = g;
+      queue->add_metric(metric_t::AIPG, g);
+  }
 }
 
 std::string SimpleCP::cp_model_str(model &m, NetContext &net_ctx,

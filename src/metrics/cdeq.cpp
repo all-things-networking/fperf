@@ -33,7 +33,7 @@ void CDeq::populate_val_exprs(NetContext& net_ctx){
     value_[0] = queue->deq_cnt(0);
     
     for (unsigned int t = 1; t < total_time; t++){
-        value_[t] == value_[t - 1] + queue->deq_cnt(t);
+        value_[t] = value_[t - 1] + queue->deq_cnt(t);
     }
 
     // valid

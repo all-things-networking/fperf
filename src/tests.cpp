@@ -391,28 +391,29 @@ void leaf_spine_bw(std::string good_examples_file,
     // Base Workload
     Workload wl(in_queue_cnt, in_queue_cnt, total_time);
     
-    wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, src_server), op_t::GE, TIME(1)),
+    wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, src_server), op_t::GE, Time(1)),
                              total_time - 1,
                              total_time));
 
-    wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::META1, src_server), op_t::EQ, dst_server),
+    wl.add_spec(TimedSpec(Comp(Indiv(metric_t::DST, src_server), op_t::EQ, dst_server),
                              total_time - 1,
                              total_time));
 
-    cp->set_base_workload(wl); 
     for (unsigned int q = 0; q < in_queue_cnt; q++){
-        Same s(metric_t::META1, q); 
-        cp->add_same_to_base(s, time_range_t(0, total_time - 1)); 
+        Same s(metric_t::DST, q);
+        wl.add_spec(TimedSpec(s,time_range_t(0, total_time - 1), total_time));
         cout << "[1, " << total_time << "] " << s << endl;
     }
+
+    cp->set_base_workload(wl); 
 
     qset_t unique_qset;
     for (unsigned int q = 0; q < in_queue_cnt; q++){
         unique_qset.insert(q);
     }
-    Unique u(unique_qset, metric_t::META1);
-    cp->add_unique_to_base(u, time_range_t(0, total_time - 1));
-    cout << "[1, " << total_time << "] " << u << endl;
+//    Unique u(unique_qset, metric_t::META1);
+//    cp->add_unique_to_base(u, time_range_t(0, total_time - 1));
+//    cout << "[1, " << total_time << "] " << u << endl;
  
     // Query
     cid_t query_qid = cp->get_out_queue(dst_server)->get_id();

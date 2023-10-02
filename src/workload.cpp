@@ -743,6 +743,18 @@ bool operator<(const Comp& comp1, const Comp& comp2){
 }
 
 //************************************* WlSpec *************************************//
+bool wl_spec_is_all(wl_spec_t spec){
+    if(holds_alternative<Comp>(spec))
+        return get<Comp>(spec).spec_is_all();
+    return false;
+}
+
+bool wl_spec_is_empty(wl_spec_t spec){
+    if(holds_alternative<Comp>(spec))
+        return get<Comp>(spec).spec_is_empty();
+    return false;
+}
+
 unsigned int wl_spec_ast_size(const wl_spec_t wl_spec){
     if (holds_alternative<Comp>(wl_spec)){
         return get<Comp>(wl_spec).ast_size();

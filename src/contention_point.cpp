@@ -2099,11 +2099,12 @@ expr ContentionPoint::get_expr(Decr decr, time_range_t time_range){
 }
 
 expr ContentionPoint::get_expr(Comp comp, time_range_t time_range){
+    expr_vector res(net_ctx.z3_ctx());
     for (unsigned int t = time_range.first;
          t <= time_range.second; t++){
-        return get_expr(comp, t);
+        res.push_back(get_expr(comp, t));
     }
-    return net_ctx.bool_val(true);
+    return mk_and(res);
 }
 
 expr ContentionPoint::get_expr(Comp comp, unsigned int t){

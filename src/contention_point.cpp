@@ -2271,7 +2271,7 @@ void ContentionPoint::eval_rhs(rhs_t rhs,
         eval_Time(get<Time>(rhs), eg, time, res);
     }
     else if (holds_alternative<unsigned int>(rhs)){
-        res.valid = false;
+        res.valid = true;
         res.value = get<unsigned int>(rhs);
     } else {
         std::cout << "ContentionPoint::eval_rhs: invalid variant." << std::endl;

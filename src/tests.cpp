@@ -166,7 +166,8 @@ void rr(std::string good_examples_file,
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = 2;
     dists_params.pkt_meta2_val_max = 2;
-    
+    dists_params.random_seed = 5422;
+
     Dists* dists = new Dists(dists_params); 
     SharedConfig* config = new SharedConfig(total_time,
                                             rr->in_queue_cnt(),

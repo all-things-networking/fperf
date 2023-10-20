@@ -2248,7 +2248,7 @@ bool ContentionPoint::eval_spec(Comp comp,
         eval_lhs(comp.get_lhs(), eg, t, lhs_m_val);
         if (!lhs_m_val.valid) return false;
         
-        eval_rhs(comp.get_lhs(), eg, t, rhs_m_val);
+        eval_rhs(comp.get_rhs(), eg, t, rhs_m_val);
         if (!rhs_m_val.valid) return false;
     
         unsigned int lhs_val = lhs_m_val.value;

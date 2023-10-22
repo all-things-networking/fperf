@@ -65,7 +65,6 @@ void prio(std::string good_examples_file,
 
     cout << "base example generation: " << (get_diff_millisec(start_time, noww())/1000.0) << " s" << endl;
 
-    
     // Set shared config
     DistsParams dists_params;
     dists_params.in_queue_cnt = prio->in_queue_cnt();
@@ -245,6 +244,7 @@ void fq_codel(std::string good_examples_file,
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = 2;
     dists_params.pkt_meta2_val_max = 2;
+    dists_params.random_seed = 10000;
     
     Dists* dists = new Dists(dists_params); 
     SharedConfig* config = new SharedConfig(total_time,
@@ -504,7 +504,7 @@ void run(ContentionPoint* cp,
     cp->generate_bad_examples(bad_example_cnt, bad_examples);
 
     cout << "bad example generation: " << (get_diff_millisec(start_time, noww())/ 1000.0) << " s" << endl;
-  
+
     // write the bad examples to a file 
     deque<Example*> bad_unindexed_examples;
     if (!bad_examples_file.empty()){ 
@@ -516,7 +516,7 @@ void run(ContentionPoint* cp,
 
       write_examples_to_file(bad_unindexed_examples, bad_examples_file);
     }
-    
+
     start_time = noww();
     // search
     Search search(cp, 

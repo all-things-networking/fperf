@@ -2134,8 +2134,11 @@ m_val_expr_t ContentionPoint::get_expr(Time time, unsigned int t){
 
 m_val_expr_t ContentionPoint::get_expr(Indiv indiv, unsigned int t){
     Queue* queue = in_queues[indiv.get_queue()];
-    metric_t metric = indiv.get_metric();
-    return queue->get_metric(metric)->val(t);
+    Metric* metric = queue->get_metric(indiv.get_metric());
+    if(metric != nullptr)
+        return metric->val(t);
+    else
+        return {net_ctx.bool_val(false), net_ctx.int_val(0)};
 }
 
 m_val_expr_t ContentionPoint::get_expr(QSum qsum, unsigned int t){
@@ -2318,8 +2321,11 @@ void ContentionPoint::eval_m_expr(Indiv indiv,
                                   unsigned int time,
                                   metric_val& res) const{
     unsigned int queue = indiv.get_queue();
-    metric_t metric = indiv.get_metric();
-    in_queues[queue]->get_metric(metric)->eval(eg, time, queue, res);
+    Metric* metric = in_queues[queue]->get_metric(indiv.get_metric());
+    if(metric != nullptr)
+        metric->eval(eg, time, queue, res);
+    else
+        res.valid = false;
 }
 
 void ContentionPoint::eval_Time(Time time,

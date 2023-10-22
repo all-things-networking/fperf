@@ -73,7 +73,6 @@ template <typename... Args> std::string format_string(const std::string& format,
     return s;
 }
 
-#define DEBUG
 #ifdef DEBUG
 #define DEBUG_MSG(str) do { std::cout << str; } while( false )
 #else

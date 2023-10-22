@@ -244,7 +244,7 @@ void fq_codel(std::string good_examples_file,
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = 2;
     dists_params.pkt_meta2_val_max = 2;
-    dists_params.random_seed = 10000;
+    dists_params.random_seed = 4854;
     
     Dists* dists = new Dists(dists_params); 
     SharedConfig* config = new SharedConfig(total_time,
@@ -313,6 +313,7 @@ void loom(std::string good_examples_file,
     
     // Query
     Query query(query_quant_t::FORALL,
+                //                                          Why using query_time?
                 time_range_t(total_time - 1 - query_time, total_time - 1),
                 qdiff_t(cp->get_out_queue(1)->get_id(),
                         cp->get_out_queue(0)->get_id()),
@@ -344,6 +345,7 @@ void loom(std::string good_examples_file,
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = 3;
     dists_params.pkt_meta2_val_max = 2;
+    dists_params.random_seed = 13388;
     
     Dists* dists = new Dists(dists_params); 
     SharedConfig* config = new SharedConfig(total_time,
@@ -450,6 +452,7 @@ void leaf_spine_bw(std::string good_examples_file,
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = server_cnt - 1;
     dists_params.pkt_meta2_val_max = spine_cnt - 1;
+    dists_params.random_seed = 154;
     
     Dists* dists = new Dists(dists_params); 
     SharedConfig* config = new SharedConfig(total_time,

@@ -11,7 +11,7 @@
 #include "switch_xbar_qm.hpp"
 #include "spine_forwarding_qm.hpp"
 #include "leaf_forwarding_qm.hpp"
-#include "math.h"
+#include "dst.hpp"
 
 #include <sstream>
 
@@ -324,7 +324,16 @@ void LeafSpine::add_metrics(){
         metrics[metric_t::AIPG][queue->get_id()] = g;
         queue->add_metric(metric_t::AIPG, g);
     }
-    
+
+    // DST
+    for (unsigned int q = 0; q < in_queues.size(); q++){
+        Queue* queue = in_queues[q];
+        Dst* d = new Dst(queue, total_time, net_ctx);
+        dst.push_back(d);
+        metrics[metric_t::DST][queue->get_id()] = d;
+        queue->add_metric(metric_t::DST, d);
+    }
+
     //// Outputs
     // CEnq
     for (unsigned int q = 0; q < out_queues.size(); q++){

@@ -1174,6 +1174,7 @@ void Workload::normalize(){
     
     regenerate_spec_set();
 
+    // TODO: move this to as a check in Search::pick_neighbors
     if (all_specs.size() > max_size) {
         empty = true;
         return;

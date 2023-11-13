@@ -334,6 +334,15 @@ void LeafSpine::add_metrics(){
         queue->add_metric(metric_t::DST, d);
     }
 
+    // ECMP
+    for (unsigned int q = 0; q < in_queues.size(); q++){
+        Queue* queue = in_queues[q];
+        Ecmp* e = new Ecmp(queue, total_time, net_ctx);
+        ecmp.push_back(e);
+        metrics[metric_t::ECMP][queue->get_id()] = e;
+        queue->add_metric(metric_t::ECMP, e);
+    }
+
     //// Outputs
     // CEnq
     for (unsigned int q = 0; q < out_queues.size(); q++){

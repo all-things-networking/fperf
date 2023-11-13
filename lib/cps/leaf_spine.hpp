@@ -13,6 +13,7 @@
 #include "cenq.hpp"
 #include "aipg.hpp"
 #include "dst.hpp"
+#include "ecmp.hpp"
 #include "qsize.hpp"
 
 class LeafSpine: public ContentionPoint{
@@ -35,6 +36,7 @@ private:
     std::vector<CEnq*> cenq;
     std::vector<AIPG*> aipg;
     std::vector<Dst*> dst;
+    std::vector<Ecmp*> ecmp;
     std::vector<QSize*> qsize;
  
     vector<unsigned int> leaf_voq_input_map;

@@ -18,8 +18,40 @@ ContentionPoint::ContentionPoint(unsigned int total_time):
 total_time(total_time),
 base_wl(Workload(0, 0, total_time)),
 base_wl_expr(expr(net_ctx.z3_ctx())),
-query_expr(expr(net_ctx.z3_ctx()))
-{}
+query_expr(expr(net_ctx.z3_ctx())) {
+}
+
+void ContentionPoint::add_unique_to_base(time_range_t time_range, qset_t qset, metric_t metric) {
+    vector<unsigned int> queues(qset.begin(), qset.end());
+    unsigned int start = time_range.first;
+    unsigned int end = time_range.second;
+
+    expr_vector unique_metric(net_ctx.z3_ctx());
+
+    for (unsigned int t = start; t <= end; t++) {
+        for (unsigned int i = 0; i < queues.size(); i++) {
+            unsigned int q = queues[i];
+            Queue* queue = in_queues[q];
+            Metric* metric1 = queue->get_metric(metric);
+            m_val_expr_t metric1_val_expr = metric1->val(t);
+            expr m1_valid = metric1_val_expr.first;
+            expr m1_value = metric1_val_expr.second;
+
+            for (unsigned int j = i + 1; j < queues.size(); j++) {
+                unsigned int q2 = queues[j];
+                if (q2 == q) continue;
+                Queue* queue2 = in_queues[q2];
+                Metric* metric2 = queue2->get_metric(metric);
+                m_val_expr_t metric2_val_expr = metric2->val(t);
+                expr m2_valid = metric2_val_expr.first;
+                expr m2_value = metric2_val_expr.second;
+                unique_metric.push_back(implies(m1_valid && m2_valid, m1_value != m2_value));
+            }
+        }
+    }
+    expr constr = mk_and(unique_metric);
+    this->base_wl_expr = this->base_wl_expr && constr;
+}
 
 // NOTE: the constructor of inherited classes
 //       (i.e., CPs) should call init.
@@ -2043,15 +2075,17 @@ expr ContentionPoint::get_expr(Same same, time_range_t time_range){
  
     expr_vector res(net_ctx.z3_ctx());
     res.push_back(valid_expr);
-    
-    for (unsigned int t = time_range.first + 1;
-         t <= time_range.second; t++){
+    expr_vector no_enq(net_ctx.z3_ctx());
+
+    for (unsigned int t = time_range.first + 1; t <= time_range.second; t++) {
         m_val_expr_t val_expr = metric->val(t);
         res.push_back(val_expr.first);
-        res.push_back(val_expr.second == init_value_expr);                   
+        res.push_back(val_expr.second == init_value_expr);
+        no_enq.push_back(queue->enq_cnt(t) == 0);
     }
 
-    return mk_and(res);
+    expr on_enq = mk_and(res);
+    return ite(mk_and(no_enq), net_ctx.bool_val(true), on_enq);
 }
 
 expr ContentionPoint::get_expr(Incr incr, time_range_t time_range){

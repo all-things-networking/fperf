@@ -366,7 +366,7 @@ void loom(std::string good_examples_file,
 
 void leaf_spine_bw(std::string good_examples_file,
                    std::string bad_examples_file){
-   
+    int rand_seed = stoi(good_examples_file) ;
     cout << "leaf_spine_bw" << endl; 
     time_typ start_time = noww();
 
@@ -450,7 +450,7 @@ void leaf_spine_bw(std::string good_examples_file,
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = server_cnt - 1;
     dists_params.pkt_meta2_val_max = spine_cnt - 1;
-    dists_params.random_seed = 15379;
+    dists_params.random_seed = 3586;
 
     Dists* dists = new Dists(dists_params);
     SharedConfig* config = new SharedConfig(total_time, cp->in_queue_cnt(), target_queues, dists);

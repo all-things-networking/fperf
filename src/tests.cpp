@@ -65,13 +65,13 @@ void prio(std::string good_examples_file,
 
     cout << "base example generation: " << (get_diff_millisec(start_time, noww())/1000.0) << " s" << endl;
 
-    
     // Set shared config
     DistsParams dists_params;
     dists_params.in_queue_cnt = prio->in_queue_cnt();
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = 2;
     dists_params.pkt_meta2_val_max = 2;
+    dists_params.random_seed = 2000;
     
     Dists* dists = new Dists(dists_params); 
     SharedConfig* config = new SharedConfig(total_time,
@@ -165,7 +165,8 @@ void rr(std::string good_examples_file,
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = 2;
     dists_params.pkt_meta2_val_max = 2;
-    
+    dists_params.random_seed = 5422;
+
     Dists* dists = new Dists(dists_params); 
     SharedConfig* config = new SharedConfig(total_time,
                                             rr->in_queue_cnt(),
@@ -243,6 +244,7 @@ void fq_codel(std::string good_examples_file,
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = 2;
     dists_params.pkt_meta2_val_max = 2;
+    dists_params.random_seed = 4854;
     
     Dists* dists = new Dists(dists_params); 
     SharedConfig* config = new SharedConfig(total_time,
@@ -311,6 +313,7 @@ void loom(std::string good_examples_file,
     
     // Query
     Query query(query_quant_t::FORALL,
+                //                                          Why using query_time?
                 time_range_t(total_time - 1 - query_time, total_time - 1),
                 qdiff_t(cp->get_out_queue(1)->get_id(),
                         cp->get_out_queue(0)->get_id()),
@@ -342,6 +345,7 @@ void loom(std::string good_examples_file,
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = 3;
     dists_params.pkt_meta2_val_max = 2;
+    dists_params.random_seed = 13388;
     
     Dists* dists = new Dists(dists_params); 
     SharedConfig* config = new SharedConfig(total_time,
@@ -362,7 +366,7 @@ void loom(std::string good_examples_file,
 
 void leaf_spine_bw(std::string good_examples_file,
                    std::string bad_examples_file){
-   
+    int rand_seed = stoi(good_examples_file) ;
     cout << "leaf_spine_bw" << endl; 
     time_typ start_time = noww();
 
@@ -389,8 +393,8 @@ void leaf_spine_bw(std::string good_examples_file,
     unsigned int in_queue_cnt = cp->in_queue_cnt();
    
     // Base Workload
-    Workload wl(in_queue_cnt, in_queue_cnt, total_time);
-    
+    Workload wl(in_queue_cnt + 2, in_queue_cnt, total_time);
+
     wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, src_server), op_t::GE, Time(1)),
                              total_time - 1,
                              total_time));
@@ -411,10 +415,8 @@ void leaf_spine_bw(std::string good_examples_file,
     for (unsigned int q = 0; q < in_queue_cnt; q++){
         unique_qset.insert(q);
     }
-//    Unique u(unique_qset, metric_t::META1);
-//    cp->add_unique_to_base(u, time_range_t(0, total_time - 1));
-//    cout << "[1, " << total_time << "] " << u << endl;
- 
+    cp->add_unique_to_base(time_range_t(0, total_time - 1), unique_qset, metric_t::DST);
+
     // Query
     cid_t query_qid = cp->get_out_queue(dst_server)->get_id();
     Query query(query_quant_t::FORALL,
@@ -448,12 +450,10 @@ void leaf_spine_bw(std::string good_examples_file,
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = server_cnt - 1;
     dists_params.pkt_meta2_val_max = spine_cnt - 1;
-    
-    Dists* dists = new Dists(dists_params); 
-    SharedConfig* config = new SharedConfig(total_time,
-                                            cp->in_queue_cnt(),
-                                            target_queues,
-                                            dists);
+    dists_params.random_seed = 3586;
+
+    Dists* dists = new Dists(dists_params);
+    SharedConfig* config = new SharedConfig(total_time, cp->in_queue_cnt(), target_queues, dists);
     bool config_set = cp->set_shared_config(config);
     if (!config_set) return;
 
@@ -502,7 +502,7 @@ void run(ContentionPoint* cp,
     cp->generate_bad_examples(bad_example_cnt, bad_examples);
 
     cout << "bad example generation: " << (get_diff_millisec(start_time, noww())/ 1000.0) << " s" << endl;
-  
+
     // write the bad examples to a file 
     deque<Example*> bad_unindexed_examples;
     if (!bad_examples_file.empty()){ 
@@ -514,7 +514,7 @@ void run(ContentionPoint* cp,
 
       write_examples_to_file(bad_unindexed_examples, bad_examples_file);
     }
-    
+
     start_time = noww();
     // search
     Search search(cp, 

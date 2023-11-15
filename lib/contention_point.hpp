@@ -26,8 +26,7 @@ public:
     ContentionPoint(unsigned int total_time);
 
     void set_base_workload(Workload wl);
-    void add_same_to_base(Same same, time_range_t time_range);
-    //void add_unique_to_base(Unique unique, time_range_t time_range);
+    void add_unique_to_base(time_range_t time_range, qset_t qset, metric_t metric);
     Workload get_base_workload();
     expr get_base_wl_expr();
     

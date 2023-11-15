@@ -18,8 +18,40 @@ ContentionPoint::ContentionPoint(unsigned int total_time):
 total_time(total_time),
 base_wl(Workload(0, 0, total_time)),
 base_wl_expr(expr(net_ctx.z3_ctx())),
-query_expr(expr(net_ctx.z3_ctx()))
-{}
+query_expr(expr(net_ctx.z3_ctx())) {
+}
+
+void ContentionPoint::add_unique_to_base(time_range_t time_range, qset_t qset, metric_t metric) {
+    vector<unsigned int> queues(qset.begin(), qset.end());
+    unsigned int start = time_range.first;
+    unsigned int end = time_range.second;
+
+    expr_vector unique_metric(net_ctx.z3_ctx());
+
+    for (unsigned int t = start; t <= end; t++) {
+        for (unsigned int i = 0; i < queues.size(); i++) {
+            unsigned int q = queues[i];
+            Queue* queue = in_queues[q];
+            Metric* metric1 = queue->get_metric(metric);
+            m_val_expr_t metric1_val_expr = metric1->val(t);
+            expr m1_valid = metric1_val_expr.first;
+            expr m1_value = metric1_val_expr.second;
+
+            for (unsigned int j = i + 1; j < queues.size(); j++) {
+                unsigned int q2 = queues[j];
+                if (q2 == q) continue;
+                Queue* queue2 = in_queues[q2];
+                Metric* metric2 = queue2->get_metric(metric);
+                m_val_expr_t metric2_val_expr = metric2->val(t);
+                expr m2_valid = metric2_val_expr.first;
+                expr m2_value = metric2_val_expr.second;
+                unique_metric.push_back(implies(m1_valid && m2_valid, m1_value != m2_value));
+            }
+        }
+    }
+    expr constr = mk_and(unique_metric);
+    this->base_wl_expr = this->base_wl_expr && constr;
+}
 
 // NOTE: the constructor of inherited classes
 //       (i.e., CPs) should call init.
@@ -2043,15 +2075,17 @@ expr ContentionPoint::get_expr(Same same, time_range_t time_range){
  
     expr_vector res(net_ctx.z3_ctx());
     res.push_back(valid_expr);
-    
-    for (unsigned int t = time_range.first + 1;
-         t <= time_range.second; t++){
+    expr_vector no_enq(net_ctx.z3_ctx());
+
+    for (unsigned int t = time_range.first + 1; t <= time_range.second; t++) {
         m_val_expr_t val_expr = metric->val(t);
         res.push_back(val_expr.first);
-        res.push_back(val_expr.second == init_value_expr);                   
+        res.push_back(val_expr.second == init_value_expr);
+        no_enq.push_back(queue->enq_cnt(t) == 0);
     }
 
-    return mk_and(res);
+    expr on_enq = mk_and(res);
+    return ite(mk_and(no_enq), net_ctx.bool_val(true), on_enq);
 }
 
 expr ContentionPoint::get_expr(Incr incr, time_range_t time_range){
@@ -2099,11 +2133,12 @@ expr ContentionPoint::get_expr(Decr decr, time_range_t time_range){
 }
 
 expr ContentionPoint::get_expr(Comp comp, time_range_t time_range){
+    expr_vector res(net_ctx.z3_ctx());
     for (unsigned int t = time_range.first;
          t <= time_range.second; t++){
-        return get_expr(comp, t);
+        res.push_back(get_expr(comp, t));
     }
-    return net_ctx.bool_val(true);
+    return mk_and(res);
 }
 
 expr ContentionPoint::get_expr(Comp comp, unsigned int t){
@@ -2133,8 +2168,13 @@ m_val_expr_t ContentionPoint::get_expr(Time time, unsigned int t){
 
 m_val_expr_t ContentionPoint::get_expr(Indiv indiv, unsigned int t){
     Queue* queue = in_queues[indiv.get_queue()];
-    metric_t metric = indiv.get_metric();
-    return queue->get_metric(metric)->val(t);
+    Metric* metric = queue->get_metric(indiv.get_metric());
+    // TODO: This a temporary fix, after parametrizing search based on metrics we need to throw
+    // exception and stop the search if metric not exists
+    if(metric != nullptr)
+        return metric->val(t);
+    else
+        return {net_ctx.bool_val(false), net_ctx.int_val(0)};
 }
 
 m_val_expr_t ContentionPoint::get_expr(QSum qsum, unsigned int t){
@@ -2247,7 +2287,7 @@ bool ContentionPoint::eval_spec(Comp comp,
         eval_lhs(comp.get_lhs(), eg, t, lhs_m_val);
         if (!lhs_m_val.valid) return false;
         
-        eval_rhs(comp.get_lhs(), eg, t, rhs_m_val);
+        eval_rhs(comp.get_rhs(), eg, t, rhs_m_val);
         if (!rhs_m_val.valid) return false;
     
         unsigned int lhs_val = lhs_m_val.value;
@@ -2270,7 +2310,7 @@ void ContentionPoint::eval_rhs(rhs_t rhs,
         eval_Time(get<Time>(rhs), eg, time, res);
     }
     else if (holds_alternative<unsigned int>(rhs)){
-        res.valid = false;
+        res.valid = true;
         res.value = get<unsigned int>(rhs);
     } else {
         std::cout << "ContentionPoint::eval_rhs: invalid variant." << std::endl;
@@ -2317,8 +2357,13 @@ void ContentionPoint::eval_m_expr(Indiv indiv,
                                   unsigned int time,
                                   metric_val& res) const{
     unsigned int queue = indiv.get_queue();
-    metric_t metric = indiv.get_metric();
-    in_queues[queue]->get_metric(metric)->eval(eg, time, queue, res);
+    Metric* metric = in_queues[queue]->get_metric(indiv.get_metric());
+    // TODO: This a temporary fix, after parametrizing search based on metrics we need to throw
+    // exception and stop the search if metric not exists
+    if(metric != nullptr)
+        metric->eval(eg, time, queue, res);
+    else
+        res.valid = false;
 }
 
 void ContentionPoint::eval_Time(Time time,

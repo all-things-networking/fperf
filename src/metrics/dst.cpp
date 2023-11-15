@@ -41,14 +41,14 @@ void Dst::eval(const IndexedExample* eg,
 void Dst::populate_val_exprs(NetContext& net_ctx){
 
     for (unsigned int t = 0; t < total_time; t++){
-        value_[t] = net_ctx.pkt2meta1(queue->enqs(t)[0]);
+        value_[t] = net_ctx.pkt2meta1(queue->enqs(0)[t]);
     }        
 
     for (unsigned int t = 0; t < total_time; t++){
-        expr base_meta1 = net_ctx.pkt2meta1(queue->enqs(t)[0]);
-        valid_[t] = net_ctx.pkt2val(queue->enqs(t)[0]);
+        expr base_meta1 = net_ctx.pkt2meta1(queue->enqs(0)[t]);
+        valid_[t] = net_ctx.pkt2val(queue->enqs(0)[t]);
         for (unsigned int e = 1; e < queue->max_enq(); e++){
-            expr pkt = queue->enqs(t)[e];
+            expr pkt = queue->enqs(e)[t];
             expr val = net_ctx.pkt2val(pkt);
             expr meta1 = net_ctx.pkt2meta1(pkt);
             valid_[t] = valid_[t] && (!val || (meta1 == base_meta1));

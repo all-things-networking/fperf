@@ -126,6 +126,7 @@ bool Search::check(Workload wl){
         return false;
     }
 
+    //TODO: Make use of a real input_only_solver
     solver_res_t input_only_res = input_only_solver->check_workload_without_query(wl);
     
     bool res = false;
@@ -138,7 +139,8 @@ bool Search::check(Workload wl){
         {
             input_only_solver_call++;
             query_only_solver_call++;
-            
+
+            // wl & !query
             solver_res_t query_only_res = cp->check_workload_with_query(wl, counter_eg);
             
             // add counter example
@@ -176,7 +178,7 @@ bool Search::check(Workload wl){
                 {
                     solver_res_t query_only_res = cp->check_workload_with_query(wl, counter_eg);
                     
-                    DEBUG_MSG("query satisfied " << query_only_res << endl);
+                    DEBUG_MSG("not query satisfied " << query_only_res << endl);
                     
                     // add counter example
                     if (query_only_res == solver_res_t::SAT){
@@ -210,7 +212,9 @@ bool Search::check(Workload wl){
             break;
         }
     }
-     
+
+    //TODO: It only being populated in SAT case, where we need the eg.
+    // Otherwise it does not get populated, thus no need for deletion.
     if (!used_example){
         delete counter_eg;
     }
@@ -265,6 +269,8 @@ void Search::search(Workload wl){
                 to_check.add_spec(n_spec);
             }
         }
+        // true <=> (wl & !query): UNSAT
+        // false -> bad_examples += eg
         bool satisfies_query = check(to_check);
         //bool satisfies_query = check(wl);
     
@@ -275,6 +281,7 @@ void Search::search(Workload wl){
             found = true;
         }
         if (found){
+            // TODO: Currently the SOLUTION_REFINEMENT_MAX_ROUNDS is zero
             solution_refinement_rounds++;
             if (solution_refinement_rounds > SOLUTION_REFINEMENT_MAX_ROUNDS) break;
         }
@@ -282,6 +289,7 @@ void Search::search(Workload wl){
         
         // Undo the last move if the current spec if infeasible
         // record the infeasible wl
+        // last_input_infeasible <=> (base_wl & wl): UNSAT
         if (last_input_infeasible){
             infeasible_wls.push_back(wl);
             wl = wl_last_step;
@@ -321,7 +329,8 @@ void Search::search(Workload wl){
         // we might be biased towards infeasible inputs
         
         DEBUG_MSG("local search: " << local_search << endl);
-        
+
+        // Find a modified workload with lower cost
         while (!found_next){
             unsigned int hops = 1;
             if (local_search) hops = LOCAL_SEARCH_MAX_HOPS;

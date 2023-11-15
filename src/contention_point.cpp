@@ -2169,6 +2169,8 @@ m_val_expr_t ContentionPoint::get_expr(Time time, unsigned int t){
 m_val_expr_t ContentionPoint::get_expr(Indiv indiv, unsigned int t){
     Queue* queue = in_queues[indiv.get_queue()];
     Metric* metric = queue->get_metric(indiv.get_metric());
+    // TODO: This a temporary fix, after parametrizing search based on metrics we need to throw
+    // exception and stop the search if metric not exists
     if(metric != nullptr)
         return metric->val(t);
     else
@@ -2356,6 +2358,8 @@ void ContentionPoint::eval_m_expr(Indiv indiv,
                                   metric_val& res) const{
     unsigned int queue = indiv.get_queue();
     Metric* metric = in_queues[queue]->get_metric(indiv.get_metric());
+    // TODO: This a temporary fix, after parametrizing search based on metrics we need to throw
+    // exception and stop the search if metric not exists
     if(metric != nullptr)
         metric->eval(eg, time, queue, res);
     else

@@ -10,8 +10,6 @@
 
 #include "search.hpp"
 
-// TOASK: Bad examples size is being increased.
-// Should we make it not being static?
 unsigned long MAX_COST;
 
 Search::Search(ContentionPoint* cp,
@@ -128,7 +126,7 @@ bool Search::check(Workload wl){
         return false;
     }
 
-    //TOASK: What is input_only_solver? What's the difference with cp?
+    //TODO: Make use of a real input_only_solver
     solver_res_t input_only_res = input_only_solver->check_workload_without_query(wl);
     
     bool res = false;
@@ -215,7 +213,7 @@ bool Search::check(Workload wl){
         }
     }
 
-    //TOASK: Why? It only being populated in SAT case, where we need the eg.
+    //TODO: It only being populated in SAT case, where we need the eg.
     // Otherwise it does not get populated, thus no need for deletion.
     if (!used_example){
         delete counter_eg;
@@ -283,7 +281,7 @@ void Search::search(Workload wl){
             found = true;
         }
         if (found){
-            // FIXME: This seems to not being used!
+            // TODO: Currently the SOLUTION_REFINEMENT_MAX_ROUNDS is zero
             solution_refinement_rounds++;
             if (solution_refinement_rounds > SOLUTION_REFINEMENT_MAX_ROUNDS) break;
         }

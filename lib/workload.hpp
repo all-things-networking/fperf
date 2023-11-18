@@ -25,16 +25,17 @@
 The Grammar:
  Workload    := /\ (TimedSpec)
  TimedSpec   := forall t in [CONST, CONST] WlSpec
- WlSpec      := SAME | INCR | DECR | COMP
+ WlSpec      := SAME | INCR | DECR | COMP | UNIQ
  SAME        := same[MTRC(Q, t)]
  INCR        := incr[MTRC(Q, t)]
- DECR        := decr[METRC(Q, t)]
+ DECR        := decr[MTRC(Q, t)]
+ UNIQ        := uniq[MTRC(QSET, t)]
  COMP        := LHS OP RHS
  LHS         := MTRC_EXPR
  RHS         := MTRC_EXPR | TIME | C
  MTRC_EXPR   := QSUM | INDIV
  QSUM        := SUM_[q in QSET] MTRC(q, t)
- INDIV       := METRC(Q, t)
+ INDIV       := MTRC(Q, t)
  TIME        := C.t
 ----------------------------------------------------------------- */
 
@@ -132,6 +133,28 @@ std::ostream& operator<<(std::ostream& os, const rhs_t& rhs);
 bool operator==(const rhs_t& rhs1, const rhs_t& rhs2);
 bool operator<(const rhs_t& rhs1, const rhs_t& rhs2);
 
+//************************************* UNIQ *************************************//
+class Uniqe{
+
+public:
+
+    Uniqe(metric_t metric, qset_t qset);
+
+    bool applies_to_queue(unsigned int queue) const;
+
+    qset_t get_qset() const;
+    metric_t get_metric() const;
+
+private:
+
+    metric_t metric;
+    qset_t qset;
+
+    friend std::ostream& operator<<(std::ostream& os, const Uniqe& u);
+    friend bool operator== (const Uniqe& u1, const Uniqe& u2);
+    friend bool operator< (const Uniqe& u1, const Uniqe& u2);
+};
+
 //************************************* SAME *************************************//
 class Same{
 
@@ -197,7 +220,6 @@ private:
     friend bool operator== (const Decr& decr1, const Decr& decr2);
     friend bool operator< (const Decr& decr1, const Decr& decr2);
 };
-
 
 //************************************* COMP *************************************//
 

@@ -20,7 +20,7 @@ QSum::QSum(qset_t qset, metric_t metric):
 qset(qset),
 metric(metric)
 {}
- 
+
 bool QSum::applies_to_queue(unsigned int queue) const{
     return (qset.find(queue) != qset.end());
 }
@@ -35,8 +35,8 @@ qset_t QSum::get_qset() const{
 
 metric_t QSum::get_metric() const{
     return metric;
-}    
-       
+}
+
 std::ostream& operator<<(std::ostream& os, const QSum& qsum){
     os << "SUM_[q in " << qsum.qset << "] " << qsum.metric << "(q ,t)";
     return os;
@@ -64,7 +64,7 @@ queue(queue)
 bool Indiv::applies_to_queue(unsigned int queue) const{
     return this->queue == queue;
 }
- 
+
 unsigned int Indiv::get_queue() const{
     return queue;
 }
@@ -72,7 +72,7 @@ unsigned int Indiv::get_queue() const{
 metric_t Indiv::get_metric() const{
     return metric;
 }
-    
+
 std::ostream& operator<<(std::ostream& os, const Indiv& indiv){
     os << indiv.metric << "(" << indiv.queue << ", t)";
     return os;
@@ -167,7 +167,7 @@ bool operator== (const m_expr_t& m_expr1, const m_expr_t& m_expr2){
 
 bool operator<(const m_expr_t& m_expr1, const m_expr_t& m_expr2){
     // QSum < Indiv
-    
+
     if (std::holds_alternative<QSum>(m_expr1)){
         if (std::holds_alternative<QSum>(m_expr2)){
             return std::get<QSum>(m_expr1) < std::get<QSum>(m_expr2);
@@ -176,7 +176,7 @@ bool operator<(const m_expr_t& m_expr1, const m_expr_t& m_expr2){
             return true;
         }
     }
-        
+
     else if (std::holds_alternative<Indiv>(m_expr1)){
         if (std::holds_alternative<Indiv>(m_expr2)){
             return std::get<Indiv>(m_expr1) < std::get<Indiv>(m_expr2);
@@ -185,7 +185,7 @@ bool operator<(const m_expr_t& m_expr1, const m_expr_t& m_expr2){
             return false;
         }
     }
-    
+
     std::cout << "operator < for m_expr: should not reach here" << endl;
     return false;
 }
@@ -262,7 +262,7 @@ bool operator==(const rhs_t& rhs1, const rhs_t& rhs2){
 
 bool operator<(const rhs_t& rhs1, const rhs_t& rhs2){
     // m_expr_t < Time < unsigned int
-    
+
     if (std::holds_alternative<m_expr_t>(rhs1)){
         if (std::holds_alternative<m_expr_t>(rhs2)){
             return std::get<m_expr_t>(rhs1) < std::get<m_expr_t>(rhs2);
@@ -271,7 +271,7 @@ bool operator<(const rhs_t& rhs1, const rhs_t& rhs2){
             return true;
         }
     }
-        
+
     else if (std::holds_alternative<Time>(rhs1)){
         if (std::holds_alternative<Time>(rhs2)){
             return std::get<Time>(rhs1) < std::get<Time>(rhs2);
@@ -283,7 +283,7 @@ bool operator<(const rhs_t& rhs1, const rhs_t& rhs2){
             return true;
         }
     }
-        
+
     if (std::holds_alternative<unsigned int>(rhs1)){
         if (std::holds_alternative<unsigned int>(rhs2)){
             return std::get<unsigned int>(rhs1) < std::get<unsigned int>(rhs2);
@@ -294,6 +294,42 @@ bool operator<(const rhs_t& rhs1, const rhs_t& rhs2){
     }
     std::cout << "operator < for rhs: should not reach here" << endl;
     return false;
+}
+
+//************************************* UNIQ *************************************//
+
+Uniqe::Uniqe(metric_t metric, qset_t qset):
+    metric(metric),
+    qset(qset)
+{}
+
+
+bool Uniqe::applies_to_queue(unsigned int queue) const{
+    return (qset.find(queue) != qset.end());
+}
+
+qset_t Uniqe::get_qset() const{
+    return qset;
+}
+
+metric_t Uniqe::get_metric() const{
+    return metric;
+}
+
+std::ostream& operator<<(std::ostream& os, const Uniqe& u){
+    os << "Uniqe[" << u << "(" << u.qset << ", t)]";
+    return os;
+}
+
+bool operator== (const Uniqe& u1, const Uniqe& u2){
+    return (u1.metric == u2.metric &&
+            u1.qset == u2.qset);
+}
+
+bool operator<(const Uniqe& u1, const Uniqe& u2){
+    return (u1.metric < u2.metric ||
+            (u1.metric == u2.metric &&
+             u1.qset < u2.qset));
 }
 
 //************************************* SAME *************************************//
@@ -307,7 +343,7 @@ queue(queue)
 bool Same::applies_to_queue(unsigned int queue) const{
     return this->queue == queue;
 }
- 
+
 unsigned int Same::get_queue() const{
     return queue;
 }
@@ -315,7 +351,7 @@ unsigned int Same::get_queue() const{
 metric_t Same::get_metric() const{
     return metric;
 }
-    
+
 std::ostream& operator<<(std::ostream& os, const Same& s){
     os << "Same[" << s.metric << "(" << s.queue << ", t)]";
     return os;
@@ -343,7 +379,7 @@ queue(queue)
 bool Incr::applies_to_queue(unsigned int queue) const{
     return this->queue == queue;
 }
- 
+
 unsigned int Incr::get_queue() const{
     return queue;
 }
@@ -351,7 +387,7 @@ unsigned int Incr::get_queue() const{
 metric_t Incr::get_metric() const{
     return metric;
 }
-    
+
 std::ostream& operator<<(std::ostream& os, const Incr& incr){
     os << "Incr[" << incr.metric << "(" << incr.queue << ", t)]";
     return os;
@@ -379,7 +415,7 @@ queue(queue)
 bool Decr::applies_to_queue(unsigned int queue) const{
     return this->queue == queue;
 }
- 
+
 unsigned int Decr::get_queue() const{
     return queue;
 }
@@ -387,7 +423,7 @@ unsigned int Decr::get_queue() const{
 metric_t Decr::get_metric() const{
     return metric;
 }
-    
+
 std::ostream& operator<<(std::ostream& os, const Decr& decr){
     os << "Decr[" << decr.metric << "(" << decr.queue << ", t)]";
     return os;
@@ -426,32 +462,32 @@ bool Comp::applies_to_queue(unsigned int queue) const{
 void Comp::normalize(){
     // If the right hand side is TRF, we might be able to normalize
     if (holds_alternative<m_expr_t>(rhs)){
-        
+
         m_expr_t lhs_m_expr = lhs;
         m_expr_t rhs_m_expr = get<m_expr_t>(rhs);
-        
+
         bool lhs_is_qsum = holds_alternative<QSum>(lhs_m_expr);
         bool lhs_is_indiv = holds_alternative<Indiv>(lhs_m_expr);
-        
+
         bool rhs_is_qsum = holds_alternative<QSum>(rhs_m_expr);
         bool rhs_is_indiv = holds_alternative<Indiv>(rhs_m_expr);
 
         // If both are QSum
         if (lhs_is_qsum && rhs_is_qsum){
-            
+
             QSum lhs_qsum = get<QSum>(lhs_m_expr);
             QSum rhs_qsum = get<QSum>(rhs_m_expr);
-    
+
             if (lhs_qsum.get_metric() == rhs_qsum.get_metric()){
                 qset_t lhs_qset = lhs_qsum.get_qset();
                 qset_t rhs_qset = rhs_qsum.get_qset();
-                
+
                 set<unsigned int> inters;
                 set_intersection(lhs_qset.begin(), lhs_qset.end(),
                                  rhs_qset.begin(), rhs_qset.end(),
                                  std::inserter(inters, inters.begin()));
                 bool intersect = inters.size() > 0;
-            
+
                 if (lhs_qset == rhs_qset){
                     if (op == op_t::GE ||
                         op == op_t::LE) is_all = true;
@@ -463,7 +499,7 @@ void Comp::normalize(){
                     set_difference(rhs_qset.begin(), rhs_qset.end(),
                                    lhs_qset.begin(), lhs_qset.end(),
                                    std::inserter(diff, diff.begin()));
-                    
+
                     if (op == op_t::LE) is_all = true;
                     else if (op == op_t::GT) is_empty = true;
                     else if (diff.size() == 1){
@@ -484,7 +520,7 @@ void Comp::normalize(){
                     set_difference(lhs_qset.begin(), lhs_qset.end(),
                                    rhs_qset.begin(), rhs_qset.end(),
                                    std::inserter(diff, diff.begin()));
-                    
+
                     if (op == op_t::LT) is_empty = true;
                     else if (op == op_t::GE) is_all = true;
                     else if (diff.size() == 1){
@@ -501,12 +537,12 @@ void Comp::normalize(){
                     set_difference(lhs_qset.begin(), lhs_qset.end(),
                                    rhs_qset.begin(), rhs_qset.end(),
                                    std::inserter(lhs_diff, lhs_diff.begin()));
-                    
+
                     set<unsigned int> rhs_diff;
                     set_difference(rhs_qset.begin(), rhs_qset.end(),
                                    lhs_qset.begin(), lhs_qset.end(),
                                    std::inserter(rhs_diff, rhs_diff.begin()));
-                    
+
                     // set lhs
                     if (lhs_diff.size() == 1){
                         lhs = Indiv(lhs_qsum.get_metric(), *(lhs_diff.begin()));
@@ -515,7 +551,7 @@ void Comp::normalize(){
                         lhs = QSum(qset_t(lhs_diff.begin(), lhs_diff.end()),
                                    lhs_qsum.get_metric());
                     }
-                    
+
                     // set rhs
                     if (rhs_diff.size() == 1){
                         rhs = Indiv(rhs_qsum.get_metric(), *(rhs_diff.begin()));
@@ -546,18 +582,18 @@ void Comp::normalize(){
         // Notice here we only have LT or LE as op
         else if (lhs_is_indiv && rhs_is_qsum){
             m_expr_t tmp = lhs_m_expr;
-            
+
             lhs = rhs_m_expr;
             lhs_m_expr = rhs_m_expr;
-            
+
             rhs = tmp;
             rhs_m_expr = tmp;
-           
+
             op = neg_op(op);
-            
+
             lhs_is_qsum = true;
             lhs_is_indiv = false;
-            
+
             rhs_is_qsum = false;
             rhs_is_indiv = true;
         }
@@ -567,10 +603,10 @@ void Comp::normalize(){
         if (lhs_is_qsum && rhs_is_indiv){
             QSum lhs_qsum = get<QSum>(lhs_m_expr);
             Indiv rhs_indiv = get<Indiv>(rhs_m_expr);
-            
+
             qset_t lhs_qset = lhs_qsum.get_qset();
             unsigned int rhs_queue = rhs_indiv.get_queue();
-            
+
             if (lhs_qsum.get_metric() == rhs_indiv.get_metric()){
                 qset_t::iterator it = lhs_qset.find(rhs_queue);
                 if (it != lhs_qset.end()){
@@ -590,7 +626,7 @@ void Comp::normalize(){
             }
         }
     }
-    
+
     // If the right hand side is constant, op should either be
     // GE or LE
     if (holds_alternative<unsigned int>(rhs)){
@@ -608,7 +644,7 @@ void Comp::normalize(){
         }
 
     }
-    
+
     if (holds_alternative<Time>(rhs)){
         unsigned int c = get<Time>(rhs).get_coeff();
         if (c == 0){
@@ -635,7 +671,7 @@ void Comp::normalize(){
                     c >= (qsum.get_qset().size() - 1) * MAX_ENQ)
                     is_empty = true;
             }
-        } 
+        }
     }
 }
 
@@ -656,7 +692,7 @@ unsigned int Comp::ast_size() const{
 pair<metric_t, qset_t> Comp::get_zero_queues() const{
     qset_t qset;
     metric_t metric;
-    
+
     if (op == op_t::LE &&
         holds_alternative<unsigned int>(rhs) &&
         get<unsigned int>(rhs) == 0){
@@ -710,11 +746,11 @@ bool operator==(const Comp& comp1, const Comp& comp2){
     lhs_t lhs1 = comp1.lhs;
     op_t op1 = comp1.op;
     rhs_t rhs1 = comp1.rhs;
-   
+
     lhs_t lhs2 = comp2.lhs;
     op_t op2 = comp2.op;
     rhs_t rhs2 = comp2.rhs;
-    
+
     bool res = (lhs1 == lhs2 &&
                 op1 == op2 &&
                 rhs1 == rhs2);
@@ -729,11 +765,11 @@ bool operator<(const Comp& comp1, const Comp& comp2){
     lhs_t lhs1 = comp1.lhs;
     op_t op1 = comp1.op;
     rhs_t rhs1 = comp1.rhs;
-    
+
     lhs_t lhs2 = comp2.lhs;
     op_t op2 = comp2.op;
     rhs_t rhs2 = comp2.rhs;
-    
+
     return (lhs1 < lhs2 ||
             (lhs1 == lhs2 &&
             op1 < op2) ||
@@ -821,7 +857,7 @@ bool operator==(const wl_spec_t& spec1, const wl_spec_t& spec2) {
 
 bool operator<(const wl_spec_t& spec1, const wl_spec_t& spec2) {
     // Comp < Same < Incr < Decr
-    
+
     if (std::holds_alternative<Comp>(spec1)){
         if (std::holds_alternative<Comp>(spec2)){
             return std::get<Comp>(spec1) < std::get<Comp>(spec2);
@@ -830,7 +866,7 @@ bool operator<(const wl_spec_t& spec1, const wl_spec_t& spec2) {
             return true;
         }
     }
-        
+
     else if (std::holds_alternative<Same>(spec1)){
         if (std::holds_alternative<Same>(spec2)){
             return std::get<Same>(spec1) < std::get<Same>(spec2);
@@ -842,7 +878,7 @@ bool operator<(const wl_spec_t& spec1, const wl_spec_t& spec2) {
             return true;
         }
     }
-        
+
     if (std::holds_alternative<Incr>(spec1)){
         if (std::holds_alternative<Incr>(spec2)){
             return std::get<Incr>(spec1) < std::get<Incr>(spec2);
@@ -871,7 +907,7 @@ bool operator<(const wl_spec_t& spec1, const wl_spec_t& spec2) {
 //************************************* TimedSpec *************************************//
 
 // Invariant: An object of this class
-//            is always normalized independent of the operation 
+//            is always normalized independent of the operation
 //            running on it.
 
 TimedSpec::TimedSpec(wl_spec_t wl_spec, time_range_t time_range, unsigned int total_time):
@@ -969,7 +1005,7 @@ std::ostream& operator<<(std::ostream& os, const TimedSpec* spec){
 bool operator==(const TimedSpec& spec1, const TimedSpec& spec2){
     wl_spec_t wl_spec1 = spec1.wl_spec;
     wl_spec_t wl_spec2 = spec2.wl_spec;
-    
+
     return (wl_spec1 == wl_spec2 &&
             spec1.time_range == spec2.time_range);
 }
@@ -995,7 +1031,7 @@ total_time(total_time)
 {
     timeline[time_range_t(0, total_time - 1)] = empty_set;
 }
-    
+
 void Workload::clear(){
     all_specs.clear();
     timeline.clear();
@@ -1029,10 +1065,10 @@ void Workload::rm_spec(TimedSpec spec){
                 (it->second).erase(wl_spec);
             }
         }
-        
+
         normalize();
     }
-    
+
 }
 
 void Workload::mod_spec(TimedSpec old_spec, TimedSpec new_spec){
@@ -1041,7 +1077,7 @@ void Workload::mod_spec(TimedSpec old_spec, TimedSpec new_spec){
         add_spec(new_spec);
     }
 }
- 
+
 // TODO: anything different for empty or all?
 unsigned long Workload::size() const{
     return all_specs.size();
@@ -1075,13 +1111,13 @@ wl_cost_t Workload::cost() const{
     }
 
     unsigned int timeline_val = (unsigned int) timeline.size();
-    
+
     return ast_val + timeline_val;
 }
 
 bool Workload::is_empty() const{
     if (empty) return true;
-    
+
     for (set<TimedSpec>::iterator it = all_specs.begin();
          it != all_specs.end(); it++) {
         if (it->spec_is_empty()) {
@@ -1102,46 +1138,46 @@ void Workload::normalize(){
     // If total time is zero, we are not
     // putting any constraints so it is "all"
     if (total_time == 0) clear();
-    
+
 
     // Normalize each timeline entry
     for (timeline_t::iterator it = timeline.begin();
          it != timeline.end(); it++){
         normalize(it->first);
     }
-        
+
     // TODO: what happens if an entry is "empty"?
-    // do we just continue to this loop? or should we 
+    // do we just continue to this loop? or should we
     // check that first?
     if (timeline.size() > 1){
         vector<time_range_t> to_erase;
 
         typedef pair<time_range_t, set<wl_spec_t>> timeline_entry;
         vector<timeline_entry> to_add;
-        
+
         bool valid_last_new_entry = false;
         timeline_entry last_new_entry;
-       
+
         // Merging consecutive timeline entries
-        // with the same set of specs. 
+        // with the same set of specs.
         for (timeline_t::iterator it = timeline.begin();
              it != prev(timeline.end()); it++){
-        
+
             timeline_t::iterator next_it = next(it);
-        
+
             set<wl_spec_t> specs1 = it->second;
             set<wl_spec_t> specs2 = next_it->second;
-                    
+
             if (specs1 == specs2){
                 time_range_t time_range_1 = it->first;
-                
+
                 time_range_t time_range_2 = next(it)->first;
-            
+
                 to_erase.push_back(time_range_1);
                 to_erase.push_back(time_range_2);
-                
+
                 time_range_t to_add_range(time_range_1.first, time_range_2.second);
-                
+
                 if (valid_last_new_entry){
                     last_new_entry.first.second = to_add_range.second;
                 }
@@ -1158,20 +1194,20 @@ void Workload::normalize(){
                 valid_last_new_entry = false;
             }
         }
-        
+
         if (valid_last_new_entry){
             to_add.push_back(timeline_entry(last_new_entry));
         }
-        
+
         for (unsigned int i = 0; i < to_erase.size(); i++){
             timeline.erase(to_erase[i]);
         }
-        
+
         for (unsigned int i = 0; i < to_add.size(); i++){
             timeline.insert(to_add[i]);
         }
     }
-    
+
     regenerate_spec_set();
 
     // TODO: move this to as a check in Search::pick_neighbors
@@ -1183,7 +1219,7 @@ void Workload::normalize(){
 
 void Workload::normalize(time_range_t time_range){
     set<wl_spec_t> specs = timeline[time_range];
-    
+
     // if one is empty, the entire thing is empty
     for (set<wl_spec_t>::iterator it = specs.begin(); it != specs.end(); it++) {
         if (wl_spec_is_empty(*it)) {
@@ -1193,11 +1229,11 @@ void Workload::normalize(time_range_t time_range){
             return;
         }
     }
-    
+
     // Filter:
     // - Remove the "alls".
     // TODO: implement with the std utilities like sort and remove_if
-    
+
     set<wl_spec_t> filtered_specs;
     for (set<wl_spec_t>::iterator it = specs.begin(); it != specs.end(); it++) {
 
@@ -1206,10 +1242,10 @@ void Workload::normalize(time_range_t time_range){
         filtered_specs.insert(*it);
     }
     specs = filtered_specs;
-   
+
 
     // ** Zero Propagation ** //
-    
+
     typedef pair<metric_t, unsigned int> zero_pair;
     vector<zero_pair> zeros;
 
@@ -1224,22 +1260,22 @@ void Workload::normalize(time_range_t time_range){
     for (set<wl_spec_t>::iterator it = specs.begin();
          it != specs.end(); it++){
         wl_spec_t spec = *it;
-       
+
         if (!holds_alternative<Comp>(spec)){
             non_op_specs.push_back(spec);
             continue;
         }
-        
+
         Comp comp = get<Comp>(spec);
- 
+
         auto zero_queues = comp.get_zero_queues();
         qset_t zero_queue_set = zero_queues.second;
         bool has_zero = zero_queue_set.size() > 0;
-        
-        
+
+
         if (has_zero){
             metric_t metric = zero_queues.first;
-        
+
             for (qset_t::iterator z_it = zero_queue_set.begin();
                  z_it != zero_queue_set.end(); z_it++){
                 unsigned int q = *z_it;
@@ -1253,14 +1289,14 @@ void Workload::normalize(time_range_t time_range){
         else
             non_zero_comps.push_back(get<Comp>(spec));
     }
-    
+
     bool changed = true;
     vector<Comp> new_comps;
-    
+
     unsigned int round = 0;
     while (changed){
         round++;
-    
+
         changed = false;
         new_comps.clear();
 
@@ -1269,7 +1305,7 @@ void Workload::normalize(time_range_t time_range){
             bool empty_lhs = false;
 
             Comp comp = non_zero_comps[i];
-            
+
             lhs_t lhs = comp.get_lhs();
             op_t op = comp.get_op();
             rhs_t rhs = comp.get_rhs();
@@ -1278,7 +1314,7 @@ void Workload::normalize(time_range_t time_range){
             for (unsigned int j = 0; j < zeros.size(); j++){
                 metric_t z_metric = zeros[j].first;
                 unsigned int z_q = zeros[j].second;
-                
+
                 if (rhs_applies_to_queue(rhs, z_q)){
                     m_expr_t m_expr = get<m_expr_t>(rhs);
                     if (holds_alternative<Indiv>(m_expr)){
@@ -1329,7 +1365,7 @@ void Workload::normalize(time_range_t time_range){
                     }
                 }
             }
-            
+
             if (spec_changed){
                 changed = true;
 
@@ -1409,12 +1445,12 @@ void Workload::normalize(time_range_t time_range){
         if (changed){
             non_zero_comps.assign(new_comps.begin(), new_comps.end());
         }
-    
+
     }
-   
+
 
     set<wl_spec_t> final_specs;
-        
+
     final_specs.insert(zero_comps.begin(), zero_comps.end());
     final_specs.insert(non_zero_comps.begin(), non_zero_comps.end());
     final_specs.insert(non_op_specs.begin(), non_op_specs.end());
@@ -1427,17 +1463,17 @@ void Workload::regenerate_spec_set(){
         clear();
         return;
     }
-    
+
     vector<TimedSpec> new_all_specs;
-    
+
     for (timeline_t::iterator it = timeline.begin();
          it != timeline.end(); it++){
         time_range_t time_range = it->first;
         set<wl_spec_t> specs = it->second;
-        
+
         for (set<wl_spec_t>::iterator s_it = specs.begin();
              s_it != specs.end(); s_it++){
-            
+
             bool already_exists = false;
             for (unsigned int i = 0; i < new_all_specs.size(); i++){
                 if (new_all_specs[i].get_wl_spec() == *s_it &&
@@ -1454,7 +1490,7 @@ void Workload::regenerate_spec_set(){
             }
         }
     }
-   
+
     all_specs = std::set<TimedSpec>(new_all_specs.begin(), new_all_specs.end());
 }
 
@@ -1463,7 +1499,7 @@ unsigned int Workload::ast_size() const{
     for (timeline_t::const_iterator it = timeline.cbegin();
          it != timeline.cend(); it++){
         set<wl_spec_t> specs = it->second;
-        
+
         if (specs.size() == 0) res++;
         for (set<wl_spec_t>::iterator s_it = specs.begin();
              s_it != specs.end(); s_it++){
@@ -1475,10 +1511,10 @@ unsigned int Workload::ast_size() const{
 
 set<time_range_t> Workload::add_time_range(time_range_t time_range){
     set<time_range_t> res;
-    
+
     timeline_t::iterator beginning;
     timeline_t::iterator end;
-    
+
     for (timeline_t::iterator it = timeline.begin();
          it != timeline.end(); it++){
         time_range_t entry_time_range = it->first;
@@ -1487,7 +1523,7 @@ set<time_range_t> Workload::add_time_range(time_range_t time_range){
             break;
         }
     }
-    
+
     time_range_t beginning_time_range = beginning->first;
     set<wl_spec_t> beginning_set = beginning->second;
 
@@ -1510,17 +1546,17 @@ set<time_range_t> Workload::add_time_range(time_range_t time_range){
 
     time_range_t end_time_range = end->first;
     set<wl_spec_t> end_set = end->second;
-    
+
     if (time_range.second < end_time_range.second){
         timeline[time_range_t(end_time_range.first,
                               time_range.second)] = end_set;
-        
+
         timeline[time_range_t(time_range.second + 1,
                               end_time_range.second)] = end_set;
-        
+
         timeline.erase(end_time_range);
     }
-    
+
     for (timeline_t::iterator it = timeline.begin();
          it != timeline.end(); it++){
         time_range_t entry_time_range = it->first;
@@ -1528,7 +1564,7 @@ set<time_range_t> Workload::add_time_range(time_range_t time_range){
             res.insert(entry_time_range);
         }
     }
-    
+
     return res;
 }
 
@@ -1574,7 +1610,7 @@ std::ostream& operator<<(std::ostream& os, const Workload& wl){
              it != all_specs.end(); it++){
             os << *it << endl;
         }
-    } 
+    }
     return os;
 }
 

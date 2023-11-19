@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-FPERF_PATH=build/autoperf
+FPERF_PATH=build/fperf
 
 function run_test() {
   TEST_NAME=$1

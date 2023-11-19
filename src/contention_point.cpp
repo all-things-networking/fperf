@@ -1,6 +1,6 @@
 //
 //  contention_point.cpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 11/12/20.
 //  Copyright © 2020 Mina Tahmasbi Arashloo. All rights reserved.
@@ -92,12 +92,12 @@ void ContentionPoint::setup_edges() {
                 Queue* queue;
                 switch (qinfo.type) {
                     case queue_t::LINK: {
-                        queue = new Link(base_out_id, std::to_string(q), total_time, net_ctx);
+                        queue = new Link(base_out_id, to_string(q), total_time, net_ctx);
                         break;
                     }
                     case queue_t::IMM_QUEUE: {
                         queue = new ImmQueue(base_out_id,
-                                             std::to_string(q),
+                                             to_string(q),
                                              qinfo.size,
                                              qinfo.max_enq,
                                              qinfo.max_deq,
@@ -107,7 +107,7 @@ void ContentionPoint::setup_edges() {
                     }
                     default: {
                         queue = new Queue(base_out_id,
-                                          std::to_string(q),
+                                          to_string(q),
                                           qinfo.size,
                                           qinfo.max_enq,
                                           qinfo.max_deq,
@@ -274,7 +274,7 @@ void ContentionPoint::add_out_queue_constrs() {
                                           queue->deq_cnt(t) == (int) deq_bound));
 
             expr constr = mk_and(deq_cnt_vec);
-            std::snprintf(constr_name, 100, "%s_deq_cnt_at_%d", queue->get_id().c_str(), t);
+            snprintf(constr_name, 100, "%s_deq_cnt_at_%d", queue->get_id().c_str(), t);
             add_constr(constr, constr_name);
             constr_map.insert(named_constr(constr_name, constr));
         }
@@ -312,12 +312,12 @@ solver_res_t ContentionPoint::solve() {
 #ifdef DEBUG
     if (res == sat) {
         model m = z3_solver->get_model();
-        std::cout << get_model_str(m) << std::endl;
+        cout << get_model_str(m) << endl;
     } else if (res == unsat) {
         expr_vector core = z3_solver->unsat_core();
-        std::cout << "size: " << core.size() << "\n";
+        cout << "size: " << core.size() << "\n";
         for (unsigned i = 0; i < core.size(); i++) {
-            std::cout << core[i] << "\n";
+            cout << core[i] << "\n";
         }
     }
 #endif
@@ -327,7 +327,7 @@ solver_res_t ContentionPoint::solve() {
 
 solver_res_t ContentionPoint::satisfy_query() {
     if (!query_is_set) {
-        std::cout << "ContentionPoint::satisfy_query: Query is not set." << std::endl;
+        cout << "ContentionPoint::satisfy_query: Query is not set." << endl;
         return solver_res_t::UNKNOWN;
     }
 
@@ -420,13 +420,13 @@ expr ContentionPoint::get_random_eg_mod(IndexedExample* eg,
     typedef pair<unsigned int, unsigned int> modpair_t;
     set<modpair_t> mods;
 
-    std::uniform_int_distribution<unsigned int> queue_dist(0, queue_set.size() - 1);
-    std::uniform_int_distribution<unsigned int> time_dist(0, total_time - 3);
-    std::mt19937& gen = dists->get_gen();
+    uniform_int_distribution<unsigned int> queue_dist(0, queue_set.size() - 1);
+    uniform_int_distribution<unsigned int> time_dist(0, total_time - 3);
+    mt19937& gen = dists->get_gen();
     while (mods.size() < mod_cnt) {
         unsigned int ind = queue_dist(gen);
         qset_t::iterator it = queue_set.begin();
-        std::advance(it, ind);
+        advance(it, ind);
         unsigned int qid = *it;
         unsigned int timestep = time_dist(gen);
         modpair_t modpair(qid, timestep);
@@ -561,7 +561,7 @@ bool ContentionPoint::generate_base_example(IndexedExample* base_eg,
         model m = z3_optimizer->get_model();
 
         populate_example_from_model(m, base_eg);
-        DEBUG_MSG("base example:\n" << *base_eg << std::endl);
+        DEBUG_MSG("base example:\n" << *base_eg << endl);
 
         // populate the "zero" queues, i.e., queues
         // that will receive no traffic in any time step
@@ -573,10 +573,10 @@ bool ContentionPoint::generate_base_example(IndexedExample* base_eg,
                 target_queues.insert(q);
             }
         }
-        DEBUG_MSG("zero_queues: " << zero_queues << std::endl);
-        DEBUG_MSG("target_queues: " << target_queues << std::endl);
+        DEBUG_MSG("zero_queues: " << zero_queues << endl);
+        DEBUG_MSG("target_queues: " << target_queues << endl);
     } else {
-        std::cout << "Could not find base example. Solver returned: " << res << std::endl;
+        cout << "Could not find base example. Solver returned: " << res << endl;
         z3_optimizer->pop();
         return false;
     }
@@ -682,7 +682,7 @@ void ContentionPoint::generate_good_examples(IndexedExample* base_eg,
                     populate_example_from_model(m, new_eg);
                     examples.push_back(new_eg);
 
-                    DEBUG_MSG(*new_eg << std::endl);
+                    DEBUG_MSG(*new_eg << endl);
                     expr_vector eg_vec(net_ctx.z3_ctx());
                     for (unsigned int q = 0; q < new_eg->enqs.size(); q++) {
                         for (unsigned int t = 0; t < new_eg->total_time; t++) {
@@ -696,17 +696,16 @@ void ContentionPoint::generate_good_examples(IndexedExample* base_eg,
                     // POP
                     z3_optimizer->pop();
                     // Make sure we don't get this example again
-                    std::snprintf(constr_name, 100, "example_%d", i);
+                    snprintf(constr_name, 100, "example_%d", i);
                     z3_optimizer->add(not_this_example, constr_name);
 
 
-                    if (i % 10 == 0)
-                        std::cout << "generated " << i << " good examples." << std::endl;
+                    if (i % 10 == 0) cout << "generated " << i << " good examples." << endl;
 
                     break;
 
                 } else {
-                    DEBUG_MSG(j << " mods didn't work" << std::endl);
+                    DEBUG_MSG(j << " mods didn't work" << endl);
                     // POP
                     z3_optimizer->pop();
                 }
@@ -761,7 +760,7 @@ void ContentionPoint::generate_bad_examples(unsigned int count, deque<IndexedExa
         populate_example_from_model(m, eg);
         examples.push_back(eg);
 
-        DEBUG_MSG(*eg << std::endl);
+        DEBUG_MSG(*eg << endl);
         expr_vector eg_vec(net_ctx.z3_ctx());
         for (unsigned int q = 0; q < eg->enqs.size(); q++) {
             for (unsigned int t = 0; t < eg->total_time; t++) {
@@ -775,8 +774,7 @@ void ContentionPoint::generate_bad_examples(unsigned int count, deque<IndexedExa
         z3_solver->add(not_this_example, "example_0");
 
     } else {
-        std::cout << "ContentionPoint::generate_bad_examples: There are no bad examples."
-                  << std::endl;
+        cout << "ContentionPoint::generate_bad_examples: There are no bad examples." << endl;
         z3_solver->pop();
         return;
     }
@@ -820,7 +818,7 @@ void ContentionPoint::generate_bad_examples(unsigned int count, deque<IndexedExa
                     populate_example_from_model(m, new_eg);
                     examples.push_back(new_eg);
 
-                    DEBUG_MSG(*new_eg << std::endl);
+                    DEBUG_MSG(*new_eg << endl);
                     expr_vector eg_vec(net_ctx.z3_ctx());
                     for (unsigned int q = 0; q < new_eg->enqs.size(); q++) {
                         for (unsigned int t = 0; t < new_eg->total_time; t++) {
@@ -835,12 +833,11 @@ void ContentionPoint::generate_bad_examples(unsigned int count, deque<IndexedExa
                     z3_solver->pop();
 
                     // Make sure we don't get this example again
-                    std::snprintf(constr_name, 100, "example_%d", i);
+                    snprintf(constr_name, 100, "example_%d", i);
                     z3_solver->add(not_this_example, constr_name);
 
 
-                    if (i % 10 == 0)
-                        std::cout << "generated " << i << " bad examples." << std::endl;
+                    if (i % 10 == 0) cout << "generated " << i << " bad examples." << endl;
                     break;
 
                 } else {
@@ -953,8 +950,7 @@ void ContentionPoint::generate_good_examples_from_base_flow(deque<IndexedExample
     past_thresh.push_back(mod_thresh);
 
     for (unsigned int i = 1; i < count; i++) {
-        if ((i + 1) % 10 == 0)
-            std::cout << "generated " << (i + 1) << " good examples." << std::endl;
+        if ((i + 1) % 10 == 0) cout << "generated " << (i + 1) << " good examples." << endl;
 
         bool found = false;
 
@@ -973,7 +969,7 @@ void ContentionPoint::generate_good_examples_from_base_flow(deque<IndexedExample
                 if (res == sat) {
                     found = true;
 
-                    // DEBUG_MSG("changes: " << mod_expr << std::endl);
+                    // DEBUG_MSG("changes: " << mod_expr << endl);
                     model m = z3_optimizer->get_model();
 
                     IndexedExample* new_eg = new IndexedExample();
@@ -982,7 +978,7 @@ void ContentionPoint::generate_good_examples_from_base_flow(deque<IndexedExample
 
                     // cout << m.eval(sum(smooth_flow_vec)).get_numeral_int() << endl;
 
-                    DEBUG_MSG(*new_eg << std::endl);
+                    DEBUG_MSG(*new_eg << endl);
                     expr_vector eg_vec(net_ctx.z3_ctx());
                     for (unsigned int q = 0; q < new_eg->enqs.size(); q++) {
                         for (unsigned int t = 0; t < new_eg->total_time; t++) {
@@ -994,7 +990,7 @@ void ContentionPoint::generate_good_examples_from_base_flow(deque<IndexedExample
                     eg = new_eg;
 
                     z3_optimizer->pop();
-                    std::snprintf(constr_name, 100, "example_%d", i);
+                    snprintf(constr_name, 100, "example_%d", i);
                     z3_optimizer->add(not_this_example, constr_name);
 
                     past_thresh.push_back(j);
@@ -1011,7 +1007,7 @@ void ContentionPoint::generate_good_examples_from_base_flow(deque<IndexedExample
                     break;
 
                 } else {
-                    DEBUG_MSG(j << " mods didn't work" << std::endl);
+                    DEBUG_MSG(j << " mods didn't work" << endl);
                     z3_optimizer->pop();
                 }
             }
@@ -1117,7 +1113,7 @@ void ContentionPoint::generate_good_examples_flow(deque<IndexedExample*>& exampl
         model m = z3_optimizer->get_model();
 
         populate_example_from_model(m, base_eg);
-        DEBUG_MSG(*base_eg << std::endl);
+        DEBUG_MSG(*base_eg << endl);
 
         examples.push_back(base_eg);
 
@@ -1130,12 +1126,12 @@ void ContentionPoint::generate_good_examples_flow(deque<IndexedExample*>& exampl
                 non_zero_queues.insert(q);
             }
         }
-        DEBUG_MSG("zero_queues: " << zero_queues << std::endl);
-        DEBUG_MSG("non_zero_queues: " << non_zero_queues << std::endl);
+        DEBUG_MSG("zero_queues: " << zero_queues << endl);
+        DEBUG_MSG("non_zero_queues: " << non_zero_queues << endl);
 
         target_queues = non_zero_queues;
     } else {
-        std::cout << res << std::endl;
+        cout << res << endl;
         z3_optimizer->pop();
         return;
     }
@@ -1143,7 +1139,7 @@ void ContentionPoint::generate_good_examples_flow(deque<IndexedExample*>& exampl
     // POP
     z3_optimizer->pop();
 
-    DEBUG_MSG("base eg: " << (get_diff_millisec(start, noww()) / 1000.0) << std::endl);
+    DEBUG_MSG("base eg: " << (get_diff_millisec(start, noww()) / 1000.0) << endl);
 
     // PUSH
     z3_optimizer->push();
@@ -1253,8 +1249,7 @@ void ContentionPoint::generate_good_examples_flow(deque<IndexedExample*>& exampl
     past_thresh.push_back(mod_thresh);
 
     for (unsigned int i = 1; i < count; i++) {
-        if ((i + 1) % 10 == 0)
-            std::cout << "generated " << (i + 1) << " good examples." << std::endl;
+        if ((i + 1) % 10 == 0) cout << "generated " << (i + 1) << " good examples." << endl;
 
         bool found = false;
 
@@ -1273,7 +1268,7 @@ void ContentionPoint::generate_good_examples_flow(deque<IndexedExample*>& exampl
                 if (res == sat) {
                     found = true;
 
-                    // DEBUG_MSG("changes: " << mod_expr << std::endl);
+                    // DEBUG_MSG("changes: " << mod_expr << endl);
                     model m = z3_optimizer->get_model();
 
                     IndexedExample* new_eg = new IndexedExample();
@@ -1282,7 +1277,7 @@ void ContentionPoint::generate_good_examples_flow(deque<IndexedExample*>& exampl
 
                     // cout << m.eval(sum(smooth_flow_vec)).get_numeral_int() << endl;
 
-                    DEBUG_MSG(*new_eg << std::endl);
+                    DEBUG_MSG(*new_eg << endl);
                     expr_vector eg_vec(net_ctx.z3_ctx());
                     for (unsigned int q = 0; q < new_eg->enqs.size(); q++) {
                         for (unsigned int t = 0; t < new_eg->total_time; t++) {
@@ -1294,7 +1289,7 @@ void ContentionPoint::generate_good_examples_flow(deque<IndexedExample*>& exampl
                     eg = new_eg;
 
                     z3_optimizer->pop();
-                    std::snprintf(constr_name, 100, "example_%d", i);
+                    snprintf(constr_name, 100, "example_%d", i);
                     z3_optimizer->add(not_this_example, constr_name);
 
                     past_thresh.push_back(j);
@@ -1311,7 +1306,7 @@ void ContentionPoint::generate_good_examples_flow(deque<IndexedExample*>& exampl
                     break;
 
                 } else {
-                    DEBUG_MSG(j << " mods didn't work" << std::endl);
+                    DEBUG_MSG(j << " mods didn't work" << endl);
                     z3_optimizer->pop();
                 }
             }
@@ -1437,8 +1432,7 @@ void ContentionPoint::generate_good_examples2(IndexedExample* base_eg,
     past_thresh.push_back(mod_thresh);
 
     for (unsigned int i = 1; i < count; i++) {
-        if ((i + 1) % 10 == 0)
-            std::cout << "generated " << (i + 1) << " good examples." << std::endl;
+        if ((i + 1) % 10 == 0) cout << "generated " << (i + 1) << " good examples." << endl;
 
         bool found = false;
 
@@ -1457,7 +1451,7 @@ void ContentionPoint::generate_good_examples2(IndexedExample* base_eg,
                 if (res == sat) {
                     found = true;
 
-                    // DEBUG_MSG("changes: " << mod_expr << std::endl);
+                    // DEBUG_MSG("changes: " << mod_expr << endl);
                     model m = z3_optimizer->get_model();
 
                     IndexedExample* new_eg = new IndexedExample();
@@ -1466,7 +1460,7 @@ void ContentionPoint::generate_good_examples2(IndexedExample* base_eg,
 
                     // cout << m.eval(sum(smooth_flow_vec)).get_numeral_int() << endl;
 
-                    DEBUG_MSG(*new_eg << std::endl);
+                    DEBUG_MSG(*new_eg << endl);
                     expr_vector eg_vec(net_ctx.z3_ctx());
                     for (unsigned int q = 0; q < new_eg->enqs.size(); q++) {
                         for (unsigned int t = 0; t < new_eg->total_time; t++) {
@@ -1478,7 +1472,7 @@ void ContentionPoint::generate_good_examples2(IndexedExample* base_eg,
                     eg = new_eg;
 
                     z3_optimizer->pop();
-                    std::snprintf(constr_name, 100, "example_%d", i);
+                    snprintf(constr_name, 100, "example_%d", i);
                     z3_optimizer->add(not_this_example, constr_name);
 
                     past_thresh.push_back(j);
@@ -1495,7 +1489,7 @@ void ContentionPoint::generate_good_examples2(IndexedExample* base_eg,
                     break;
 
                 } else {
-                    DEBUG_MSG(j << " mods didn't work" << std::endl);
+                    DEBUG_MSG(j << " mods didn't work" << endl);
                     z3_optimizer->pop();
                 }
             }
@@ -1518,9 +1512,9 @@ IndexedExample* ContentionPoint::index_example(Example* eg) {
     for (unsigned int i = 0; i < in_queues.size(); i++) {
         cid_t qid = in_queues[i]->get_id();
         if (eg->enqs.find(qid) == eg->enqs.end()) {
-            std::cout << "ContentionPoint::workload_satisifes_example: Example does not include "
-                         "all queues."
-                      << std::endl;
+            cout << "ContentionPoint::workload_satisifes_example: Example does not include "
+                    "all queues."
+                 << endl;
         }
         ieg->enqs.push_back(eg->enqs[qid]);
     }
@@ -1528,9 +1522,9 @@ IndexedExample* ContentionPoint::index_example(Example* eg) {
     for (unsigned int i = 0; i < in_queues.size(); i++) {
         cid_t qid = in_queues[i]->get_id();
         if (eg->enqs_meta1.find(qid) == eg->enqs_meta1.end()) {
-            std::cout << "ContentionPoint::workload_satisifes_example: Example does not include "
-                         "all queues."
-                      << std::endl;
+            cout << "ContentionPoint::workload_satisifes_example: Example does not include "
+                    "all queues."
+                 << endl;
         }
         ieg->enqs_meta1.push_back(eg->enqs_meta1[qid]);
     }
@@ -1538,9 +1532,9 @@ IndexedExample* ContentionPoint::index_example(Example* eg) {
     for (unsigned int i = 0; i < in_queues.size(); i++) {
         cid_t qid = in_queues[i]->get_id();
         if (eg->enqs_meta2.find(qid) == eg->enqs_meta2.end()) {
-            std::cout << "ContentionPoint::workload_satisifes_example: Example does not include "
-                         "all queues."
-                      << std::endl;
+            cout << "ContentionPoint::workload_satisifes_example: Example does not include "
+                    "all queues."
+                 << endl;
         }
         ieg->enqs_meta2.push_back(eg->enqs_meta2[qid]);
     }
@@ -1548,9 +1542,9 @@ IndexedExample* ContentionPoint::index_example(Example* eg) {
     for (unsigned int i = 0; i < in_queues.size(); i++) {
         cid_t qid = in_queues[i]->get_id();
         if (eg->deqs.find(qid) == eg->deqs.end()) {
-            std::cout << "ContentionPoint::workload_satisifes_example: Example does not include "
-                         "all queues."
-                      << std::endl;
+            cout << "ContentionPoint::workload_satisifes_example: Example does not include "
+                    "all queues."
+                 << endl;
         }
         ieg->deqs.push_back(eg->deqs[qid]);
     }
@@ -1593,34 +1587,34 @@ string ContentionPoint::get_model_str(model& m) {
 
 
     for (unsigned int t = 0; t < total_time; t++) {
-        ss << "---------- T = " << t << " ----------" << std::endl;
-        ss << "input queues: " << std::endl;
+        ss << "---------- T = " << t << " ----------" << endl;
+        ss << "input queues: " << endl;
         for (unsigned int q = 0; q < in_queues.size(); q++) {
             Queue* queue = in_queues[q];
             ss << queue->get_model_str(m, net_ctx, t) << endl;
         }
 
-        ss << "output queues: " << std::endl;
+        ss << "output queues: " << endl;
         for (unsigned int q = 0; q < out_queues.size(); q++) {
             Queue* queue = out_queues[q];
             ss << queue->get_model_str(m, net_ctx, t) << endl;
         }
 
-        ss << "other info: " << std::endl;
-        ss << cp_model_str(m, net_ctx, t) << std::endl;
+        ss << "other info: " << endl;
+        ss << cp_model_str(m, net_ctx, t) << endl;
 
 
         for (unsigned int n = 0; n < nodes.size(); n++) {
             ss << "------------- " << endl;
             QueuingModule* qm = id_to_qm[nodes[n]];
             ss << qm->get_id() << endl;
-            ss << "input queues: " << std::endl;
+            ss << "input queues: " << endl;
             for (unsigned int q = 0; q < qm->in_queue_cnt(); q++) {
                 Queue* queue = qm->get_in_queue(q);
                 ss << queue->get_model_str(m, net_ctx, t) << endl;
             }
 
-            ss << "output queues: " << std::endl;
+            ss << "output queues: " << endl;
             for (unsigned int q = 0; q < qm->out_queue_cnt(); q++) {
                 Queue* queue = qm->get_out_queue(q);
                 ss << queue->get_model_str(m, net_ctx, t) << endl;
@@ -1712,20 +1706,20 @@ ostream& operator<<(ostream& os, const ContentionPoint& p) {
     for (unsigned int i = 0; i < p.nodes.size(); i++) {
         os << p.nodes.at(i) << " ";
     }
-    os << std::endl;
+    os << endl;
 
     os << "in_queues: ";
     for (unsigned int i = 0; i < p.in_queues.size(); i++) {
         os << (*p.in_queues.at(i)) << " ";
     }
-    os << std::endl;
+    os << endl;
 
     os << "out_queues: ";
     for (unsigned int i = 0; i < p.out_queues.size(); i++) {
         os << (*p.out_queues.at(i)) << " ";
     }
-    os << std::endl;
-    os << std::endl;
+    os << endl;
+    os << endl;
 
     return os;
 }
@@ -1738,7 +1732,7 @@ expr ContentionPoint::mk_op(expr lhs, op_t op, expr rhs) {
         case (op_t::LE): return lhs <= rhs;
         case (op_t::EQ): return lhs == rhs;
     }
-    std::cout << "AutoPerfModel::mk_op: should not reach here" << std::endl;
+    cout << "FPerfModel::mk_op: should not reach here" << endl;
     return lhs >= rhs;
 }
 
@@ -1778,14 +1772,12 @@ bool ContentionPoint::set_shared_config(SharedConfig* shared_config) {
         target_queues = shared_config->get_target_queues();
         dists = shared_config->get_dists();
         if (total_time != shared_config->get_total_time()) {
-            std::cout << "Total time in contention point and shared config are different"
-                      << std::endl;
+            cout << "Total time in contention point and shared config are different" << endl;
             return false;
         }
         if (in_queues.size() != shared_config->get_in_queue_cnt()) {
-            std::cout
-                << "Number of input queues in contention point and shared config are different"
-                << std::endl;
+            cout << "Number of input queues in contention point and shared config are different"
+                 << endl;
             return false;
         }
         return true;
@@ -1813,7 +1805,7 @@ solver_res_t ContentionPoint::get_solver_res_t(check_result z3_res) {
             return solver_res_t::UNKNOWN;
         }
     }
-    std::cout << "get_solver_res_t:: Should not reach here" << endl;
+    cout << "get_solver_res_t:: Should not reach here" << endl;
     return solver_res_t::UNKNOWN;
 }
 
@@ -1824,7 +1816,7 @@ expr ContentionPoint::get_expr(Query& query) {
     metric_t m = query.get_metric();
 
     if (metrics.find(m) == metrics.end()) {
-        std::cout << "ContentionPoint::get_expr(Query): Invalid Query" << std::endl;
+        cout << "ContentionPoint::get_expr(Query): Invalid Query" << endl;
         query_expr = net_ctx.bool_val(false);
         return query_expr;
     }
@@ -1837,7 +1829,7 @@ expr ContentionPoint::get_expr(Query& query) {
         case 0: {
             cid_t qid = get<cid_t>(query_lhs);
             if (metrics[m].find(qid) == metrics[m].end()) {
-                std::cout << "ContentionPoint::get_expr(Query): Invalid Query" << std::endl;
+                cout << "ContentionPoint::get_expr(Query): Invalid Query" << endl;
                 query_expr = net_ctx.bool_val(false);
                 return query_expr;
             }
@@ -1852,7 +1844,7 @@ expr ContentionPoint::get_expr(Query& query) {
 
             if (metrics[m].find(qid1) == metrics[m].end() ||
                 metrics[m].find(qid2) == metrics[m].end()) {
-                std::cout << "ContentionPoint::get_expr(Query): Invalid Query" << std::endl;
+                cout << "ContentionPoint::get_expr(Query): Invalid Query" << endl;
                 query_expr = net_ctx.bool_val(false);
                 return query_expr;
             }
@@ -1867,7 +1859,7 @@ expr ContentionPoint::get_expr(Query& query) {
             for (unsigned int i = 0; i < ids.size(); i++) {
                 cid_t id = ids[i];
                 if (metrics[m].find(id) == metrics[m].end()) {
-                    std::cout << "ContentionPoint::get_expr(Query): Invalid Query" << std::endl;
+                    cout << "ContentionPoint::get_expr(Query): Invalid Query" << endl;
                     query_expr = net_ctx.bool_val(false);
                     return query_expr;
                 }
@@ -1877,7 +1869,7 @@ expr ContentionPoint::get_expr(Query& query) {
         }
 
         default: {
-            std::cout << "ContentionPoint::get_expr(Query): Invalid Query" << std::endl;
+            cout << "ContentionPoint::get_expr(Query): Invalid Query" << endl;
             query_expr = net_ctx.bool_val(false);
             return query_expr;
         }
@@ -1923,7 +1915,7 @@ expr ContentionPoint::get_expr(Query& query) {
             }
 
             default: {
-                std::cout << "ContentionPoint::get_expr(Query): Invalid Query" << std::endl;
+                cout << "ContentionPoint::get_expr(Query): Invalid Query" << endl;
                 query_expr = net_ctx.bool_val(false);
                 return query_expr;
             }
@@ -1935,7 +1927,7 @@ expr ContentionPoint::get_expr(Query& query) {
     switch (query.get_quant()) {
         case query_quant_t::FORALL: query_expr = mk_and(query_vec); break;
         case query_quant_t::EXISTS: query_expr = mk_or(query_vec); break;
-        default: std::cout << "ContentionPoint::get_expr(Query): Invalid Query" << std::endl;
+        default: cout << "ContentionPoint::get_expr(Query): Invalid Query" << endl;
     }
 
     return query_expr;
@@ -2282,7 +2274,7 @@ void ContentionPoint::eval_rhs(rhs_t rhs,
         res.valid = true;
         res.value = get<unsigned int>(rhs);
     } else {
-        std::cout << "ContentionPoint::eval_rhs: invalid variant." << std::endl;
+        cout << "ContentionPoint::eval_rhs: invalid variant." << endl;
     }
 }
 

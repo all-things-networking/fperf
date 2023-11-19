@@ -1,6 +1,6 @@
 //
 //  ecmp.cpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 06/06/23.
 //  Copyright © 2023 Mina Tahmasbi Arashloo. All rights reserved.

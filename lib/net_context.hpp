@@ -1,6 +1,6 @@
 //
 //  NetContext.hpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 4/2/20.
 //  Copyright © 2020 Mina Tahmasbi Arashloo. All rights reserved.
@@ -46,7 +46,7 @@ private:
     context ctx;
     // Packets
     const char* names[3] = {"val", "meta1", "meta2"};
-    sort sorts[3] = {ctx.bool_sort(), ctx.int_sort(), ctx.int_sort()};
+    z3::sort sorts[3] = {ctx.bool_sort(), ctx.int_sort(), ctx.int_sort()};
     func_decl_vector* ptup_projs = new func_decl_vector(ctx);
     func_decl pkt_sort = ctx.tuple_sort("pkt_tuple", 3, names, sorts, *ptup_projs);
     func_decl ptup = pkt_sort;

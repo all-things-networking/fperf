@@ -1,6 +1,6 @@
 //
 //  priority_qm.cpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 11/12/20.
 //  Copyright © 2020 Mina Tahmasbi Arashloo. All rights reserved.
@@ -10,10 +10,10 @@
 
 PriorityQM::PriorityQM(cid_t id,
                        unsigned int total_time,
-                       std::vector<QueueInfo> in_queue_info,
+                       vector<QueueInfo> in_queue_info,
                        QueueInfo out_queue_info,
                        NetContext& net_ctx):
-QueuingModule(id, total_time, in_queue_info, std::vector<QueueInfo>{out_queue_info}, net_ctx) {
+QueuingModule(id, total_time, in_queue_info, vector<QueueInfo>{out_queue_info}, net_ctx) {
     init(net_ctx);
 }
 
@@ -22,7 +22,7 @@ void PriorityQM::add_proc_vars(NetContext& net_ctx) {
     (void) net_ctx;
 }
 
-void PriorityQM::add_constrs(NetContext& net_ctx, std::map<std::string, expr>& constr_map) {
+void PriorityQM::add_constrs(NetContext& net_ctx, map<string, expr>& constr_map) {
     char constr_name[100];
 
     for (unsigned int t = 0; t < total_time; t++) {

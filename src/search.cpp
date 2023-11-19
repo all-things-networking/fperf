@@ -1,6 +1,6 @@
 //
 //  search.cpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 11/20/20.
 //  Copyright © 2020 Mina Tahmasbi Arashloo. All rights reserved.
@@ -108,7 +108,7 @@ bool Search::satisfies_bad_example(Workload wl) {
         //        DEBUG_MSG("call time: " << get_diff_microsec(start, noww()) << endl);
 
         if (satisfies) {
-            //            DEBUG_MSG("bad example" << endl << **it << std::endl);
+            //            DEBUG_MSG("bad example" << endl << **it << endl);
             return true;
         }
     }
@@ -150,9 +150,8 @@ bool Search::check(Workload wl) {
                 used_example = true;
             }
             if (query_only_res == solver_res_t::UNKNOWN) {
-                std::cout << "UNKNOWN from full solver::check_without_query for workload: "
-                          << std::endl;
-                std::cout << wl << std::endl;
+                cout << "UNKNOWN from full solver::check_without_query for workload: " << endl;
+                cout << wl << endl;
             }
 
             res = query_only_res == solver_res_t::UNSAT;
@@ -186,9 +185,9 @@ bool Search::check(Workload wl) {
                         DEBUG_MSG(*counter_eg << endl);
                     }
                     if (query_only_res == solver_res_t::UNKNOWN) {
-                        std::cout << "UNKNOWN from full solver::check_without_query for workload: "
-                                  << std::endl;
-                        std::cout << wl << std::endl;
+                        cout << "UNKNOWN from full solver::check_without_query for workload: "
+                             << endl;
+                        cout << wl << endl;
                     }
 
                     res = query_only_res == solver_res_t::UNSAT;
@@ -202,9 +201,8 @@ bool Search::check(Workload wl) {
                 }
                 case solver_res_t::UNKNOWN: {
                     res = false;
-                    std::cout << "UNKNOWN from full solver::check_without_query for workload: "
-                              << std::endl;
-                    std::cout << wl << std::endl;
+                    cout << "UNKNOWN from full solver::check_without_query for workload: " << endl;
+                    cout << wl << endl;
                     break;
                 }
             }
@@ -248,12 +246,12 @@ void Search::search(Workload wl) {
         /* ******************** check the current workload ******************** */
 
         // print current wl
-        std::cout << "----------------------------------------------------------" << std::endl;
+        cout << "----------------------------------------------------------" << endl;
         if (call_cnt > 0) {
             DEBUG_MSG("avg call time: " << (sum_call_time / call_cnt) << endl);
         }
-        std::cout << "round " << round_no << endl;
-        std::cout << wl << std::endl;
+        cout << "round " << round_no << endl;
+        cout << wl << endl;
 
         // check if it is the answer
 
@@ -292,9 +290,9 @@ void Search::search(Workload wl) {
         if (last_input_infeasible) {
             infeasible_wls.push_back(wl);
             wl = wl_last_step;
-            std::cout << "Undoing last step " << std::endl;
-            std::cout << "----------------------------------------------------------" << std::endl;
-            std::cout << wl << std::endl;
+            cout << "Undoing last step " << endl;
+            cout << "----------------------------------------------------------" << endl;
+            cout << wl << endl;
             backtrack_count++;
         } else {
             infeasible_wls.clear();
@@ -310,7 +308,7 @@ void Search::search(Workload wl) {
 
         if (close_count > RESET_THRESH_SLOW_PROGRESS || backtrack_count > RESET_THRESH_BACKTRACK) {
 
-            std::cout << banner("RESETTING") << std::endl;
+            cout << banner("RESETTING") << endl;
             reset_cnt++;
             init_wl(wl);
             close_count = 0;
@@ -359,11 +357,10 @@ void Search::search(Workload wl) {
             }
 
             if (found_next) {
-                DEBUG_MSG("candidate: " << candidate_cost << ": "
-                                        << good_example_match_count(candidate) << " "
-                                        << bad_example_match_count(candidate) << " "
-                                        << candidate.cost() << std::endl);
-                DEBUG_MSG(candidate << std::endl);
+                DEBUG_MSG("candidate: "
+                          << candidate_cost << ": " << good_example_match_count(candidate) << " "
+                          << bad_example_match_count(candidate) << " " << candidate.cost() << endl);
+                DEBUG_MSG(candidate << endl);
             }
         }
 
@@ -434,8 +431,7 @@ Workload Search::refine(Workload wl) {
         done = !changed;
     }
 
-    std::cout << "refinement 1 time: " << (get_diff_millisec(start, noww()) / 1000.0) << " s"
-              << endl;
+    cout << "refinement 1 time: " << (get_diff_millisec(start, noww()) / 1000.0) << " s" << endl;
 
     start = noww();
 
@@ -455,7 +451,7 @@ Workload Search::refine(Workload wl) {
             // TODO: This assumes that rhs is constant
             if (m == metric_t::DST || m == metric_t::ECMP) {
                 unsigned int q = indiv.get_queue();
-                unsigned int c = std::get<unsigned int>(comp.get_rhs());
+                unsigned int c = get<unsigned int>(comp.get_rhs());
                 if (c < 1) c = 1;
 
                 candidate = wl;
@@ -475,8 +471,7 @@ Workload Search::refine(Workload wl) {
         }
     }
 
-    std::cout << "refinement 3 time: " << (get_diff_millisec(start, noww()) / 1000.0) << " s"
-              << endl;
+    cout << "refinement 3 time: " << (get_diff_millisec(start, noww()) / 1000.0) << " s" << endl;
 
     start = noww();
     // Find tighter bounds when the
@@ -551,8 +546,7 @@ Workload Search::refine(Workload wl) {
             }
         }
     }
-    std::cout << "refinement 4 time: " << (get_diff_millisec(start, noww()) / 1000.0) << " s"
-              << endl;
+    cout << "refinement 4 time: " << (get_diff_millisec(start, noww()) / 1000.0) << " s" << endl;
 
     start = noww();
 
@@ -654,8 +648,7 @@ Workload Search::refine(Workload wl) {
             }
         }
     }
-    std::cout << "refinement 2 time: " << (get_diff_millisec(start, noww()) / 1000.0) << " s"
-              << endl;
+    cout << "refinement 2 time: " << (get_diff_millisec(start, noww()) / 1000.0) << " s" << endl;
     return wl;
 }
 
@@ -670,15 +663,15 @@ void Search::run() {
 
     print_stats();
 
-    std::cout << "search time: " << (get_diff_millisec(start, noww()) / 1000.0) << " s" << endl;
+    cout << "search time: " << (get_diff_millisec(start, noww()) / 1000.0) << " s" << endl;
 
     for (unsigned int i = 0; i < solutions.size(); i++) {
-        std::cout << "Solution " << i << endl;
+        cout << "Solution " << i << endl;
         Workload refined_ans = refine(solutions[i]);
-        std::cout << refined_ans << endl << endl;
+        cout << refined_ans << endl << endl;
     }
 
-    // std::cout << "total Search::run time: " << get_diff_sec(start, noww()) << endl;
+    // cout << "total Search::run time: " << get_diff_sec(start, noww()) << endl;
 }
 
 
@@ -891,32 +884,32 @@ Workload Search::random_neighbor(Workload wl, unsigned int hops) {
     uniform_int_distribution<unsigned int> nei_dist(0, (unsigned int) candidates.size() - 1);
 
     DEBUG_MSG("done picking the candidate" << endl);
-    std::mt19937& gen = dists->get_gen();
+    mt19937& gen = dists->get_gen();
     return candidates[nei_dist(gen)];
 }
 
 void Search::print_stats() {
-    std::cout << "-------------------- STATS -----------------------" << std::endl;
-    std::cout << "number of rounds: " << round_no << endl;
-    std::cout << "rounds in local search: " << rounds_in_local_search << endl;
-    std::cout << "number of resets: " << reset_cnt << endl;
-    std::cout << "no_solver_call: " << no_solver_call << endl;
-    std::cout << "input_only_solver_call: " << input_only_solver_call << endl;
-    std::cout << "query_only_solver_call: " << query_only_solver_call << endl;
-    std::cout << "full_solver_call: " << full_solver_call << endl;
-    std::cout << "infeasible_input_cnt: " << infeasible_input_cnt << endl;
-    std::cout << "full solver stats:\n";
-    std::cout << "   w/o query: " << (cp->get_check_workload_without_query_avg_time() / 1000.0)
-              << " " << (cp->get_check_workload_without_query_max_time() / 1000.0) << endl;
-    std::cout << "   w/ query: " << (cp->get_check_workload_with_query_avg_time() / 1000.0) << " "
-              << (cp->get_check_workload_with_query_max_time() / 1000.0) << endl;
-    std::cout << round_no << "\t" << reset_cnt << "\t" << rounds_in_local_search << "\t"
-              << no_solver_call << "\t" << full_solver_call << "\t"
-              << cp->get_check_workload_without_query_avg_time() << " ("
-              << cp->get_check_workload_without_query_max_time() << ")"
-              << "\t" << (full_solver_call - infeasible_input_cnt) << "\t"
-              << cp->get_check_workload_with_query_avg_time() << " ("
-              << cp->get_check_workload_with_query_max_time() << ")"
-              << "\t" << endl;
-    std::cout << "--------------------------------------------------" << std::endl;
+    cout << "-------------------- STATS -----------------------" << endl;
+    cout << "number of rounds: " << round_no << endl;
+    cout << "rounds in local search: " << rounds_in_local_search << endl;
+    cout << "number of resets: " << reset_cnt << endl;
+    cout << "no_solver_call: " << no_solver_call << endl;
+    cout << "input_only_solver_call: " << input_only_solver_call << endl;
+    cout << "query_only_solver_call: " << query_only_solver_call << endl;
+    cout << "full_solver_call: " << full_solver_call << endl;
+    cout << "infeasible_input_cnt: " << infeasible_input_cnt << endl;
+    cout << "full solver stats:\n";
+    cout << "   w/o query: " << (cp->get_check_workload_without_query_avg_time() / 1000.0) << " "
+         << (cp->get_check_workload_without_query_max_time() / 1000.0) << endl;
+    cout << "   w/ query: " << (cp->get_check_workload_with_query_avg_time() / 1000.0) << " "
+         << (cp->get_check_workload_with_query_max_time() / 1000.0) << endl;
+    cout << round_no << "\t" << reset_cnt << "\t" << rounds_in_local_search << "\t"
+         << no_solver_call << "\t" << full_solver_call << "\t"
+         << cp->get_check_workload_without_query_avg_time() << " ("
+         << cp->get_check_workload_without_query_max_time() << ")"
+         << "\t" << (full_solver_call - infeasible_input_cnt) << "\t"
+         << cp->get_check_workload_with_query_avg_time() << " ("
+         << cp->get_check_workload_with_query_max_time() << ")"
+         << "\t" << endl;
+    cout << "--------------------------------------------------" << endl;
 }

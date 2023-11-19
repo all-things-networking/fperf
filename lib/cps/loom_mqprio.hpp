@@ -1,6 +1,6 @@
 //
 //  loom_mqprio.hpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 5/3/21.
 //  Copyright © 2021 Mina Tahmasbi Arashloo. All rights reserved.
@@ -13,6 +13,8 @@
 #include "cenq.hpp"
 #include "contention_point.hpp"
 
+using namespace std;
+
 class LoomMQPrio : public ContentionPoint {
 public:
     LoomMQPrio(unsigned int nic_tx_queue_cnt,
@@ -24,14 +26,14 @@ private:
     unsigned int per_core_flow_cnt;
     unsigned int tenant_cnt = 2;
 
-    std::vector<CEnq*> cenq;
-    std::vector<AIPG*> aipg;
+    vector<CEnq*> cenq;
+    vector<AIPG*> aipg;
 
     void add_nodes();
     void add_edges();
     void add_metrics();
 
-    std::string cp_model_str(model& m, NetContext& net_ctx, unsigned int t);
+    string cp_model_str(model& m, NetContext& net_ctx, unsigned int t);
 };
 
 

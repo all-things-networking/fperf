@@ -1,6 +1,6 @@
 //
 //  solver.cpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 2/3/21.
 //  Copyright © 2021 Mina Tahmasbi Arashloo. All rights reserved.
@@ -28,7 +28,7 @@ unsigned long long int Solver::get_check_workload_with_query_avg_time() {
                : check_workload_with_query_total_time / check_workload_with_query_total_invoc;
 }
 
-std::ostream& operator<<(std::ostream& os, const solver_res_t& res) {
+ostream& operator<<(ostream& os, const solver_res_t& res) {
     switch (res) {
         case solver_res_t::SAT: os << "SAT"; break;
         case solver_res_t::UNSAT: os << "UNSAT"; break;

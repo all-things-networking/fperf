@@ -7,8 +7,6 @@
 #include "simple_cp.hpp"
 #include "tests.hpp"
 
-using namespace std;
-
 bool test_search() {
   uint total_time = 5;
   uint last_t = total_time - 1;

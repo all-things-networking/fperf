@@ -1,6 +1,6 @@
 //
 //  leaf_spine.cpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 12/24/21.
 //  Copyright © 2021 Mina Tahmasbi Arashloo. All rights reserved.
@@ -402,7 +402,7 @@ void LeafSpine::add_metrics() {
     */
 }
 
-std::string LeafSpine::cp_model_str(model& m, NetContext& net_ctx, unsigned int t) {
+string LeafSpine::cp_model_str(model& m, NetContext& net_ctx, unsigned int t) {
     (void) m;
     (void) net_ctx;
     (void) t;

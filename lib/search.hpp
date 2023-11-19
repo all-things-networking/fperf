@@ -1,6 +1,6 @@
 //
 //  search.hpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 11/20/20.
 //  Copyright © 2020 Mina Tahmasbi Arashloo. All rights reserved.
@@ -21,8 +21,6 @@
 #include "shared_config.hpp"
 #include "spec_factory.hpp"
 #include "workload.hpp"
-
-using namespace std;
 
 class Search {
 public:

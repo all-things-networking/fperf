@@ -1,6 +1,6 @@
 //
 //  workload.hpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 11/19/20.
 //  Copyright © 2020 Mina Tahmasbi Arashloo. All rights reserved.
@@ -56,7 +56,7 @@ private:
     qset_t qset;
     metric_t metric;
 
-    friend std::ostream& operator<<(std::ostream& os, const QSum& tsum);
+    friend ostream& operator<<(ostream& os, const QSum& tsum);
     friend bool operator==(const QSum& s1, const QSum& s2);
     friend bool operator<(const QSum& s1, const QSum& s2);
     friend class SpecFactory;
@@ -78,7 +78,7 @@ private:
     metric_t metric;
     unsigned int queue;
 
-    friend std::ostream& operator<<(std::ostream& os, const Indiv& tone);
+    friend ostream& operator<<(ostream& os, const Indiv& tone);
     friend bool operator==(const Indiv& s1, const Indiv& s2);
     friend bool operator<(const Indiv& s1, const Indiv& s2);
 };
@@ -94,14 +94,14 @@ public:
 private:
     unsigned int coeff;
 
-    friend std::ostream& operator<<(std::ostream& os, const Time& time);
+    friend ostream& operator<<(ostream& os, const Time& time);
     friend bool operator==(const Time& t1, const Time& t2);
     friend bool operator<(const Time& t1, const Time& t2);
 };
 
 //************************************* MTRC_EXPR/LHS *************************************//
 
-typedef std::variant<QSum, Indiv> m_expr_t;
+typedef variant<QSum, Indiv> m_expr_t;
 typedef m_expr_t lhs_t;
 
 unsigned int lhs_ast_size(const lhs_t lhs);
@@ -110,19 +110,19 @@ unsigned int m_expr_ast_size(const m_expr_t m_expr);
 bool lhs_applies_to_queue(const lhs_t lhs, unsigned int queue);
 bool m_expr_applies_to_queue(const m_expr_t m_expr, unsigned int queue);
 
-std::ostream& operator<<(std::ostream& os, const m_expr_t& m_expr);
+ostream& operator<<(ostream& os, const m_expr_t& m_expr);
 
 bool operator==(const m_expr_t& m_expr1, const m_expr_t& m_expr2);
 bool operator<(const m_expr_t& m_expr1, const m_expr_t& m_expr2);
 
 //************************************* RHS *************************************//
 
-typedef std::variant<m_expr_t, Time, unsigned int> rhs_t;
+typedef variant<m_expr_t, Time, unsigned int> rhs_t;
 
 unsigned int rhs_ast_size(const rhs_t rhs);
 bool rhs_applies_to_queue(const rhs_t rhs, unsigned int queue);
 
-std::ostream& operator<<(std::ostream& os, const rhs_t& rhs);
+ostream& operator<<(ostream& os, const rhs_t& rhs);
 
 bool operator==(const rhs_t& rhs1, const rhs_t& rhs2);
 bool operator<(const rhs_t& rhs1, const rhs_t& rhs2);
@@ -142,7 +142,7 @@ private:
     metric_t metric;
     qset_t qset;
 
-    friend std::ostream& operator<<(std::ostream& os, const Unique& u);
+    friend ostream& operator<<(ostream& os, const Unique& u);
     friend bool operator==(const Unique& u1, const Unique& u2);
     friend bool operator<(const Unique& u1, const Unique& u2);
 };
@@ -162,7 +162,7 @@ private:
     metric_t metric;
     unsigned int queue;
 
-    friend std::ostream& operator<<(std::ostream& os, const Same& s);
+    friend ostream& operator<<(ostream& os, const Same& s);
     friend bool operator==(const Same& s1, const Same& s2);
     friend bool operator<(const Same& s1, const Same& s2);
 };
@@ -182,7 +182,7 @@ private:
     metric_t metric;
     unsigned int queue;
 
-    friend std::ostream& operator<<(std::ostream& os, const Incr& incr);
+    friend ostream& operator<<(ostream& os, const Incr& incr);
     friend bool operator==(const Incr& incr1, const Incr& incr2);
     friend bool operator<(const Incr& incr1, const Incr& incr2);
 };
@@ -202,7 +202,7 @@ private:
     metric_t metric;
     unsigned int queue;
 
-    friend std::ostream& operator<<(std::ostream& os, const Decr& decr);
+    friend ostream& operator<<(ostream& os, const Decr& decr);
     friend bool operator==(const Decr& decr1, const Decr& decr2);
     friend bool operator<(const Decr& decr1, const Decr& decr2);
 };
@@ -233,15 +233,15 @@ private:
 
     void normalize();
 
-    friend std::ostream& operator<<(std::ostream& os, const Comp& spec);
-    friend std::ostream& operator<<(std::ostream& os, const Comp* spec);
+    friend ostream& operator<<(ostream& os, const Comp& spec);
+    friend ostream& operator<<(ostream& os, const Comp* spec);
     friend bool operator==(const Comp& spec1, const Comp& spec2);
     friend bool operator!=(const Comp& spec1, const Comp& spec2);
     friend bool operator<(const Comp& spec1, const Comp& spec2);
 };
 
 //************************************* WlSpec *************************************//
-typedef std::variant<Comp, Same, Incr, Decr, Unique> wl_spec_t;
+typedef variant<Comp, Same, Incr, Decr, Unique> wl_spec_t;
 
 bool wl_spec_applies_to_queue(wl_spec_t spec, unsigned int queue);
 
@@ -251,7 +251,7 @@ bool wl_spec_is_all(wl_spec_t spec);
 
 unsigned int wl_spec_ast_size(const wl_spec_t wl_spec);
 
-std::ostream& operator<<(std::ostream& os, const wl_spec_t& wl_spec);
+ostream& operator<<(ostream& os, const wl_spec_t& wl_spec);
 
 bool operator==(const wl_spec_t& wl_spec1, const wl_spec_t& wl_spec2);
 bool operator<(const wl_spec_t& wl_spec1, const wl_spec_t& wl_spec2);
@@ -283,8 +283,8 @@ private:
 
     void normalize();
 
-    friend std::ostream& operator<<(std::ostream& os, const TimedSpec& spec);
-    friend std::ostream& operator<<(std::ostream& os, const TimedSpec* spec);
+    friend ostream& operator<<(ostream& os, const TimedSpec& spec);
+    friend ostream& operator<<(ostream& os, const TimedSpec* spec);
     friend bool operator==(const TimedSpec& spec1, const TimedSpec& spec2);
     friend bool operator!=(const TimedSpec& spec1, const TimedSpec& spec2);
     friend bool operator<(const TimedSpec& spec1, const TimedSpec& spec2);
@@ -292,7 +292,7 @@ private:
 
 
 //************************************* Workload *************************************//
-typedef map<time_range_t, std::set<wl_spec_t>> timeline_t;
+typedef map<time_range_t, set<wl_spec_t>> timeline_t;
 
 class Workload {
 public:
@@ -316,14 +316,14 @@ public:
 
     wl_cost_t cost() const;
 
-    friend std::ostream& operator<<(std::ostream& os, const Workload& wl);
-    friend std::ostream& operator<<(std::ostream& os, const Workload* wl);
+    friend ostream& operator<<(ostream& os, const Workload& wl);
+    friend ostream& operator<<(ostream& os, const Workload* wl);
 
 private:
     unsigned int max_size;
     unsigned int queue_cnt;
     unsigned int total_time;
-    std::set<wl_spec_t> empty_set;
+    set<wl_spec_t> empty_set;
 
     set<TimedSpec> all_specs;
     timeline_t timeline;

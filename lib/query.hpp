@@ -1,6 +1,6 @@
 //
 //  query.hpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 11/20/20.
 //  Copyright © 2020 Mina Tahmasbi Arashloo. All rights reserved.
@@ -13,9 +13,9 @@
 #include "util.hpp"
 #include "workload.hpp"
 
-typedef std::vector<cid_t> qsum_t;
-typedef std::pair<cid_t, cid_t> qdiff_t;
-typedef std::variant<cid_t, qdiff_t, qsum_t> query_lhs_t;
+typedef vector<cid_t> qsum_t;
+typedef pair<cid_t, cid_t> qdiff_t;
+typedef variant<cid_t, qdiff_t, qsum_t> query_lhs_t;
 
 enum class query_quant_t { FORALL = 0, EXISTS };
 

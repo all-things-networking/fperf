@@ -1,6 +1,6 @@
 //
 //  main.cpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 12/07/22.
 //  Copyright © 2022 Mina Tahmasbi Arashloo. All rights reserved.
@@ -11,42 +11,41 @@
 /******************************* Dists *****************************/
 Dists::Dists(DistsParams params) {
     unsigned int seed = params.random_seed;
-    std::cout << "seed is: " << seed << std::endl;
+    cout << "seed is: " << seed << endl;
     gen.seed(seed);
 
-    real_zero_to_one_dist = std::uniform_real_distribution<double>(0.0, 1.0);
+    real_zero_to_one_dist = uniform_real_distribution<double>(0.0, 1.0);
 
-    rhs_dist = std::discrete_distribution<unsigned int>(begin(params.rhs_selection_weights),
-                                                        end(params.rhs_selection_weights));
+    rhs_dist = discrete_distribution<unsigned int>(begin(params.rhs_selection_weights),
+                                                   end(params.rhs_selection_weights));
 
-    rhs_const_dist = std::uniform_int_distribution<unsigned int>(params.rhs_const_min,
-                                                                 params.rhs_const_max);
+    rhs_const_dist = uniform_int_distribution<unsigned int>(params.rhs_const_min,
+                                                            params.rhs_const_max);
 
-    rhs_time_coeff_dist = std::uniform_int_distribution<unsigned int>(params.rhs_time_coeff_min,
-                                                                      params.rhs_time_coeff_max);
+    rhs_time_coeff_dist = uniform_int_distribution<unsigned int>(params.rhs_time_coeff_min,
+                                                                 params.rhs_time_coeff_max);
 
-    trf_dist = std::discrete_distribution<unsigned int>(begin(params.trf_selection_weights),
-                                                        end(params.trf_selection_weights));
+    trf_dist = discrete_distribution<unsigned int>(begin(params.trf_selection_weights),
+                                                   end(params.trf_selection_weights));
 
 
-    wl_metric_dist = std::discrete_distribution<unsigned int>(
-        begin(params.wl_metric_selection_weights), end(params.wl_metric_selection_weights));
+    wl_metric_dist = discrete_distribution<unsigned int>(begin(params.wl_metric_selection_weights),
+                                                         end(params.wl_metric_selection_weights));
 
-    input_queue_dist = std::uniform_int_distribution<unsigned int>(0, params.in_queue_cnt - 1);
-    input_queue_cnt_dist = std::uniform_int_distribution<unsigned int>(0, params.in_queue_cnt + 1);
+    input_queue_dist = uniform_int_distribution<unsigned int>(0, params.in_queue_cnt - 1);
+    input_queue_cnt_dist = uniform_int_distribution<unsigned int>(0, params.in_queue_cnt + 1);
 
-    op_dist = std::uniform_int_distribution<unsigned int>(params.op_range_min, params.op_range_max);
+    op_dist = uniform_int_distribution<unsigned int>(params.op_range_min, params.op_range_max);
 
-    timestep_dist = std::uniform_int_distribution<unsigned int>(0, params.total_time - 1);
+    timestep_dist = uniform_int_distribution<unsigned int>(0, params.total_time - 1);
 
-    enq_dist = std::uniform_int_distribution<unsigned int>(params.enq_range_min,
-                                                           params.enq_range_max);
+    enq_dist = uniform_int_distribution<unsigned int>(params.enq_range_min, params.enq_range_max);
 
-    pkt_meta1_val_dist = std::uniform_int_distribution<unsigned int>(0, params.pkt_meta1_val_max);
-    pkt_meta2_val_dist = std::uniform_int_distribution<unsigned int>(0, params.pkt_meta2_val_max);
+    pkt_meta1_val_dist = uniform_int_distribution<unsigned int>(0, params.pkt_meta1_val_max);
+    pkt_meta2_val_dist = uniform_int_distribution<unsigned int>(0, params.pkt_meta2_val_max);
 }
 
-std::mt19937& Dists::get_gen() {
+mt19937& Dists::get_gen() {
     return gen;
 }
 
@@ -98,15 +97,15 @@ unsigned int Dists::pkt_metric2_val() {
     return pkt_meta2_val_dist(gen);
 }
 
-std::uniform_int_distribution<unsigned int>& Dists::get_pkt_meta1_val_dist() {
+uniform_int_distribution<unsigned int>& Dists::get_pkt_meta1_val_dist() {
     return pkt_meta1_val_dist;
 }
 
-std::uniform_int_distribution<unsigned int>& Dists::get_pkt_meta2_val_dist() {
+uniform_int_distribution<unsigned int>& Dists::get_pkt_meta2_val_dist() {
     return pkt_meta2_val_dist;
 }
 
-std::uniform_int_distribution<unsigned int>& Dists::get_rhs_const_dist() {
+uniform_int_distribution<unsigned int>& Dists::get_rhs_const_dist() {
     return rhs_const_dist;
 }
 

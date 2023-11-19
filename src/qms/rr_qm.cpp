@@ -1,6 +1,6 @@
 //
 //  rr_qm.cpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 2/17/21.
 //  Copyright © 2021 Mina Tahmasbi Arashloo. All rights reserved.
@@ -10,10 +10,10 @@
 
 RRQM::RRQM(cid_t id,
            unsigned int total_time,
-           std::vector<QueueInfo> in_queue_info,
+           vector<QueueInfo> in_queue_info,
            QueueInfo out_queue_info,
            NetContext& net_ctx):
-QueuingModule(id, total_time, in_queue_info, std::vector<QueueInfo>{out_queue_info}, net_ctx) {
+QueuingModule(id, total_time, in_queue_info, vector<QueueInfo>{out_queue_info}, net_ctx) {
     last_served_queue_ = new vector<expr>[in_queues.size()];
     init(net_ctx);
 }
@@ -22,13 +22,13 @@ void RRQM::add_proc_vars(NetContext& net_ctx) {
     for (unsigned int q = 0; q < in_queues.size(); q++) {
         for (unsigned int t = 0; t < total_time; t++) {
             char vname[100];
-            std::sprintf(vname, "%s_last_served_queue[%d][%d]", id.c_str(), q, t);
+            sprintf(vname, "%s_last_served_queue[%d][%d]", id.c_str(), q, t);
             last_served_queue_[q].push_back(net_ctx.bool_const(vname));
         }
     }
 }
 
-void RRQM::add_constrs(NetContext& net_ctx, std::map<std::string, expr>& constr_map) {
+void RRQM::add_constrs(NetContext& net_ctx, map<string, expr>& constr_map) {
     char constr_name[100];
     unsigned long in_queue_cnt = in_queues.size();
 

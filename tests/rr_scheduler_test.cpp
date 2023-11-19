@@ -28,7 +28,7 @@ bool test_unsat_query() {
                            time_range_t(total_time - 1, total_time - 1),
                            total_time));
 
-  std::cout << "base workload: " << std::endl << wl << std::endl;
+  cout << "base workload: " << endl << wl << endl;
 
   rr->set_base_workload(wl);
 
@@ -77,7 +77,7 @@ bool test_sat_query() {
                            time_range_t(total_time - 1, total_time - 1),
                            total_time));
 
-  std::cout << "base workload: " << std::endl << wl << std::endl;
+  cout << "base workload: " << endl << wl << endl;
 
   rr->set_base_workload(wl);
 

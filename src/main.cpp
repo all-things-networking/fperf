@@ -1,6 +1,6 @@
 //
 //  main.cpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 3/2/20.
 //  Copyright © 2020 Mina Tahmasbi Arashloo. All rights reserved.
@@ -24,7 +24,7 @@ bool debug = false;
 int main(int argc, const char* argv[]) {
     (void) argc;
     (void) argv;
-    std::vector<std::string> args(argv + 1, argv + argc);
+    vector<string> args(argv + 1, argv + argc);
 
     //    prio();
     //     rr(args[0]);
@@ -33,7 +33,7 @@ int main(int argc, const char* argv[]) {
     //        leaf_spine_bw(args[0]);
     leaf_spine_bw();
 
-    std::cout << "FINISHED " << args[0] << std::endl;
+    cout << "FINISHED " << args[0] << endl;
 
     return 0;
 }

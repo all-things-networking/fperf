@@ -1,6 +1,6 @@
 //
 //  tests.cpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 12/05/22.
 //  Copyright © 2022 Mina Tahmasbi Arashloo. All rights reserved.
@@ -20,14 +20,14 @@
 void run(ContentionPoint* cp,
          IndexedExample* base_eg,
          unsigned int good_example_cnt,
-         std::string good_examples_file,
+         string good_examples_file,
          unsigned int bad_example_cnt,
-         std::string bad_examples_file,
+         string bad_examples_file,
          Query& query,
          unsigned int max_spec,
          SharedConfig* config);
 
-void prio(std::string good_examples_file, std::string bad_examples_file) {
+void prio(string good_examples_file, string bad_examples_file) {
 
     cout << "Prio" << endl;
     time_typ start_time = noww();
@@ -92,7 +92,7 @@ void prio(std::string good_examples_file, std::string bad_examples_file) {
         config);
 }
 
-void rr(std::string good_examples_file, std::string bad_examples_file) {
+void rr(string good_examples_file, string bad_examples_file) {
 
     cout << "rr" << endl;
     time_typ start_time = noww();
@@ -128,7 +128,7 @@ void rr(std::string good_examples_file, std::string bad_examples_file) {
                   time_range_t(total_time - 1, total_time - 1),
                   total_time));
 
-    std::cout << "base workload: " << std::endl << wl << std::endl;
+    cout << "base workload: " << endl << wl << endl;
 
     rr->set_base_workload(wl);
 
@@ -187,7 +187,7 @@ void rr(std::string good_examples_file, std::string bad_examples_file) {
         config);
 }
 
-void fq_codel(std::string good_examples_file, std::string bad_examples_file) {
+void fq_codel(string good_examples_file, string bad_examples_file) {
 
     cout << "fq_codel" << endl;
     time_typ start_time = noww();
@@ -265,7 +265,7 @@ void fq_codel(std::string good_examples_file, std::string bad_examples_file) {
         config);
 }
 
-void loom(std::string good_examples_file, std::string bad_examples_file) {
+void loom(string good_examples_file, string bad_examples_file) {
 
     cout << "loom" << endl;
     time_typ start_time = noww();
@@ -364,7 +364,7 @@ void loom(std::string good_examples_file, std::string bad_examples_file) {
         config);
 }
 
-void leaf_spine_bw(std::string good_examples_file, std::string bad_examples_file) {
+void leaf_spine_bw(string good_examples_file, string bad_examples_file) {
     cout << "leaf_spine_bw" << endl;
     time_typ start_time = noww();
 

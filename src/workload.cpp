@@ -1,6 +1,6 @@
 //
 //  workload.cpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 11/19/20.
 //  Copyright © 2020 Mina Tahmasbi Arashloo. All rights reserved.
@@ -35,7 +35,7 @@ metric_t QSum::get_metric() const {
     return metric;
 }
 
-std::ostream& operator<<(std::ostream& os, const QSum& qsum) {
+ostream& operator<<(ostream& os, const QSum& qsum) {
     os << "SUM_[q in " << qsum.qset << "] " << qsum.metric << "(q ,t)";
     return os;
 }
@@ -66,7 +66,7 @@ metric_t Indiv::get_metric() const {
     return metric;
 }
 
-std::ostream& operator<<(std::ostream& os, const Indiv& indiv) {
+ostream& operator<<(ostream& os, const Indiv& indiv) {
     os << indiv.metric << "(" << indiv.queue << ", t)";
     return os;
 }
@@ -88,7 +88,7 @@ unsigned int Time::get_coeff() const {
     return coeff;
 }
 
-std::ostream& operator<<(std::ostream& os, const Time& time) {
+ostream& operator<<(ostream& os, const Time& time) {
     if (time.coeff != 1) os << time.coeff;
     os << "t";
     return os;
@@ -127,7 +127,7 @@ unsigned int m_expr_ast_size(const m_expr_t m_expr) {
         return 1u;
 }
 
-std::ostream& operator<<(std::ostream& os, const m_expr_t& m_expr) {
+ostream& operator<<(ostream& os, const m_expr_t& m_expr) {
     switch (m_expr.index()) {
         // QSum
         case 0: os << get<QSum>(m_expr); break;
@@ -139,11 +139,11 @@ std::ostream& operator<<(std::ostream& os, const m_expr_t& m_expr) {
 }
 
 bool operator==(const m_expr_t& m_expr1, const m_expr_t& m_expr2) {
-    if (std::holds_alternative<QSum>(m_expr1) && std::holds_alternative<QSum>(m_expr2)) {
-        return std::get<QSum>(m_expr1) == std::get<QSum>(m_expr2);
+    if (holds_alternative<QSum>(m_expr1) && holds_alternative<QSum>(m_expr2)) {
+        return get<QSum>(m_expr1) == get<QSum>(m_expr2);
     }
-    if (std::holds_alternative<Indiv>(m_expr1) && std::holds_alternative<Indiv>(m_expr2)) {
-        return std::get<Indiv>(m_expr1) == std::get<Indiv>(m_expr2);
+    if (holds_alternative<Indiv>(m_expr1) && holds_alternative<Indiv>(m_expr2)) {
+        return get<Indiv>(m_expr1) == get<Indiv>(m_expr2);
     }
     return false;
 }
@@ -151,23 +151,23 @@ bool operator==(const m_expr_t& m_expr1, const m_expr_t& m_expr2) {
 bool operator<(const m_expr_t& m_expr1, const m_expr_t& m_expr2) {
     // QSum < Indiv
 
-    if (std::holds_alternative<QSum>(m_expr1)) {
-        if (std::holds_alternative<QSum>(m_expr2)) {
-            return std::get<QSum>(m_expr1) < std::get<QSum>(m_expr2);
+    if (holds_alternative<QSum>(m_expr1)) {
+        if (holds_alternative<QSum>(m_expr2)) {
+            return get<QSum>(m_expr1) < get<QSum>(m_expr2);
         } else {
             return true;
         }
     }
 
-    else if (std::holds_alternative<Indiv>(m_expr1)) {
-        if (std::holds_alternative<Indiv>(m_expr2)) {
-            return std::get<Indiv>(m_expr1) < std::get<Indiv>(m_expr2);
+    else if (holds_alternative<Indiv>(m_expr1)) {
+        if (holds_alternative<Indiv>(m_expr2)) {
+            return get<Indiv>(m_expr1) < get<Indiv>(m_expr2);
         } else {
             return false;
         }
     }
 
-    std::cout << "operator < for m_expr: should not reach here" << endl;
+    cout << "operator < for m_expr: should not reach here" << endl;
     return false;
 }
 
@@ -200,7 +200,7 @@ unsigned int rhs_ast_size(const rhs_t rhs) {
         return 0u;
 }
 
-std::ostream& operator<<(std::ostream& os, const rhs_t& rhs) {
+ostream& operator<<(ostream& os, const rhs_t& rhs) {
     switch (rhs.index()) {
         // m_expr
         case 0: {
@@ -223,14 +223,14 @@ std::ostream& operator<<(std::ostream& os, const rhs_t& rhs) {
 }
 
 bool operator==(const rhs_t& rhs1, const rhs_t& rhs2) {
-    if (std::holds_alternative<m_expr_t>(rhs1) && std::holds_alternative<m_expr_t>(rhs2)) {
-        return std::get<m_expr_t>(rhs1) == std::get<m_expr_t>(rhs2);
+    if (holds_alternative<m_expr_t>(rhs1) && holds_alternative<m_expr_t>(rhs2)) {
+        return get<m_expr_t>(rhs1) == get<m_expr_t>(rhs2);
     }
-    if (std::holds_alternative<Time>(rhs1) && std::holds_alternative<Time>(rhs2)) {
-        return std::get<Time>(rhs1) == std::get<Time>(rhs2);
+    if (holds_alternative<Time>(rhs1) && holds_alternative<Time>(rhs2)) {
+        return get<Time>(rhs1) == get<Time>(rhs2);
     }
-    if (std::holds_alternative<unsigned int>(rhs1) && std::holds_alternative<unsigned int>(rhs2)) {
-        return std::get<unsigned int>(rhs1) == std::get<unsigned int>(rhs2);
+    if (holds_alternative<unsigned int>(rhs1) && holds_alternative<unsigned int>(rhs2)) {
+        return get<unsigned int>(rhs1) == get<unsigned int>(rhs2);
     }
     return false;
 }
@@ -238,32 +238,32 @@ bool operator==(const rhs_t& rhs1, const rhs_t& rhs2) {
 bool operator<(const rhs_t& rhs1, const rhs_t& rhs2) {
     // m_expr_t < Time < unsigned int
 
-    if (std::holds_alternative<m_expr_t>(rhs1)) {
-        if (std::holds_alternative<m_expr_t>(rhs2)) {
-            return std::get<m_expr_t>(rhs1) < std::get<m_expr_t>(rhs2);
+    if (holds_alternative<m_expr_t>(rhs1)) {
+        if (holds_alternative<m_expr_t>(rhs2)) {
+            return get<m_expr_t>(rhs1) < get<m_expr_t>(rhs2);
         } else {
             return true;
         }
     }
 
-    else if (std::holds_alternative<Time>(rhs1)) {
-        if (std::holds_alternative<Time>(rhs2)) {
-            return std::get<Time>(rhs1) < std::get<Time>(rhs2);
-        } else if (std::holds_alternative<m_expr_t>(rhs2)) {
+    else if (holds_alternative<Time>(rhs1)) {
+        if (holds_alternative<Time>(rhs2)) {
+            return get<Time>(rhs1) < get<Time>(rhs2);
+        } else if (holds_alternative<m_expr_t>(rhs2)) {
             return false;
         } else {
             return true;
         }
     }
 
-    if (std::holds_alternative<unsigned int>(rhs1)) {
-        if (std::holds_alternative<unsigned int>(rhs2)) {
-            return std::get<unsigned int>(rhs1) < std::get<unsigned int>(rhs2);
+    if (holds_alternative<unsigned int>(rhs1)) {
+        if (holds_alternative<unsigned int>(rhs2)) {
+            return get<unsigned int>(rhs1) < get<unsigned int>(rhs2);
         } else {
             return false;
         }
     }
-    std::cout << "operator < for rhs: should not reach here" << endl;
+    cout << "operator < for rhs: should not reach here" << endl;
     return false;
 }
 
@@ -285,7 +285,7 @@ metric_t Unique::get_metric() const {
     return metric;
 }
 
-std::ostream& operator<<(std::ostream& os, const Unique& u) {
+ostream& operator<<(ostream& os, const Unique& u) {
     os << "Uniqe[" << u.metric << "(" << u.qset << ", t)]";
     return os;
 }
@@ -316,7 +316,7 @@ metric_t Same::get_metric() const {
     return metric;
 }
 
-std::ostream& operator<<(std::ostream& os, const Same& s) {
+ostream& operator<<(ostream& os, const Same& s) {
     os << "Same[" << s.metric << "(" << s.queue << ", t)]";
     return os;
 }
@@ -347,7 +347,7 @@ metric_t Incr::get_metric() const {
     return metric;
 }
 
-std::ostream& operator<<(std::ostream& os, const Incr& incr) {
+ostream& operator<<(ostream& os, const Incr& incr) {
     os << "Incr[" << incr.metric << "(" << incr.queue << ", t)]";
     return os;
 }
@@ -379,7 +379,7 @@ metric_t Decr::get_metric() const {
     return metric;
 }
 
-std::ostream& operator<<(std::ostream& os, const Decr& decr) {
+ostream& operator<<(ostream& os, const Decr& decr) {
     os << "Decr[" << decr.metric << "(" << decr.queue << ", t)]";
     return os;
 }
@@ -437,7 +437,7 @@ void Comp::normalize() {
                                  lhs_qset.end(),
                                  rhs_qset.begin(),
                                  rhs_qset.end(),
-                                 std::inserter(inters, inters.begin()));
+                                 inserter(inters, inters.begin()));
                 bool intersect = inters.size() > 0;
 
                 if (lhs_qset == rhs_qset) {
@@ -449,7 +449,7 @@ void Comp::normalize() {
                                    rhs_qset.end(),
                                    lhs_qset.begin(),
                                    lhs_qset.end(),
-                                   std::inserter(diff, diff.begin()));
+                                   inserter(diff, diff.begin()));
 
                     if (op == op_t::LE)
                         is_all = true;
@@ -476,7 +476,7 @@ void Comp::normalize() {
                                    lhs_qset.end(),
                                    rhs_qset.begin(),
                                    rhs_qset.end(),
-                                   std::inserter(diff, diff.begin()));
+                                   inserter(diff, diff.begin()));
 
                     if (op == op_t::LT)
                         is_empty = true;
@@ -495,14 +495,14 @@ void Comp::normalize() {
                                    lhs_qset.end(),
                                    rhs_qset.begin(),
                                    rhs_qset.end(),
-                                   std::inserter(lhs_diff, lhs_diff.begin()));
+                                   inserter(lhs_diff, lhs_diff.begin()));
 
                     set<unsigned int> rhs_diff;
                     set_difference(rhs_qset.begin(),
                                    rhs_qset.end(),
                                    lhs_qset.begin(),
                                    lhs_qset.end(),
-                                   std::inserter(rhs_diff, rhs_diff.begin()));
+                                   inserter(rhs_diff, rhs_diff.begin()));
 
                     // set lhs
                     if (lhs_diff.size() == 1) {
@@ -673,7 +673,7 @@ rhs_t Comp::get_rhs() const {
     return rhs;
 }
 
-std::ostream& operator<<(std::ostream& os, const Comp& comp) {
+ostream& operator<<(ostream& os, const Comp& comp) {
     if (comp.is_all)
         os << "*";
     else if (comp.is_empty)
@@ -683,7 +683,7 @@ std::ostream& operator<<(std::ostream& os, const Comp& comp) {
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const Comp* comp) {
+ostream& operator<<(ostream& os, const Comp* comp) {
     os << comp->lhs << " " << comp->op << " " << comp->rhs;
     return os;
 }
@@ -749,7 +749,7 @@ bool wl_spec_applies_to_queue(wl_spec_t spec, unsigned int queue) {
     }
 }
 
-std::ostream& operator<<(std::ostream& os, const wl_spec_t& wl_spec) {
+ostream& operator<<(ostream& os, const wl_spec_t& wl_spec) {
     switch (wl_spec.index()) {
         // Comp
         case 0: {
@@ -782,17 +782,17 @@ std::ostream& operator<<(std::ostream& os, const wl_spec_t& wl_spec) {
 }
 
 bool operator==(const wl_spec_t& spec1, const wl_spec_t& spec2) {
-    if (std::holds_alternative<Comp>(spec1) && std::holds_alternative<Comp>(spec2)) {
-        return std::get<Comp>(spec1) == std::get<Comp>(spec2);
+    if (holds_alternative<Comp>(spec1) && holds_alternative<Comp>(spec2)) {
+        return get<Comp>(spec1) == get<Comp>(spec2);
     }
-    if (std::holds_alternative<Same>(spec1) && std::holds_alternative<Same>(spec2)) {
-        return std::get<Same>(spec1) == std::get<Same>(spec2);
+    if (holds_alternative<Same>(spec1) && holds_alternative<Same>(spec2)) {
+        return get<Same>(spec1) == get<Same>(spec2);
     }
-    if (std::holds_alternative<Incr>(spec1) && std::holds_alternative<Incr>(spec2)) {
-        return std::get<Incr>(spec1) == std::get<Incr>(spec2);
+    if (holds_alternative<Incr>(spec1) && holds_alternative<Incr>(spec2)) {
+        return get<Incr>(spec1) == get<Incr>(spec2);
     }
-    if (std::holds_alternative<Decr>(spec1) && std::holds_alternative<Decr>(spec2)) {
-        return std::get<Decr>(spec1) == std::get<Decr>(spec2);
+    if (holds_alternative<Decr>(spec1) && holds_alternative<Decr>(spec2)) {
+        return get<Decr>(spec1) == get<Decr>(spec2);
     }
     return false;
 }
@@ -800,52 +800,52 @@ bool operator==(const wl_spec_t& spec1, const wl_spec_t& spec2) {
 bool operator<(const wl_spec_t& spec1, const wl_spec_t& spec2) {
     // Comp < Same < Incr < Decr < Uniq
 
-    if (std::holds_alternative<Comp>(spec1)) {
-        if (std::holds_alternative<Comp>(spec2)) {
-            return std::get<Comp>(spec1) < std::get<Comp>(spec2);
+    if (holds_alternative<Comp>(spec1)) {
+        if (holds_alternative<Comp>(spec2)) {
+            return get<Comp>(spec1) < get<Comp>(spec2);
         } else {
             return true;
         }
     }
 
-    else if (std::holds_alternative<Same>(spec1)) {
-        if (std::holds_alternative<Same>(spec2)) {
-            return std::get<Same>(spec1) < std::get<Same>(spec2);
-        } else if (std::holds_alternative<Comp>(spec2)) {
+    else if (holds_alternative<Same>(spec1)) {
+        if (holds_alternative<Same>(spec2)) {
+            return get<Same>(spec1) < get<Same>(spec2);
+        } else if (holds_alternative<Comp>(spec2)) {
             return false;
         } else {
             return true;
         }
     }
 
-    else if (std::holds_alternative<Incr>(spec1)) {
-        if (std::holds_alternative<Incr>(spec2)) {
-            return std::get<Incr>(spec1) < std::get<Incr>(spec2);
-        } else if (std::holds_alternative<Comp>(spec2) || std::holds_alternative<Same>(spec2)) {
+    else if (holds_alternative<Incr>(spec1)) {
+        if (holds_alternative<Incr>(spec2)) {
+            return get<Incr>(spec1) < get<Incr>(spec2);
+        } else if (holds_alternative<Comp>(spec2) || holds_alternative<Same>(spec2)) {
             return false;
         } else {
             return true;
         }
     }
 
-    else if (std::holds_alternative<Decr>(spec1)) {
-        if (std::holds_alternative<Decr>(spec2)) {
-            return std::get<Decr>(spec1) < std::get<Decr>(spec2);
+    else if (holds_alternative<Decr>(spec1)) {
+        if (holds_alternative<Decr>(spec2)) {
+            return get<Decr>(spec1) < get<Decr>(spec2);
         } else {
             return false;
         }
     }
 
-    else if (std::holds_alternative<Unique>(spec1)) {
-        if (std::holds_alternative<Unique>(spec2)) {
-            return std::get<Unique>(spec1) < std::get<Unique>(spec2);
-        } else if (std::holds_alternative<Unique>(spec2)) {
+    else if (holds_alternative<Unique>(spec1)) {
+        if (holds_alternative<Unique>(spec2)) {
+            return get<Unique>(spec1) < get<Unique>(spec2);
+        } else if (holds_alternative<Unique>(spec2)) {
             return false;
         } else {
             return true;
         }
     }
-    std::cout << "operator < for wl_spec_t: should not reach here" << endl;
+    cout << "operator < for wl_spec_t: should not reach here" << endl;
     return false;
 }
 
@@ -929,13 +929,13 @@ wl_spec_t TimedSpec::get_wl_spec() const {
     return wl_spec;
 }
 
-std::ostream& operator<<(std::ostream& os, const TimedSpec& spec) {
+ostream& operator<<(ostream& os, const TimedSpec& spec) {
     os << spec.time_range << ": ";
     os << spec.wl_spec;
 
     return os;
 }
-std::ostream& operator<<(std::ostream& os, const TimedSpec* spec) {
+ostream& operator<<(ostream& os, const TimedSpec* spec) {
     os << spec->time_range << ": ";
     os << spec->wl_spec;
 
@@ -1406,7 +1406,7 @@ void Workload::regenerate_spec_set() {
         }
     }
 
-    all_specs = std::set<TimedSpec>(new_all_specs.begin(), new_all_specs.end());
+    all_specs = set<TimedSpec>(new_all_specs.begin(), new_all_specs.end());
 }
 
 unsigned int Workload::ast_size() const {
@@ -1479,9 +1479,9 @@ set<time_range_t> Workload::add_time_range(time_range_t time_range) {
 string Workload::get_timeline_str() {
     stringstream ss;
     if (is_empty()) {
-        ss << "FALSE" << std::endl;
+        ss << "FALSE" << endl;
     } else if (is_all()) {
-        ss << "*" << std::endl;
+        ss << "*" << endl;
     } else {
         for (timeline_t::iterator it = timeline.begin(); it != timeline.end(); it++) {
             ss << it->first << ": ";
@@ -1496,16 +1496,16 @@ string Workload::get_timeline_str() {
                 if (!is_first) {
                     ss << "        ";
                 }
-                ss << *it2 << std::endl;
+                ss << *it2 << endl;
                 is_first = false;
             }
         }
-        ss << std::endl;
+        ss << endl;
     }
     return ss.str();
 }
 
-std::ostream& operator<<(std::ostream& os, const Workload& wl) {
+ostream& operator<<(ostream& os, const Workload& wl) {
     if (wl.is_empty())
         os << "empty";
     else if (wl.is_all())
@@ -1520,7 +1520,7 @@ std::ostream& operator<<(std::ostream& os, const Workload& wl) {
 }
 
 
-std::ostream& operator<<(std::ostream& os, const Workload* wl) {
+ostream& operator<<(ostream& os, const Workload* wl) {
     if (wl->is_empty())
         os << "empty";
     else if (wl->is_all())

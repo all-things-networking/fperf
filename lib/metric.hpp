@@ -1,6 +1,6 @@
 //
 //  metric.hpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 11/17/20.
 //  Copyright © 2020 Mina Tahmasbi Arashloo. All rights reserved.
@@ -33,7 +33,7 @@ struct metric_val {
     unsigned int value;
 };
 
-typedef std::pair<expr, expr> m_val_expr_t;
+typedef pair<expr, expr> m_val_expr_t;
 
 class Metric {
 public:
@@ -56,12 +56,12 @@ protected:
 
     Queue* queue;
     unsigned int total_time;
-    std::vector<expr> value_;
-    std::vector<expr> valid_;
+    vector<expr> value_;
+    vector<expr> valid_;
 
     void init(NetContext& net_ctx);
 };
 
-std::ostream& operator<<(std::ostream& os, const metric_t& metric);
+ostream& operator<<(ostream& os, const metric_t& metric);
 
 #endif /* metric_hpp */

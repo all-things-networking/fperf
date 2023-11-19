@@ -1,6 +1,6 @@
 //
 //  workload.cpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 11/19/20.
 //  Copyright © 2020 Mina Tahmasbi Arashloo. All rights reserved.
@@ -62,7 +62,7 @@ void SpecFactory::pick_neighbors(TimedSpec& spec, vector<TimedSpec>& neighbors) 
 
     // changing time
 
-    std::mt19937& gen = dists->get_gen();
+    mt19937& gen = dists->get_gen();
     // change lb
     if (time_range.second > 0) {
         uniform_int_distribution<unsigned int> lb_dist(0, time_range.second);
@@ -173,7 +173,7 @@ rhs_t SpecFactory::random_rhs(RandomSpecGenerationParameters params) {
 
     if (params.time_valid && rhs_type == 1) return random_time();
 
-    std::mt19937& gen = dists->get_gen();
+    mt19937& gen = dists->get_gen();
     return params.const_dist(gen);
 }
 
@@ -212,7 +212,7 @@ void SpecFactory::pick_rhs_neighbors(rhs_t rhs,
         }
         // C
         case 2: {
-            std::mt19937& gen = dists->get_gen();
+            mt19937& gen = dists->get_gen();
             unsigned int c = get<unsigned int>(rhs);
             unsigned int c_neighbor = params.const_dist(gen);
             while (c_neighbor == c) {
@@ -320,7 +320,7 @@ void SpecFactory::pick_neighbors(QSum& qsum, vector<m_expr_t>& neighbors) {
     // remove one from qset
     uniform_int_distribution<unsigned int> dist(0, (unsigned int) qset.size() - 1);
     qset_t::iterator it = qset.begin();
-    std::mt19937& gen = dists->get_gen();
+    mt19937& gen = dists->get_gen();
     advance(it, dist(gen));
     if (qset.size() == 2) {
         neighbors.push_back(Indiv(qsum.metric, *it));

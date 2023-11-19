@@ -1,6 +1,6 @@
 //
 //  leaf_forwarding_qm.cpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 12/23/21.
 //  Copyright © 2021 Mina Tahmasbi Arashloo. All rights reserved.
@@ -17,9 +17,9 @@ LeafForwardingQM::LeafForwardingQM(cid_t id,
                                    unsigned int spine_cnt,
                                    map<unsigned int, unsigned int> output_voq_map,
                                    QueueInfo in_queue_info,
-                                   std::vector<QueueInfo> out_queue_info,
+                                   vector<QueueInfo> out_queue_info,
                                    NetContext& net_ctx):
-QueuingModule(id, total_time, std::vector<QueueInfo>{in_queue_info}, out_queue_info, net_ctx),
+QueuingModule(id, total_time, vector<QueueInfo>{in_queue_info}, out_queue_info, net_ctx),
 leaf_id(leaf_id),
 fw_id(fw_id),
 servers_per_leaf(servers_per_leaf),
@@ -34,7 +34,7 @@ void LeafForwardingQM::add_proc_vars(NetContext& net_ctx) {
     (void) net_ctx;
 }
 
-void LeafForwardingQM::add_constrs(NetContext& net_ctx, std::map<std::string, expr>& constr_map) {
+void LeafForwardingQM::add_constrs(NetContext& net_ctx, map<string, expr>& constr_map) {
     char constr_name[100];
 
     Queue* in_queue = in_queues[0];

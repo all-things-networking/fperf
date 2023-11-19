@@ -1,6 +1,6 @@
 //
 //  loom_nic_enq_qm.cpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 5/3/21.
 //  Copyright © 2021 Mina Tahmasbi Arashloo. All rights reserved.
@@ -11,15 +11,12 @@
 
 LoomNICEnqQM::LoomNICEnqQM(cid_t id,
                            unsigned int total_time,
-                           std::vector<QueueInfo> in_queue_info,
+                           vector<QueueInfo> in_queue_info,
                            QueueInfo out_queue_info1,
                            QueueInfo out_queue_info2,
                            NetContext& net_ctx):
-QueuingModule(id,
-              total_time,
-              in_queue_info,
-              std::vector<QueueInfo>{out_queue_info1, out_queue_info2},
-              net_ctx) {
+QueuingModule(
+    id, total_time, in_queue_info, vector<QueueInfo>{out_queue_info1, out_queue_info2}, net_ctx) {
 
     unsigned min_max_out_enq = out_queue_info1.max_enq;
     if (out_queue_info2.max_enq < min_max_out_enq) {
@@ -39,8 +36,7 @@ void LoomNICEnqQM::add_proc_vars(NetContext& net_ctx) {
     (void) net_ctx;
 }
 
-void LoomNICEnqQM::constrs_if_not_taken(NetContext& net_ctx,
-                                        std::map<std::string, expr>& constr_map) {
+void LoomNICEnqQM::constrs_if_not_taken(NetContext& net_ctx, map<string, expr>& constr_map) {
     char constr_name[100];
 
     const unsigned int tenant1_spark = 1;
@@ -157,6 +153,6 @@ void LoomNICEnqQM::constrs_if_not_taken(NetContext& net_ctx,
     }
 }
 
-void LoomNICEnqQM::add_constrs(NetContext& net_ctx, std::map<std::string, expr>& constr_map) {
+void LoomNICEnqQM::add_constrs(NetContext& net_ctx, map<string, expr>& constr_map) {
     constrs_if_not_taken(net_ctx, constr_map);
 }

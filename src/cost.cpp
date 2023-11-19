@@ -1,6 +1,6 @@
 //
 //  cost.cpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 2/28/21.
 //  Copyright © 2021 Mina Tahmasbi Arashloo. All rights reserved.
@@ -11,11 +11,11 @@
 
 #include <vector>
 
-std::vector<unsigned int> wl_cost_weights = {SPEC_CNT_WEIGHT,
-                                             NUM_QUEUES_WITH_SPECS_WEIGHT,
-                                             MAX_SPEC_CNT_PER_QUEUE_WEIGHT,
-                                             AVG_SPEC_CNT_OVER_QUEUES,
-                                             AVG_TIME_RANGE_OVER_SPECS_WEIGHT};
+vector<unsigned int> wl_cost_weights = {SPEC_CNT_WEIGHT,
+                                        NUM_QUEUES_WITH_SPECS_WEIGHT,
+                                        MAX_SPEC_CNT_PER_QUEUE_WEIGHT,
+                                        AVG_SPEC_CNT_OVER_QUEUES,
+                                        AVG_TIME_RANGE_OVER_SPECS_WEIGHT};
 
 unsigned int uint_val(const wl_cost_t cost) {
     return cost;
@@ -54,7 +54,7 @@ bool operator!=(const cost_t cost1, const cost_t cost2) {
 }
 
 
-// std::ostream& operator<<(std::ostream& os, const cost_t cost)
+// ostream& operator<<(ostream& os, const cost_t cost)
 //{
 //     os << "[";
 //     os << cost.first << ", ";

@@ -1,5 +1,5 @@
 //  contention_point.hpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 11/12/20.
 //  Copyright © 2020 Mina Tahmasbi Arashloo. All rights reserved.
@@ -95,9 +95,9 @@ protected:
     map<cid_t, QueuingModule*> id_to_qm;
     map<cid_t, Queue*> id_to_ioq;
 
-    std::vector<Queue*> in_queues;
-    std::vector<Queue*> out_queues;
-    std::map<metric_t, map<cid_t, Metric*>> metrics;
+    vector<Queue*> in_queues;
+    vector<Queue*> out_queues;
+    map<metric_t, map<cid_t, Metric*>> metrics;
 
     void init();
 
@@ -133,7 +133,7 @@ private:
     void add_constr_from_map(map<string, expr> constr_map);
 
     string get_model_str(model& m);
-    virtual std::string cp_model_str(model& m, NetContext& net_ctx, unsigned int t) = 0;
+    virtual string cp_model_str(model& m, NetContext& net_ctx, unsigned int t) = 0;
     void populate_example_from_model(model& m, IndexedExample* eg);
 
     expr get_random_eg_mod(IndexedExample* eg, unsigned int mod_cnt, qset_t queue_set);

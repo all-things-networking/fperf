@@ -1,6 +1,6 @@
 //
 //  priority_scheduler.cpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 11/16/20.
 //  Copyright © 2020 Mina Tahmasbi Arashloo. All rights reserved.
@@ -70,13 +70,13 @@ void PrioScheduler::add_metrics() {
     }
 }
 
-std::string PrioScheduler::cp_model_str(model& m, NetContext& net_ctx, unsigned int t) {
+string PrioScheduler::cp_model_str(model& m, NetContext& net_ctx, unsigned int t) {
     (void) net_ctx;
     stringstream ss;
     for (unsigned int q = 0; q < in_queues.size(); q++) {
         Queue* queue = in_queues[q];
         ss << queue->get_id() << ": " << m.eval(cblocked[q]->val(t).second).get_numeral_int()
-           << ", " << m.eval(cenq[q]->val(t).second).get_numeral_int() << std::endl;
+           << ", " << m.eval(cenq[q]->val(t).second).get_numeral_int() << endl;
     }
     return ss.str();
 }

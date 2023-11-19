@@ -1,6 +1,6 @@
 //
 //  NetContext.cpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 4/2/20.
 //  Copyright © 2020 Mina Tahmasbi Arashloo. All rights reserved.
@@ -14,18 +14,18 @@ NetContext::NetContext() {
 
 expr NetContext::pkt_const(char const* name) {
     char val_vname[100];
-    std::strcpy(val_vname, name);
-    std::strcat(val_vname, "_val");
+    strcpy(val_vname, name);
+    strcat(val_vname, "_val");
     expr val_var = ctx.bool_const(val_vname);
 
     char meta1_vname[100];
-    std::strcpy(meta1_vname, name);
-    std::strcat(meta1_vname, "_meta1");
+    strcpy(meta1_vname, name);
+    strcat(meta1_vname, "_meta1");
     expr meta1_var = ctx.int_const(meta1_vname);
 
     char meta2_vname[100];
-    std::strcpy(meta2_vname, name);
-    std::strcat(meta2_vname, "_meta2");
+    strcpy(meta2_vname, name);
+    strcat(meta2_vname, "_meta2");
     expr meta2_var = ctx.int_const(meta2_vname);
 
     bool_var_cnt += 1;

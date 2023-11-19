@@ -1,6 +1,6 @@
 //
 //  metric.cpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 11/17/20.
 //  Copyright © 2020 Mina Tahmasbi Arashloo. All rights reserved.
@@ -26,7 +26,7 @@ Metric::Metric(metric_t m, Queue* queue, unsigned int total_time, NetContext& ne
 m_type(m),
 queue(queue),
 total_time(total_time) {
-    std::stringstream ss;
+    stringstream ss;
     ss << m;
 
     id = get_unique_id(queue->get_id(), ss.str());
@@ -53,7 +53,7 @@ metric_t Metric::get_type() {
     return m_type;
 }
 
-std::ostream& operator<<(std::ostream& os, const metric_t& metric) {
+ostream& operator<<(ostream& os, const metric_t& metric) {
     switch (metric) {
         case (metric_t::CENQ): os << "cenq"; break;
         case (metric_t::QSIZE): os << "qsize"; break;

@@ -1,6 +1,6 @@
 //
 //  query.cpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 11/20/20.
 //  Copyright © 2020 Mina Tahmasbi Arashloo. All rights reserved.
@@ -50,14 +50,14 @@ unsigned int Query::get_thresh() {
 }
 
 cid_t Query::get_qid() {
-    if (std::holds_alternative<cid_t>(lhs)) {
+    if (holds_alternative<cid_t>(lhs)) {
         return get<cid_t>(lhs);
-    } else if (std::holds_alternative<qdiff_t>(lhs)) {
+    } else if (holds_alternative<qdiff_t>(lhs)) {
         return get<qdiff_t>(lhs).first;
-    } else if (std::holds_alternative<qsum_t>(lhs)) {
+    } else if (holds_alternative<qsum_t>(lhs)) {
         return get<qsum_t>(lhs)[0];
     }
 
-    std::cout << "Query::get_qid: Invalid query" << std::endl;
+    cout << "Query::get_qid: Invalid query" << endl;
     return "";
 }

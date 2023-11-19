@@ -1,6 +1,6 @@
 //
 //  solver.hpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 12/10/20.
 //  Copyright © 2020 Mina Tahmasbi Arashloo. All rights reserved.
@@ -13,7 +13,7 @@
 #include "workload.hpp"
 
 enum class solver_res_t { SAT = 0, UNSAT, UNKNOWN };
-std::ostream& operator<<(std::ostream& os, const solver_res_t& res);
+ostream& operator<<(ostream& os, const solver_res_t& res);
 
 class Solver {
 public:

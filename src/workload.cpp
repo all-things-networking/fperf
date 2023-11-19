@@ -779,12 +779,14 @@ bool operator<(const Comp& comp1, const Comp& comp2){
 }
 
 //************************************* WlSpec *************************************//
+//TODO: Only checks COMP
 bool wl_spec_is_all(wl_spec_t spec){
     if(holds_alternative<Comp>(spec))
         return get<Comp>(spec).spec_is_all();
     return false;
 }
 
+//TODO: Only checks COMP
 bool wl_spec_is_empty(wl_spec_t spec){
     if(holds_alternative<Comp>(spec))
         return get<Comp>(spec).spec_is_empty();
@@ -804,6 +806,7 @@ bool wl_spec_applies_to_queue(wl_spec_t spec, unsigned int queue) {
         case 1: return get<Same>(spec).applies_to_queue(queue);
         case 2: return get<Incr>(spec).applies_to_queue(queue);
         case 3: return get<Decr>(spec).applies_to_queue(queue);
+        case 4: return get<Unique>(spec).applies_to_queue(queue);
         default: return false;
     }
 }
@@ -861,7 +864,7 @@ bool operator==(const wl_spec_t& spec1, const wl_spec_t& spec2) {
 }
 
 bool operator<(const wl_spec_t& spec1, const wl_spec_t& spec2) {
-    // Comp  < Same < Incr < Decr < Uniq
+    // Comp < Same < Incr < Decr < Uniq
 
     if (std::holds_alternative<Comp>(spec1)){
         if (std::holds_alternative<Comp>(spec2)){

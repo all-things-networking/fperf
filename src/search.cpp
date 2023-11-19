@@ -390,6 +390,7 @@ void Search::search(Workload wl){
     }
 }
 
+//TODO: Most of the refinement steps are only applied on COMP
 Workload Search::refine(Workload wl){
 
     // Add specs for "zero queues" back in
@@ -443,6 +444,7 @@ Workload Search::refine(Workload wl){
          it != specs.end(); it++){
         TimedSpec tspec = *it;
         wl_spec_t wspec = tspec.get_wl_spec();
+        // TODO: Generalize to other constructs?
         if(!holds_alternative<Comp>(wspec))
             continue;
         Comp comp = get<Comp>(wspec);
@@ -450,6 +452,7 @@ Workload Search::refine(Workload wl){
         if (holds_alternative<Indiv>(lhs)){
             Indiv indiv = get<Indiv>(lhs);
             metric_t m = indiv.get_metric();
+            // TODO: This assumes that rhs is constant
             if (m == metric_t::DST ||
                 m == metric_t::ECMP){
                 unsigned int q = indiv.get_queue();

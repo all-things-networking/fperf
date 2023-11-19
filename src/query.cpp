@@ -8,7 +8,8 @@
 
 #include "query.hpp"
 
-Query::Query(){}
+Query::Query() {
+}
 
 Query::Query(query_quant_t quant,
              time_range_t time_range,
@@ -21,14 +22,14 @@ time_range(time_range),
 metric(metric),
 lhs(query_lhs),
 op(op),
-thresh(thresh)
-{}
+thresh(thresh) {
+}
 
-query_quant_t Query::get_quant(){
+query_quant_t Query::get_quant() {
     return quant;
 }
 
-time_range_t Query::get_time_range(){
+time_range_t Query::get_time_range() {
     return time_range;
 }
 
@@ -36,29 +37,27 @@ metric_t Query::get_metric() {
     return metric;
 }
 
-query_lhs_t Query::get_lhs(){
+query_lhs_t Query::get_lhs() {
     return lhs;
 }
 
-op_t Query::get_op(){
+op_t Query::get_op() {
     return op;
 }
 
-unsigned int Query::get_thresh(){
+unsigned int Query::get_thresh() {
     return thresh;
 }
 
-cid_t Query::get_qid(){
-    if (std::holds_alternative<cid_t>(lhs)){
+cid_t Query::get_qid() {
+    if (std::holds_alternative<cid_t>(lhs)) {
         return get<cid_t>(lhs);
-    }
-    else if (std::holds_alternative<qdiff_t>(lhs)){
+    } else if (std::holds_alternative<qdiff_t>(lhs)) {
         return get<qdiff_t>(lhs).first;
-    }
-    else if (std::holds_alternative<qsum_t>(lhs)){
+    } else if (std::holds_alternative<qsum_t>(lhs)) {
         return get<qsum_t>(lhs)[0];
     }
-     
+
     std::cout << "Query::get_qid: Invalid query" << std::endl;
     return "";
 }

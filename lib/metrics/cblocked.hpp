@@ -14,16 +14,11 @@
 
 class CBlocked : public Metric {
 public:
-    CBlocked(Queue* queue,
-             unsigned int total_time,
-             NetContext& net_ctx);
-    
+    CBlocked(Queue* queue, unsigned int total_time, NetContext& net_ctx);
+
     void populate_val_exprs(NetContext& net_ctx);
 
-    void eval(const IndexedExample* eg,
-              unsigned int time,
-              unsigned int qind,
-              metric_val& res);
+    void eval(const IndexedExample* eg, unsigned int time, unsigned int qind, metric_val& res);
 };
 
 #endif /* cblocked_hpp */

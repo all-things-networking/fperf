@@ -16,10 +16,10 @@
 
 #pragma clang diagnostic pop
 
-#include <string>
-#include <set>
 #include <chrono>
 #include <random>
+#include <set>
+#include <string>
 
 #include "params.hpp"
 
@@ -40,11 +40,10 @@ bool satisfies(unsigned int q, qset_t qset);
 typedef std::string cid_t;
 typedef std::pair<cid_t, cid_t> cid_pair;
 
-cid_t get_unique_id(cid_t module_id,
-                    cid_t queue_id);
+cid_t get_unique_id(cid_t module_id, cid_t queue_id);
 
 //************************************* OP *************************************//
-enum class op_t {GT = 0, GE, LT, LE, EQ};
+enum class op_t { GT = 0, GE, LT, LE, EQ };
 std::ostream& operator<<(std::ostream& os, const op_t& op);
 bool eval_op(unsigned int lhs_val, op_t op, unsigned int rhs_val);
 op_t random_op();
@@ -74,9 +73,14 @@ template <typename... Args> std::string format_string(const std::string& format,
 }
 
 #ifdef DEBUG
-#define DEBUG_MSG(str) do { std::cout << str; } while( false )
+#define DEBUG_MSG(str)                                                                             \
+    do {                                                                                           \
+        std::cout << str;                                                                          \
+    } while (false)
 #else
-#define DEBUG_MSG(str) do { } while ( false )
+#define DEBUG_MSG(str)                                                                             \
+    do {                                                                                           \
+    } while (false)
 #endif
 
 #endif /* util_hpp */

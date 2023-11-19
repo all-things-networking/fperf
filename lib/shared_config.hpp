@@ -12,11 +12,11 @@
 #include <random>
 #include <vector>
 
-#include "params.hpp"
 #include "metric.hpp"
+#include "params.hpp"
 #include "util.hpp"
 
-struct DistsParams{
+struct DistsParams {
     std::vector<double> rhs_selection_weights = DEFAULT_RHS_SELECTION_WEIGHTS;
 
     unsigned int rhs_const_min = DEFAULT_RHS_CONST_MIN;
@@ -28,7 +28,7 @@ struct DistsParams{
     std::vector<double> trf_selection_weights = DEFAULT_TRF_SELECTION_WEIGHTS;
     std::vector<double> wl_metric_selection_weights = DEFAULT_WL_METRIC_SELECTION_WEIGHTS;
 
-    unsigned int in_queue_cnt = 0; 
+    unsigned int in_queue_cnt = 0;
     unsigned int total_time = 0;
 
     unsigned int op_range_min = DEFAULT_COMP_RANGE_MIN;
@@ -46,7 +46,7 @@ struct DistsParams{
 class Dists {
 public:
     Dists(DistsParams params);
-    
+
     std::mt19937& get_gen();
     double real_zero_to_one();
 
@@ -55,7 +55,7 @@ public:
     unsigned int rhs_time_coeff();
 
     unsigned int trf();
-    
+
     metric_t wl_metric();
 
     unsigned int input_queue();
@@ -90,11 +90,11 @@ private:
     std::uniform_int_distribution<unsigned int> enq_dist;
 
     std::uniform_int_distribution<unsigned int> pkt_meta1_val_dist;
-    std::uniform_int_distribution<unsigned int> pkt_meta2_val_dist;    
+    std::uniform_int_distribution<unsigned int> pkt_meta2_val_dist;
 };
 
 class SharedConfig {
-  public:
+public:
     SharedConfig(unsigned int total_time,
                  unsigned int in_queue_cnt,
                  qset_t target_queues,
@@ -105,7 +105,7 @@ class SharedConfig {
     qset_t get_target_queues();
     Dists* get_dists();
 
-  private:
+private:
     unsigned int total_time;
     unsigned int in_queue_cnt;
     qset_t target_queues;

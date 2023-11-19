@@ -25,16 +25,17 @@
 The Grammar:
  Workload    := /\ (TimedSpec)
  TimedSpec   := forall t in [CONST, CONST] WlSpec
- WlSpec      := SAME | INCR | DECR | COMP
+ WlSpec      := SAME | INCR | DECR | COMP | UNIQ
  SAME        := same[MTRC(Q, t)]
  INCR        := incr[MTRC(Q, t)]
- DECR        := decr[METRC(Q, t)]
+ DECR        := decr[MTRC(Q, t)]
+ UNIQ        := uniq[MTRC(QSET, t)]
  COMP        := LHS OP RHS
  LHS         := MTRC_EXPR
  RHS         := MTRC_EXPR | TIME | C
  MTRC_EXPR   := QSUM | INDIV
  QSUM        := SUM_[q in QSET] MTRC(q, t)
- INDIV       := METRC(Q, t)
+ INDIV       := MTRC(Q, t)
  TIME        := C.t
 ----------------------------------------------------------------- */
 
@@ -132,6 +133,28 @@ std::ostream& operator<<(std::ostream& os, const rhs_t& rhs);
 bool operator==(const rhs_t& rhs1, const rhs_t& rhs2);
 bool operator<(const rhs_t& rhs1, const rhs_t& rhs2);
 
+//************************************* UNIQ *************************************//
+class Unique{
+
+public:
+
+    Unique(metric_t metric, qset_t qset);
+
+    bool applies_to_queue(unsigned int queue) const;
+
+    qset_t get_qset() const;
+    metric_t get_metric() const;
+
+private:
+
+    metric_t metric;
+    qset_t qset;
+
+    friend std::ostream& operator<<(std::ostream& os, const Unique& u);
+    friend bool operator== (const Unique& u1, const Unique& u2);
+    friend bool operator< (const Unique& u1, const Unique& u2);
+};
+
 //************************************* SAME *************************************//
 class Same{
 
@@ -198,7 +221,6 @@ private:
     friend bool operator< (const Decr& decr1, const Decr& decr2);
 };
 
-
 //************************************* COMP *************************************//
 
 class Comp {
@@ -235,7 +257,13 @@ private:
 };
 
 //************************************* WlSpec *************************************//
-typedef std::variant<Comp, Same, Incr, Decr> wl_spec_t;
+typedef std::variant<Comp, Same, Incr, Decr, Unique> wl_spec_t;
+
+bool wl_spec_applies_to_queue(wl_spec_t spec, unsigned int queue);
+
+bool wl_spec_is_empty(wl_spec_t spec);
+
+bool wl_spec_is_all(wl_spec_t spec);
 
 unsigned int wl_spec_ast_size(const wl_spec_t wl_spec);
 
@@ -291,10 +319,10 @@ public:
              unsigned int total_time);
     
     void clear();
-    void add_wl_spec(TimedSpec spec);
-    void rm_wl_spec(TimedSpec spec);
-    void mod_wl_spec(TimedSpec old_spec, TimedSpec new_spec);
-    
+    void add_spec(TimedSpec spec);
+    void rm_spec(TimedSpec spec);
+    void mod_spec(TimedSpec old_spec, TimedSpec new_spec);
+
     unsigned long size() const;
 
     unsigned int get_max_size() const;

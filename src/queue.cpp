@@ -291,7 +291,8 @@ void Queue::add_metric(metric_t metric_type, Metric* m){
 Metric* Queue::get_metric(metric_t metric_type){
     map<metric_t, Metric*>::iterator it = metrics.find(metric_type);
     if (it == metrics.end()){
-        std::cout << "ERROR: " << "queue " << id << " does not have a " << metric_type << std::endl;
+        //TODO: Uncomment this after parametrizing search
+//        std::cout << "ERROR: " << "queue " << id << " does not have a " << metric_type << std::endl;
         return NULL;
     }
     return metrics[metric_type];

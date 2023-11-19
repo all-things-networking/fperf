@@ -17,12 +17,13 @@ public:
     Ecmp(Queue* queue,
          unsigned int total_time,
          NetContext& net_ctx);
-    
+
     void populate_val_exprs(NetContext& net_ctx);
 
-    unsigned int eval(const IndexedExample* eg,
-                      unsigned int time,
-                      unsigned int qind);    
+    void eval(const IndexedExample* eg,
+              unsigned int time,
+              unsigned int qind,
+              metric_val& res);
 };
 
 #endif /* ecmp_hpp */

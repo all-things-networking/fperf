@@ -66,7 +66,13 @@ unsigned long long int get_diff_microsec(time_typ start, time_typ end);
 //************************************* OTHER *************************************//
 std::string banner(std::string b);
 
-#define DEBUG
+template <typename... Args> std::string format_string(const std::string& format, Args... args) {
+    char vname[100];
+    std::snprintf(vname, 100, format.c_str(), args...);
+    std::string s(vname);
+    return s;
+}
+
 #ifdef DEBUG
 #define DEBUG_MSG(str) do { std::cout << str; } while( false )
 #else

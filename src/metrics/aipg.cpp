@@ -48,11 +48,11 @@ void AIPG::eval(const IndexedExample* eg,
     else res.value = eg->total_time;
 }
 
-void AIPG::populate_val_exprs (NetContext& net_ctx){
-    // value 
-    value_[0] = 0;
-    
-    for (unsigned int t1 = 1; t1 < total_time; t1++){
+void AIPG::populate_val_exprs (NetContext& net_ctx) {
+    // value
+    value_[0] = net_ctx.int_val(0);
+
+    for (unsigned int t1 = 1; t1 < total_time; t1++) {
 
         // When everything before and after is zero
         // TODO: total_time or total_time - t1?
@@ -118,9 +118,9 @@ void AIPG::populate_val_exprs (NetContext& net_ctx){
     }
     */
 
-    // valid
-    for (unsigned int t = 0; t < total_time; t++){
-        valid_[t] = net_ctx.get_bool_val(true);
+        // valid
+        for (unsigned int t = 0; t < total_time; t++) {
+            valid_[t] = net_ctx.bool_val(true);
+        }
     }
 }
-

@@ -23,9 +23,17 @@
 #include "shared_config.hpp"
 #include "workload.hpp"
 
-class SpecFactory{
+struct RandomSpecGenerationParameters {
+    bool time_valid;
+    uniform_int_distribution<unsigned int> const_dist;
+    bool bound_with_dist = false;
+};
+
+class SpecFactory {
 
 public:
+    RandomSpecGenerationParameters get_metric_params(metric_t metric_type);
+
     SpecFactory(SharedConfig* shared_config);
 
     //**** TimedSpec ****//
@@ -33,39 +41,43 @@ public:
     void pick_neighbors(TimedSpec& spec, vector<TimedSpec>& neighbors);
 
     //**** WlSpec ****//
-    WlSpec random_wl_spec();
-    void pick_neighbors(WlSpec& spec, vector<WlSpec>& neighbors);
+    wl_spec_t random_wl_spec();
+    void pick_neighbors(wl_spec_t& spec, vector<wl_spec_t>& neighbors);
+
+    //**** COMP ****//
+    Comp random_comp();
+    void pick_neighbors(Comp& spec, vector<Comp>& neighbors);
 
     //**** rhs_t ****//
     rhs_t random_rhs();
-    rhs_t random_rhs(bool time_valid, 
-                     std::uniform_int_distribution<unsigned int> const_dist);
+    rhs_t random_rhs(RandomSpecGenerationParameters params);
     void pick_rhs_neighbors(rhs_t rhs, vector<rhs_t>& neighbors);
-    void pick_rhs_neighbors(rhs_t rhs, vector<rhs_t>& neighbors,
-                        bool time_valid, std::uniform_int_distribution<unsigned int> const_dist);
-    
+    void pick_rhs_neighbors(rhs_t rhs,
+                            vector<rhs_t>& neighbors,
+                            RandomSpecGenerationParameters params);
+
     //**** lhs_t ****//
     lhs_t random_lhs();
     void pick_lhs_neighbors(lhs_t lhs, vector<lhs_t>& neighbors);
  
-    //**** trf_t ****//
-    trf_t random_trf();
-    void pick_trf_neighbors(trf_t trf, vector<trf_t>& neighbors);
+    //**** m_expr_t ****//
+    m_expr_t random_m_expr();
+    void pick_m_expr_neighbors(m_expr_t trf, vector<m_expr_t>& neighbors);
  
-    //**** TSUM ****//
-    qset_t random_tsum_qset(); 
-    TSUM random_tsum();
-    void pick_neighbors(TSUM& tsum, vector<trf_t>& neighbors);
-   
-    //**** TONE ****//
-    TONE random_tone();  
-    void pick_neighbors(TONE& tone, vector<trf_t>& neighbors);
+    //**** QSUM ****//
+    qset_t random_qsum_qset();
+    QSum random_qsum();
+    void pick_neighbors(QSum& qsum, vector<m_expr_t>& neighbors);
+
+    //**** INDIV ****//
+    Indiv random_indiv();
+    void pick_neighbors(Indiv& indiv, vector<m_expr_t>& neighbors);
 
     //**** TIME ****//
-    TIME random_time();
+    Time random_time();
 
     //**** COMP ****/
-    comp_t random_comp();
+    op_t random_op();
 
 private:
     SharedConfig* shared_config = NULL;

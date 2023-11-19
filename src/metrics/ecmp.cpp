@@ -29,7 +29,7 @@ void Ecmp::eval(const IndexedExample* eg,
 
     res.value = enqs_meta2[0];
     for (unsigned int i = 1; i < enqs_meta2.size(); i++){
-        if (enqs_meta[i] != res.value){
+        if (enqs_meta2[i] != res.value){
             res.valid = false;
             return;
         }
@@ -38,23 +38,18 @@ void Ecmp::eval(const IndexedExample* eg,
     res.valid = true;
 }
 
-void Ecmp::add_vars(NetContext& net_ctx){
-  (void) net_ctx;
-}
-
-
 void Ecmp::populate_val_exprs(NetContext& net_ctx){
 
     for (unsigned int t = 0; t < total_time; t++){
-        value_[t] = net_ctx.pkt2meta2(queue->enqs[t][0]);
+        value_[t] = net_ctx.pkt2meta2(queue->enqs(0)[t]);
     }        
 
     // Define valid_[t]
     for (unsigned int t = 0; t < total_time; t++){
-        base_meta2 = net_ctx.pkt2meta2(queue->enqs[t][0]);
-        valid_[t] = net_ctx.pkt2val(queue->enqs[t][0]);
+        expr base_meta2 = net_ctx.pkt2meta2(queue->enqs(0)[t]);
+        valid_[t] = net_ctx.pkt2val(queue->enqs(0)[t]);
         for (unsigned int e = 1; e < queue->max_enq(); e++){
-            expr pkt = queue->enqs[t][e];
+            expr pkt = queue->enqs(e)[t];
             expr val = net_ctx.pkt2val(pkt);
             expr meta2 = net_ctx.pkt2meta2(pkt);
             valid_[t] = valid_[t] && (!val || (meta2 == base_meta2));

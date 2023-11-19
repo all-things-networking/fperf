@@ -8,14 +8,14 @@
 
 #include "tests.hpp"
 
-#include "params.hpp"
-#include "priority_scheduler.hpp"
-#include "rr_scheduler.hpp"
-#include "loom_mqprio.hpp"
 #include "buggy_2l_rr_scheduler.hpp"
 #include "leaf_spine.hpp"
-#include "search.hpp"
+#include "loom_mqprio.hpp"
+#include "params.hpp"
+#include "priority_scheduler.hpp"
 #include "query.hpp"
+#include "rr_scheduler.hpp"
+#include "search.hpp"
 
 void run(ContentionPoint* cp,
          IndexedExample* base_eg,
@@ -44,7 +44,8 @@ void prio(std::string good_examples_file,
     Query query(query_quant_t::EXISTS,
                 time_range_t(0, prio->get_total_time() - 1),
                 query_qid,
-                metric_t::CBLOCKED, comp_t::GT, query_thresh);
+                metric_t::CBLOCKED,
+                op_t::GT, query_thresh);
     
     prio->set_query(query);
        
@@ -64,13 +65,13 @@ void prio(std::string good_examples_file,
 
     cout << "base example generation: " << (get_diff_millisec(start_time, noww())/1000.0) << " s" << endl;
 
-    
     // Set shared config
     DistsParams dists_params;
     dists_params.in_queue_cnt = prio->in_queue_cnt();
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = 2;
     dists_params.pkt_meta2_val_max = 2;
+    dists_params.random_seed = 2000;
     
     Dists* dists = new Dists(dists_params); 
     SharedConfig* config = new SharedConfig(total_time,
@@ -115,13 +116,13 @@ void rr(std::string good_examples_file,
     
     for (unsigned int i = 1; i <= recur; i++){
         for (unsigned int q = 0; q < in_queue_cnt; q++){
-            wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, q), comp_t::GE, i * rate),
+            wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::GE, i * rate),
                                      time_range_t(i * period - 1, i * period - 1),
                                      total_time));
         }
     }
     
-    wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, queue1), comp_t::GT, TONE(metric_t::CENQ, queue2)),
+    wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, queue1), op_t::GT, Indiv(metric_t::CENQ, queue2)),
                              time_range_t(total_time - 1, total_time - 1),
                              total_time));
     
@@ -136,7 +137,8 @@ void rr(std::string good_examples_file,
     Query query(query_quant_t::FORALL,
                 time_range_t(total_time - 1 - (period - 1), total_time - 1),
                 qdiff_t(queue2_id, queue1_id),
-                metric_t::CDEQ, comp_t::GE, 3);
+                metric_t::CDEQ,
+                op_t::GE, 3);
     
     rr->set_query(query);
  
@@ -163,7 +165,8 @@ void rr(std::string good_examples_file,
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = 2;
     dists_params.pkt_meta2_val_max = 2;
-    
+    dists_params.random_seed = 29663;
+
     Dists* dists = new Dists(dists_params); 
     SharedConfig* config = new SharedConfig(total_time,
                                             rr->in_queue_cnt(),
@@ -201,8 +204,7 @@ void fq_codel(std::string good_examples_file,
     // Base Workload
     Workload wl(in_queue_cnt * 5, in_queue_cnt, total_time);
     for (unsigned int q = 0; q < last_queue; q++){
-        wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, q),
-                                        comp_t::GE, TIME(1)),
+        wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::GE, Time(1)),
                                  total_time,
                                  total_time));
     }
@@ -214,7 +216,8 @@ void fq_codel(std::string good_examples_file,
     Query query(query_quant_t::FORALL,
                 time_range_t(total_time - 1, total_time - 1),
                 query_qid,
-                metric_t::CDEQ, comp_t::GE, query_thresh);
+                metric_t::CDEQ,
+                op_t::GE, query_thresh);
     
     cp->set_query(query);
 
@@ -241,6 +244,7 @@ void fq_codel(std::string good_examples_file,
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = 2;
     dists_params.pkt_meta2_val_max = 2;
+    dists_params.random_seed = 4854;
     
     Dists* dists = new Dists(dists_params); 
     SharedConfig* config = new SharedConfig(total_time,
@@ -290,19 +294,16 @@ void loom(std::string good_examples_file,
     // Base Workload
     
     Workload wl(20, cp->in_queue_cnt(), total_time);
-    wl.add_wl_spec(TimedSpec(WlSpec(TSUM(tenant1_qset, metric_t::CENQ),
-                                    comp_t::GE, TIME(1)),
+    wl.add_spec(TimedSpec(Comp(QSum(tenant1_qset, metric_t::CENQ), op_t::GE, Time(1)),
                              total_time,
                              total_time));
-    wl.add_wl_spec(TimedSpec(WlSpec(TSUM(tenant2_qset, metric_t::CENQ),
-                                    comp_t::GE, TIME(1)),
+    wl.add_spec(TimedSpec(Comp(QSum(tenant2_qset, metric_t::CENQ), op_t::GE, Time(1)),
                              total_time,
                              total_time));
 
     for (unsigned int q = 0; q < cp->in_queue_cnt(); q++){
         if (q % 3 == 2){
-            wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, q),
-                                            comp_t::LE, 0u),
+            wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::LE, 0u),
                                      total_time,
                                      total_time));
         }
@@ -312,11 +313,12 @@ void loom(std::string good_examples_file,
     
     // Query
     Query query(query_quant_t::FORALL,
+                //                                          Why using query_time?
                 time_range_t(total_time - 1 - query_time, total_time - 1),
                 qdiff_t(cp->get_out_queue(1)->get_id(),
                         cp->get_out_queue(0)->get_id()),
                 metric_t::CENQ,
-                comp_t::GT, 3u);
+                op_t::GT, 3u);
     
     cp->set_query(query);
    
@@ -343,6 +345,7 @@ void loom(std::string good_examples_file,
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = 3;
     dists_params.pkt_meta2_val_max = 2;
+    dists_params.random_seed = 13388;
     
     Dists* dists = new Dists(dists_params); 
     SharedConfig* config = new SharedConfig(total_time,
@@ -361,10 +364,8 @@ void loom(std::string good_examples_file,
         config);
 }
 
-void leaf_spine_bw(std::string good_examples_file,
-                   std::string bad_examples_file){
-   
-    cout << "leaf_spine_bw" << endl; 
+void leaf_spine_bw(std::string good_examples_file, std::string bad_examples_file) {
+    cout << "leaf_spine_bw" << endl;
     time_typ start_time = noww();
 
     unsigned int leaf_cnt = 3;
@@ -390,39 +391,36 @@ void leaf_spine_bw(std::string good_examples_file,
     unsigned int in_queue_cnt = cp->in_queue_cnt();
    
     // Base Workload
-    Workload wl(in_queue_cnt, in_queue_cnt, total_time);
-    
-    wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, src_server),
-                                    comp_t::GE, TIME(1)),
+    Workload wl(in_queue_cnt + 5, in_queue_cnt, total_time);
+
+    wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, src_server), op_t::GE, Time(1)),
                              total_time - 1,
                              total_time));
 
-    wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::META1, src_server),
-                                    comp_t::EQ, dst_server),
+    wl.add_spec(TimedSpec(Comp(Indiv(metric_t::DST, src_server), op_t::EQ, dst_server),
                              total_time - 1,
                              total_time));
 
-    cp->set_base_workload(wl); 
     for (unsigned int q = 0; q < in_queue_cnt; q++){
-        Same s(metric_t::META1, q); 
-        cp->add_same_to_base(s, time_range_t(0, total_time - 1)); 
-        cout << "[1, " << total_time << "] " << s << endl;
+        Same s(metric_t::DST, q);
+        wl.add_spec(TimedSpec(s,time_range_t(0, total_time - 1), total_time));
     }
 
     qset_t unique_qset;
-    for (unsigned int q = 0; q < in_queue_cnt; q++){
+    for (unsigned int q = 0; q < in_queue_cnt; q++)
         unique_qset.insert(q);
-    }
-    Unique u(unique_qset, metric_t::META1);
-    cp->add_unique_to_base(u, time_range_t(0, total_time - 1));
-    cout << "[1, " << total_time << "] " << u << endl;
- 
+    Unique uniq(metric_t::DST, unique_qset);
+    wl.add_spec(TimedSpec(uniq, time_range_t(0, total_time - 1), total_time));
+
+    cp->set_base_workload(wl);
+
     // Query
     cid_t query_qid = cp->get_out_queue(dst_server)->get_id();
     Query query(query_quant_t::FORALL,
                 time_range_t(total_time - 1, total_time - 1),
                 query_qid,
-                metric_t::CENQ, comp_t::LE, query_thresh);
+                metric_t::CENQ,
+                op_t::LE, query_thresh);
     
     cp->set_query(query);
    
@@ -449,12 +447,10 @@ void leaf_spine_bw(std::string good_examples_file,
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = server_cnt - 1;
     dists_params.pkt_meta2_val_max = spine_cnt - 1;
-    
-    Dists* dists = new Dists(dists_params); 
-    SharedConfig* config = new SharedConfig(total_time,
-                                            cp->in_queue_cnt(),
-                                            target_queues,
-                                            dists);
+    dists_params.random_seed = 24212;
+
+    Dists* dists = new Dists(dists_params);
+    SharedConfig* config = new SharedConfig(total_time, cp->in_queue_cnt(), target_queues, dists);
     bool config_set = cp->set_shared_config(config);
     if (!config_set) return;
 
@@ -503,7 +499,7 @@ void run(ContentionPoint* cp,
     cp->generate_bad_examples(bad_example_cnt, bad_examples);
 
     cout << "bad example generation: " << (get_diff_millisec(start_time, noww())/ 1000.0) << " s" << endl;
-  
+
     // write the bad examples to a file 
     deque<Example*> bad_unindexed_examples;
     if (!bad_examples_file.empty()){ 
@@ -515,7 +511,7 @@ void run(ContentionPoint* cp,
 
       write_examples_to_file(bad_unindexed_examples, bad_examples_file);
     }
-    
+
     start_time = noww();
     // search
     Search search(cp, 

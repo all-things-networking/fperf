@@ -16,7 +16,7 @@ bool test_search() {
   SimpleCP *ss = new SimpleCP(total_time);
 
   Workload wl(100, 1, total_time);
-  wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, 0), comp_t::LE, (uint)1),
+  wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, 0), op_t::LE, (uint)1),
                            time_range_t(last_t, last_t), total_time));
   ss->set_base_workload(wl);
 
@@ -24,7 +24,7 @@ bool test_search() {
   cid_t queue_id = ss->get_in_queue()->get_id();
 
   Query query(query_quant_t::FORALL, time_range_t(last_t, last_t), queue_id,
-              metric_t::CDEQ, comp_t::GE, 1);
+              metric_t::CDEQ, op_t::GE, 1);
 
   ss->set_query(query);
 
@@ -41,6 +41,7 @@ bool test_search() {
   dists_params.total_time = total_time;
   dists_params.pkt_meta1_val_max = 1;
   dists_params.pkt_meta2_val_max = 1;
+  dists_params.random_seed = 7000;
   Dists *dists = new Dists(dists_params);
   SharedConfig *config = new SharedConfig(total_time, 1, target_queues, dists);
 

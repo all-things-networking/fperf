@@ -45,49 +45,49 @@ cid_t get_unique_id(cid_t module_id,
 
 //************************************* COMP *************************************//
 
-std::ostream& operator<<(std::ostream& os, const comp_t& comp){
+std::ostream& operator<<(std::ostream& os, const op_t& comp){
     switch (comp) {
-        case (comp_t::GT):
+        case (op_t::GT):
             os << ">";
             break;
-        case (comp_t::GE):
+        case (op_t::GE):
             os << ">=";
             break;
-        case (comp_t::LT):
+        case (op_t::LT):
             os << "<";
             break;
-        case (comp_t::LE):
+        case (op_t::LE):
             os << "<=";
             break;
-        case (comp_t::EQ):
+        case (op_t::EQ):
             os << "=";
             break;
     }
     return os;
 }
 
-bool eval_comp(unsigned int lhs_val, comp_t comp, unsigned int rhs_val){
-    switch (comp) {
-        case (comp_t::GT): return lhs_val > rhs_val;
-        case (comp_t::GE): return lhs_val >= rhs_val;
-        case (comp_t::LT): return lhs_val < rhs_val;
-        case (comp_t::LE): return lhs_val <= rhs_val;
-        case (comp_t::EQ): return lhs_val == rhs_val;
+bool eval_op(unsigned int lhs_val, op_t op, unsigned int rhs_val){
+    switch (op) {
+        case (op_t::GT): return lhs_val > rhs_val;
+        case (op_t::GE): return lhs_val >= rhs_val;
+        case (op_t::LT): return lhs_val < rhs_val;
+        case (op_t::LE): return lhs_val <= rhs_val;
+        case (op_t::EQ): return lhs_val == rhs_val;
     }
     std::cout << "eval_comp: should not reach here" << std::endl;
     return false;
 }
 
-comp_t neg_comp(comp_t comp){
-    switch (comp) {
-        case (comp_t::GT): return comp_t::LT;
-        case (comp_t::GE): return comp_t::LE;
-        case (comp_t::LT): return comp_t::GT;
-        case (comp_t::LE): return comp_t::GE;
-        case (comp_t::EQ): return comp_t::EQ;
+op_t neg_op(op_t op){
+    switch (op) {
+        case (op_t::GT): return op_t::LT;
+        case (op_t::GE): return op_t::LE;
+        case (op_t::LT): return op_t::GT;
+        case (op_t::LE): return op_t::GE;
+        case (op_t::EQ): return op_t::EQ;
     }
     std::cout << "neg_comp: should not reach here" << std::endl;
-    return comp;
+    return op;
 }
 
 //************************************* TIME RANGE *************************************//

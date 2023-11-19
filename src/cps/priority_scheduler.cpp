@@ -83,8 +83,8 @@ std::string PrioScheduler::cp_model_str(model& m,
     stringstream ss;
     for (unsigned int q = 0; q < in_queues.size(); q++){
         Queue* queue = in_queues[q];
-        ss << queue->get_id() << ": " << m.eval(cblocked[q]->val(t)).get_numeral_int() << ", " <<
-                                         m.eval(cenq[q]->val(t)).get_numeral_int() << std::endl;
+        ss << queue->get_id() << ": " << m.eval(cblocked[q]->val(t).second).get_numeral_int() << ", " <<
+                                         m.eval(cenq[q]->val(t).second).get_numeral_int() << std::endl;
     }
     return ss.str();
 }

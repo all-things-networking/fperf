@@ -10,8 +10,7 @@
 
 /******************************* Dists *****************************/
 Dists::Dists(DistsParams params){
-    unsigned int seed = (unsigned int) time(NULL);
-    //unsigned int seed = 1680979592;
+    unsigned int seed = params.random_seed;
     std::cout << "seed is: " << seed << std::endl;
     gen.seed(seed);
  
@@ -78,6 +77,10 @@ std::uniform_int_distribution<unsigned int>& Dists::get_pkt_meta1_val_dist(){
 
 std::uniform_int_distribution<unsigned int>& Dists::get_pkt_meta2_val_dist(){
     return pkt_meta2_val_dist;
+}
+
+std::uniform_int_distribution<unsigned int>& Dists::get_rhs_const_dist(){
+    return rhs_const_dist;
 }
 
 /******************************* SharedConfig *****************************/

@@ -134,11 +134,11 @@ bool operator==(const rhs_t& rhs1, const rhs_t& rhs2);
 bool operator<(const rhs_t& rhs1, const rhs_t& rhs2);
 
 //************************************* UNIQ *************************************//
-class Uniqe{
+class Unique{
 
 public:
 
-    Uniqe(metric_t metric, qset_t qset);
+    Unique(metric_t metric, qset_t qset);
 
     bool applies_to_queue(unsigned int queue) const;
 
@@ -150,9 +150,9 @@ private:
     metric_t metric;
     qset_t qset;
 
-    friend std::ostream& operator<<(std::ostream& os, const Uniqe& u);
-    friend bool operator== (const Uniqe& u1, const Uniqe& u2);
-    friend bool operator< (const Uniqe& u1, const Uniqe& u2);
+    friend std::ostream& operator<<(std::ostream& os, const Unique& u);
+    friend bool operator== (const Unique& u1, const Unique& u2);
+    friend bool operator< (const Unique& u1, const Unique& u2);
 };
 
 //************************************* SAME *************************************//
@@ -257,7 +257,7 @@ private:
 };
 
 //************************************* WlSpec *************************************//
-typedef std::variant<Comp, Same, Incr, Decr> wl_spec_t;
+typedef std::variant<Comp, Same, Incr, Decr, Unique> wl_spec_t;
 
 bool wl_spec_applies_to_queue(wl_spec_t spec, unsigned int queue);
 

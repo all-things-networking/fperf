@@ -150,7 +150,8 @@ private:
     expr get_expr(IndexedExample* eg, vector<metric_t>& metrics);
     expr get_expr(IndexedExample* eg);
     expr get_expr(Workload wl);
-    expr get_expr(TimedSpec tspec); 
+    expr get_expr(TimedSpec tspec);
+    expr get_expr(Unique uniq, time_range_t time_range);
     expr get_expr(Same same, time_range_t time_range);
     expr get_expr(Incr incr, time_range_t time_range);
     expr get_expr(Decr decr, time_range_t time_range);
@@ -167,6 +168,7 @@ private:
     
     /* *********** Workload Satisifes Example ************ */
     bool timedspec_satisfies_example(TimedSpec spec, IndexedExample* eg);
+    bool eval_spec(Unique uniq, IndexedExample* eg, time_range_t time_range) const;
     bool eval_spec(Same same, IndexedExample* eg, time_range_t time_range) const;
     bool eval_spec(Incr incr, IndexedExample* eg, time_range_t time_range) const;
     bool eval_spec(Decr decr, IndexedExample* eg, time_range_t time_range) const;

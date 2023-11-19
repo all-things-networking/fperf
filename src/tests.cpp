@@ -393,7 +393,7 @@ void leaf_spine_bw(std::string good_examples_file,
     unsigned int in_queue_cnt = cp->in_queue_cnt();
    
     // Base Workload
-    Workload wl(in_queue_cnt + 2, in_queue_cnt, total_time);
+    Workload wl(in_queue_cnt + 5, in_queue_cnt, total_time);
 
     wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, src_server), op_t::GE, Time(1)),
                              total_time - 1,
@@ -406,10 +406,7 @@ void leaf_spine_bw(std::string good_examples_file,
     for (unsigned int q = 0; q < in_queue_cnt; q++){
         Same s(metric_t::DST, q);
         wl.add_spec(TimedSpec(s,time_range_t(0, total_time - 1), total_time));
-        cout << "[1, " << total_time << "] " << s << endl;
     }
-
-    cp->set_base_workload(wl); 
 
     qset_t unique_qset;
     for (unsigned int q = 0; q < in_queue_cnt; q++){
@@ -450,7 +447,8 @@ void leaf_spine_bw(std::string good_examples_file,
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = server_cnt - 1;
     dists_params.pkt_meta2_val_max = spine_cnt - 1;
-    dists_params.random_seed = 3586;
+    dists_params.random_seed = 24212;
+//    dists_params.random_seed = rand_seed;
 
     Dists* dists = new Dists(dists_params);
     SharedConfig* config = new SharedConfig(total_time, cp->in_queue_cnt(), target_queues, dists);

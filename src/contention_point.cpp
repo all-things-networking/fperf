@@ -21,38 +21,6 @@ base_wl_expr(expr(net_ctx.z3_ctx())),
 query_expr(expr(net_ctx.z3_ctx())) {
 }
 
-void ContentionPoint::add_unique_to_base(time_range_t time_range, qset_t qset, metric_t metric) {
-    vector<unsigned int> queues(qset.begin(), qset.end());
-    unsigned int start = time_range.first;
-    unsigned int end = time_range.second;
-
-    expr_vector unique_metric(net_ctx.z3_ctx());
-
-    for (unsigned int t = start; t <= end; t++) {
-        for (unsigned int i = 0; i < queues.size(); i++) {
-            unsigned int q = queues[i];
-            Queue* queue = in_queues[q];
-            Metric* metric1 = queue->get_metric(metric);
-            m_val_expr_t metric1_val_expr = metric1->val(t);
-            expr m1_valid = metric1_val_expr.first;
-            expr m1_value = metric1_val_expr.second;
-
-            for (unsigned int j = i + 1; j < queues.size(); j++) {
-                unsigned int q2 = queues[j];
-                if (q2 == q) continue;
-                Queue* queue2 = in_queues[q2];
-                Metric* metric2 = queue2->get_metric(metric);
-                m_val_expr_t metric2_val_expr = metric2->val(t);
-                expr m2_valid = metric2_val_expr.first;
-                expr m2_value = metric2_val_expr.second;
-                unique_metric.push_back(implies(m1_valid && m2_valid, m1_value != m2_value));
-            }
-        }
-    }
-    expr constr = mk_and(unique_metric);
-    this->base_wl_expr = this->base_wl_expr && constr;
-}
-
 // NOTE: the constructor of inherited classes
 //       (i.e., CPs) should call init.
 void ContentionPoint::init(){
@@ -2065,6 +2033,40 @@ expr ContentionPoint::get_expr(TimedSpec spec){
     return visit([time_range, this](auto const& sf){return this->get_expr(sf, time_range);}, wl_spec); 
 }
 
+expr ContentionPoint::get_expr(Unique uniq, time_range_t time_range){
+        qset_t qset = uniq.get_qset();
+        metric_t metric = uniq.get_metric();
+        vector<unsigned int> queues(qset.begin(), qset.end());
+        unsigned int start = time_range.first;
+        unsigned int end = time_range.second;
+
+        expr_vector unique_metric(net_ctx.z3_ctx());
+
+        for (unsigned int t = start; t <= end; t++) {
+            for (unsigned int i = 0; i < queues.size(); i++) {
+                unsigned int q = queues[i];
+                Queue* queue = in_queues[q];
+                Metric* metric1 = queue->get_metric(metric);
+                m_val_expr_t metric1_val_expr = metric1->val(t);
+                expr m1_valid = metric1_val_expr.first;
+                expr m1_value = metric1_val_expr.second;
+
+                for (unsigned int j = i + 1; j < queues.size(); j++) {
+                    unsigned int q2 = queues[j];
+                    if (q2 == q) continue;
+                    Queue* queue2 = in_queues[q2];
+                    Metric* metric2 = queue2->get_metric(metric);
+                    m_val_expr_t metric2_val_expr = metric2->val(t);
+                    expr m2_valid = metric2_val_expr.first;
+                    expr m2_value = metric2_val_expr.second;
+                    unique_metric.push_back(implies(m1_valid && m2_valid, m1_value != m2_value));
+                }
+            }
+        }
+        expr constr = mk_and(unique_metric);
+        return constr;
+}
+
 expr ContentionPoint::get_expr(Same same, time_range_t time_range){
     Queue* queue = in_queues[same.get_queue()];
     Metric* metric = queue->get_metric(same.get_metric());
@@ -2213,6 +2215,12 @@ bool ContentionPoint::timedspec_satisfies_example(TimedSpec spec,
     if (eg->total_time - 1 < time_range.first) return false;
 
     return visit([time_range, eg, this](auto const& sf){return this->eval_spec(sf, eg, time_range);}, spec.get_wl_spec());
+}
+
+bool ContentionPoint::eval_spec(Unique uniq,
+                                IndexedExample* eg,
+                                time_range_t time_range) const {
+    return true;
 }
 
 bool ContentionPoint::eval_spec(Same same,

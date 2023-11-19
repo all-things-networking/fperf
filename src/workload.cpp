@@ -298,35 +298,35 @@ bool operator<(const rhs_t& rhs1, const rhs_t& rhs2){
 
 //************************************* UNIQ *************************************//
 
-Uniqe::Uniqe(metric_t metric, qset_t qset):
+Unique::Unique(metric_t metric, qset_t qset):
     metric(metric),
     qset(qset)
 {}
 
 
-bool Uniqe::applies_to_queue(unsigned int queue) const{
+bool Unique::applies_to_queue(unsigned int queue) const{
     return (qset.find(queue) != qset.end());
 }
 
-qset_t Uniqe::get_qset() const{
+qset_t Unique::get_qset() const{
     return qset;
 }
 
-metric_t Uniqe::get_metric() const{
+metric_t Unique::get_metric() const{
     return metric;
 }
 
-std::ostream& operator<<(std::ostream& os, const Uniqe& u){
-    os << "Uniqe[" << u << "(" << u.qset << ", t)]";
+std::ostream& operator<<(std::ostream& os, const Unique& u){
+    os << "Uniqe[" << u.metric << "(" << u.qset << ", t)]";
     return os;
 }
 
-bool operator== (const Uniqe& u1, const Uniqe& u2){
+bool operator== (const Unique& u1, const Unique& u2){
     return (u1.metric == u2.metric &&
             u1.qset == u2.qset);
 }
 
-bool operator<(const Uniqe& u1, const Uniqe& u2){
+bool operator<(const Unique& u1, const Unique& u2){
     return (u1.metric < u2.metric ||
             (u1.metric == u2.metric &&
              u1.qset < u2.qset));
@@ -830,6 +830,11 @@ std::ostream& operator<<(std::ostream& os, const wl_spec_t& wl_spec){
             os << get<Decr>(wl_spec);
             break;
         }
+        // Uniq
+        case 4: {
+            os << get<Unique>(wl_spec);
+            break;
+        }
         default:
             break;
     }
@@ -856,7 +861,7 @@ bool operator==(const wl_spec_t& spec1, const wl_spec_t& spec2) {
 }
 
 bool operator<(const wl_spec_t& spec1, const wl_spec_t& spec2) {
-    // Comp < Same < Incr < Decr
+    // Comp  < Same < Incr < Decr < Uniq
 
     if (std::holds_alternative<Comp>(spec1)){
         if (std::holds_alternative<Comp>(spec2)){
@@ -879,7 +884,7 @@ bool operator<(const wl_spec_t& spec1, const wl_spec_t& spec2) {
         }
     }
 
-    if (std::holds_alternative<Incr>(spec1)){
+    else if (std::holds_alternative<Incr>(spec1)){
         if (std::holds_alternative<Incr>(spec2)){
             return std::get<Incr>(spec1) < std::get<Incr>(spec2);
         }
@@ -892,12 +897,24 @@ bool operator<(const wl_spec_t& spec1, const wl_spec_t& spec2) {
         }
     }
 
-    if (std::holds_alternative<Decr>(spec1)){
+   else if (std::holds_alternative<Decr>(spec1)){
         if (std::holds_alternative<Decr>(spec2)){
             return std::get<Decr>(spec1) < std::get<Decr>(spec2);
         }
         else {
             return false;
+        }
+    }
+
+    else if (std::holds_alternative<Unique>(spec1)){
+        if (std::holds_alternative<Unique>(spec2)){
+            return std::get<Unique>(spec1) < std::get<Unique>(spec2);
+        }
+        else if (std::holds_alternative<Unique>(spec2)){
+            return false;
+        }
+        else {
+            return true;
         }
     }
     std::cout << "operator < for wl_spec_t: should not reach here" << endl;

@@ -8,14 +8,14 @@
 
 #include "tests.hpp"
 
-#include "params.hpp"
-#include "priority_scheduler.hpp"
-#include "rr_scheduler.hpp"
-#include "loom_mqprio.hpp"
 #include "buggy_2l_rr_scheduler.hpp"
 #include "leaf_spine.hpp"
-#include "search.hpp"
+#include "loom_mqprio.hpp"
+#include "params.hpp"
+#include "priority_scheduler.hpp"
 #include "query.hpp"
+#include "rr_scheduler.hpp"
+#include "search.hpp"
 
 void run(ContentionPoint* cp,
          IndexedExample* base_eg,
@@ -165,7 +165,7 @@ void rr(std::string good_examples_file,
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = 2;
     dists_params.pkt_meta2_val_max = 2;
-    dists_params.random_seed = 5422;
+    dists_params.random_seed = 29663;
 
     Dists* dists = new Dists(dists_params); 
     SharedConfig* config = new SharedConfig(total_time,
@@ -364,10 +364,8 @@ void loom(std::string good_examples_file,
         config);
 }
 
-void leaf_spine_bw(std::string good_examples_file,
-                   std::string bad_examples_file){
-    int rand_seed = stoi(good_examples_file) ;
-    cout << "leaf_spine_bw" << endl; 
+void leaf_spine_bw(std::string good_examples_file, std::string bad_examples_file) {
+    cout << "leaf_spine_bw" << endl;
     time_typ start_time = noww();
 
     unsigned int leaf_cnt = 3;
@@ -409,10 +407,12 @@ void leaf_spine_bw(std::string good_examples_file,
     }
 
     qset_t unique_qset;
-    for (unsigned int q = 0; q < in_queue_cnt; q++){
+    for (unsigned int q = 0; q < in_queue_cnt; q++)
         unique_qset.insert(q);
-    }
-    cp->add_unique_to_base(time_range_t(0, total_time - 1), unique_qset, metric_t::DST);
+    Unique uniq(metric_t::DST, unique_qset);
+    wl.add_spec(TimedSpec(uniq, time_range_t(0, total_time - 1), total_time));
+
+    cp->set_base_workload(wl);
 
     // Query
     cid_t query_qid = cp->get_out_queue(dst_server)->get_id();
@@ -448,7 +448,6 @@ void leaf_spine_bw(std::string good_examples_file,
     dists_params.pkt_meta1_val_max = server_cnt - 1;
     dists_params.pkt_meta2_val_max = spine_cnt - 1;
     dists_params.random_seed = 24212;
-//    dists_params.random_seed = rand_seed;
 
     Dists* dists = new Dists(dists_params);
     SharedConfig* config = new SharedConfig(total_time, cp->in_queue_cnt(), target_queues, dists);

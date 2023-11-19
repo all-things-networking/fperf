@@ -1,6 +1,6 @@
 //
 //  workload.cpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 11/19/20.
 //  Copyright © 2020 Mina Tahmasbi Arashloo. All rights reserved.
@@ -16,104 +16,95 @@
 
 //************************************* QSum *************************************//
 
-QSum::QSum(qset_t qset, metric_t metric):
-qset(qset),
-metric(metric)
-{}
+QSum::QSum(qset_t qset, metric_t metric): qset(qset), metric(metric) {
+}
 
-bool QSum::applies_to_queue(unsigned int queue) const{
+bool QSum::applies_to_queue(unsigned int queue) const {
     return (qset.find(queue) != qset.end());
 }
 
-unsigned int QSum::ast_size() const{
+unsigned int QSum::ast_size() const {
     return (unsigned int) qset.size();
 }
 
-qset_t QSum::get_qset() const{
+qset_t QSum::get_qset() const {
     return qset;
 }
 
-metric_t QSum::get_metric() const{
+metric_t QSum::get_metric() const {
     return metric;
 }
 
-std::ostream& operator<<(std::ostream& os, const QSum& qsum){
+ostream& operator<<(ostream& os, const QSum& qsum) {
     os << "SUM_[q in " << qsum.qset << "] " << qsum.metric << "(q ,t)";
     return os;
 }
 
-bool operator== (const QSum& s1, const QSum& s2) {
-    return (s1.qset == s2.qset &&
-            s1.metric == s2.metric);
+bool operator==(const QSum& s1, const QSum& s2) {
+    return (s1.qset == s2.qset && s1.metric == s2.metric);
 }
 
 bool operator<(const QSum& s1, const QSum& s2) {
-    return (s1.qset < s2.qset ||
-            (s1.qset == s2.qset &&
-            s1.metric < s2.metric));
+    return (s1.qset < s2.qset || (s1.qset == s2.qset && s1.metric < s2.metric));
 }
 
 //************************************* Indiv *************************************//
 
-Indiv::Indiv(metric_t metric, unsigned int queue):
-metric(metric),
-queue(queue)
-{}
+Indiv::Indiv(metric_t metric, unsigned int queue): metric(metric), queue(queue) {
+}
 
 
-bool Indiv::applies_to_queue(unsigned int queue) const{
+bool Indiv::applies_to_queue(unsigned int queue) const {
     return this->queue == queue;
 }
 
-unsigned int Indiv::get_queue() const{
+unsigned int Indiv::get_queue() const {
     return queue;
 }
 
-metric_t Indiv::get_metric() const{
+metric_t Indiv::get_metric() const {
     return metric;
 }
 
-std::ostream& operator<<(std::ostream& os, const Indiv& indiv){
+ostream& operator<<(ostream& os, const Indiv& indiv) {
     os << indiv.metric << "(" << indiv.queue << ", t)";
     return os;
 }
 
-bool operator== (const Indiv& s1, const Indiv& s2){
-    return (s1.metric == s2.metric &&
-            s1.queue == s2.queue);
+bool operator==(const Indiv& s1, const Indiv& s2) {
+    return (s1.metric == s2.metric && s1.queue == s2.queue);
 }
 
-bool operator<(const Indiv& s1, const Indiv& s2){
-    return (s1.metric < s2.metric ||
-            (s1.metric == s2.metric &&
-             s1.queue < s2.queue));
+bool operator<(const Indiv& s1, const Indiv& s2) {
+    return (s1.metric < s2.metric || (s1.metric == s2.metric && s1.queue < s2.queue));
 }
 
 //************************************* Time *************************************//
 
-Time::Time(unsigned int coeff): coeff(coeff) {}
+Time::Time(unsigned int coeff): coeff(coeff) {
+}
 
-unsigned int Time::get_coeff() const{
+unsigned int Time::get_coeff() const {
     return coeff;
 }
 
-std::ostream& operator<<(std::ostream& os, const Time& time){
+ostream& operator<<(ostream& os, const Time& time) {
     if (time.coeff != 1) os << time.coeff;
     os << "t";
     return os;
 }
 
-bool operator== (const Time& t1, const Time& t2){
+bool operator==(const Time& t1, const Time& t2) {
     return t1.coeff == t2.coeff;
 }
 
-bool operator< (const Time& t1, const Time& t2){
+bool operator<(const Time& t1, const Time& t2) {
     return t1.coeff < t2.coeff;
 }
 
 //************************************* MTRC_EXPR *************************************//
 
-bool m_expr_applies_to_queue(const m_expr_t m_expr, unsigned int queue){
+bool m_expr_applies_to_queue(const m_expr_t m_expr, unsigned int queue) {
     switch (m_expr.index()) {
         // QSum
         case 0: {
@@ -123,318 +114,281 @@ bool m_expr_applies_to_queue(const m_expr_t m_expr, unsigned int queue){
         case 1: {
             return get<Indiv>(m_expr).applies_to_queue(queue);
         }
-        default:
-            break;
+        default: break;
     }
     cout << "m_expr_applies_to_queue: should not reach here" << endl;
     return false;
 }
 
-unsigned int m_expr_ast_size(const m_expr_t m_expr){
-    if (holds_alternative<QSum>(m_expr)){
+unsigned int m_expr_ast_size(const m_expr_t m_expr) {
+    if (holds_alternative<QSum>(m_expr)) {
         return get<QSum>(m_expr).ast_size();
-    }
-    else return 1u;
+    } else
+        return 1u;
 }
 
-std::ostream& operator<<(std::ostream& os, const m_expr_t& m_expr){
+ostream& operator<<(ostream& os, const m_expr_t& m_expr) {
     switch (m_expr.index()) {
         // QSum
-        case 0:
-            os << get<QSum>(m_expr);
-            break;
+        case 0: os << get<QSum>(m_expr); break;
         // Indiv
-        case 1:
-            os << get<Indiv>(m_expr);
-            break;
-        default:
-            break;
+        case 1: os << get<Indiv>(m_expr); break;
+        default: break;
     }
     return os;
 }
 
-bool operator== (const m_expr_t& m_expr1, const m_expr_t& m_expr2){
-    if (std::holds_alternative<QSum>(m_expr1) &&
-        std::holds_alternative<QSum>(m_expr2)){
-        return std::get<QSum>(m_expr1) == std::get<QSum>(m_expr2);
+bool operator==(const m_expr_t& m_expr1, const m_expr_t& m_expr2) {
+    if (holds_alternative<QSum>(m_expr1) && holds_alternative<QSum>(m_expr2)) {
+        return get<QSum>(m_expr1) == get<QSum>(m_expr2);
     }
-    if (std::holds_alternative<Indiv>(m_expr1) &&
-        std::holds_alternative<Indiv>(m_expr2)){
-        return std::get<Indiv>(m_expr1) == std::get<Indiv>(m_expr2);
+    if (holds_alternative<Indiv>(m_expr1) && holds_alternative<Indiv>(m_expr2)) {
+        return get<Indiv>(m_expr1) == get<Indiv>(m_expr2);
     }
     return false;
 }
 
-bool operator<(const m_expr_t& m_expr1, const m_expr_t& m_expr2){
+bool operator<(const m_expr_t& m_expr1, const m_expr_t& m_expr2) {
     // QSum < Indiv
 
-    if (std::holds_alternative<QSum>(m_expr1)){
-        if (std::holds_alternative<QSum>(m_expr2)){
-            return std::get<QSum>(m_expr1) < std::get<QSum>(m_expr2);
-        }
-        else {
+    if (holds_alternative<QSum>(m_expr1)) {
+        if (holds_alternative<QSum>(m_expr2)) {
+            return get<QSum>(m_expr1) < get<QSum>(m_expr2);
+        } else {
             return true;
         }
     }
 
-    else if (std::holds_alternative<Indiv>(m_expr1)){
-        if (std::holds_alternative<Indiv>(m_expr2)){
-            return std::get<Indiv>(m_expr1) < std::get<Indiv>(m_expr2);
-        }
-        else {
+    else if (holds_alternative<Indiv>(m_expr1)) {
+        if (holds_alternative<Indiv>(m_expr2)) {
+            return get<Indiv>(m_expr1) < get<Indiv>(m_expr2);
+        } else {
             return false;
         }
     }
 
-    std::cout << "operator < for m_expr: should not reach here" << endl;
+    cout << "operator < for m_expr: should not reach here" << endl;
     return false;
 }
 
 //************************************* LHS *************************************//
 
-bool lhs_applies_to_queue(const lhs_t lhs, unsigned int queue){
+bool lhs_applies_to_queue(const lhs_t lhs, unsigned int queue) {
     return m_expr_applies_to_queue(lhs, queue);
 }
 
-unsigned int lhs_ast_size(const lhs_t lhs){
+unsigned int lhs_ast_size(const lhs_t lhs) {
     return m_expr_ast_size(lhs);
 }
 
 
 //************************************* RHS *************************************//
 
-bool rhs_applies_to_queue(const rhs_t rhs, unsigned int queue){
-    if (holds_alternative<m_expr_t>(rhs)){
+bool rhs_applies_to_queue(const rhs_t rhs, unsigned int queue) {
+    if (holds_alternative<m_expr_t>(rhs)) {
         m_expr_t rhs_m_expr = get<m_expr_t>(rhs);
         return m_expr_applies_to_queue(rhs_m_expr, queue);
     }
     return false;
 }
 
-unsigned int rhs_ast_size(const rhs_t rhs){
-    if (holds_alternative<m_expr_t>(rhs)){
+unsigned int rhs_ast_size(const rhs_t rhs) {
+    if (holds_alternative<m_expr_t>(rhs)) {
         m_expr_t rhs_m_expr = get<m_expr_t>(rhs);
         return m_expr_ast_size(rhs_m_expr);
-    }
-    else return 0u;
+    } else
+        return 0u;
 }
 
-std::ostream& operator<<(std::ostream& os, const rhs_t& rhs){
+ostream& operator<<(ostream& os, const rhs_t& rhs) {
     switch (rhs.index()) {
         // m_expr
-        case 0:
-        {
+        case 0: {
             os << get<m_expr_t>(rhs);
             break;
         }
         // Time
-        case 1:
-        {
+        case 1: {
             os << get<Time>(rhs);
             break;
         }
         // C
-        case 2:{
+        case 2: {
             os << get<unsigned int>(rhs);
             break;
         }
-        default:
-            break;
+        default: break;
     }
     return os;
 }
 
-bool operator==(const rhs_t& rhs1, const rhs_t& rhs2){
-    if (std::holds_alternative<m_expr_t>(rhs1) &&
-        std::holds_alternative<m_expr_t>(rhs2)){
-        return std::get<m_expr_t>(rhs1) == std::get<m_expr_t>(rhs2);
+bool operator==(const rhs_t& rhs1, const rhs_t& rhs2) {
+    if (holds_alternative<m_expr_t>(rhs1) && holds_alternative<m_expr_t>(rhs2)) {
+        return get<m_expr_t>(rhs1) == get<m_expr_t>(rhs2);
     }
-    if (std::holds_alternative<Time>(rhs1) &&
-        std::holds_alternative<Time>(rhs2)){
-        return std::get<Time>(rhs1) == std::get<Time>(rhs2);
+    if (holds_alternative<Time>(rhs1) && holds_alternative<Time>(rhs2)) {
+        return get<Time>(rhs1) == get<Time>(rhs2);
     }
-    if (std::holds_alternative<unsigned int>(rhs1) &&
-        std::holds_alternative<unsigned int>(rhs2)){
-        return std::get<unsigned int>(rhs1) == std::get<unsigned int>(rhs2);
+    if (holds_alternative<unsigned int>(rhs1) && holds_alternative<unsigned int>(rhs2)) {
+        return get<unsigned int>(rhs1) == get<unsigned int>(rhs2);
     }
     return false;
 }
 
-bool operator<(const rhs_t& rhs1, const rhs_t& rhs2){
+bool operator<(const rhs_t& rhs1, const rhs_t& rhs2) {
     // m_expr_t < Time < unsigned int
 
-    if (std::holds_alternative<m_expr_t>(rhs1)){
-        if (std::holds_alternative<m_expr_t>(rhs2)){
-            return std::get<m_expr_t>(rhs1) < std::get<m_expr_t>(rhs2);
-        }
-        else {
+    if (holds_alternative<m_expr_t>(rhs1)) {
+        if (holds_alternative<m_expr_t>(rhs2)) {
+            return get<m_expr_t>(rhs1) < get<m_expr_t>(rhs2);
+        } else {
             return true;
         }
     }
 
-    else if (std::holds_alternative<Time>(rhs1)){
-        if (std::holds_alternative<Time>(rhs2)){
-            return std::get<Time>(rhs1) < std::get<Time>(rhs2);
-        }
-        else if (std::holds_alternative<m_expr_t>(rhs2)){
+    else if (holds_alternative<Time>(rhs1)) {
+        if (holds_alternative<Time>(rhs2)) {
+            return get<Time>(rhs1) < get<Time>(rhs2);
+        } else if (holds_alternative<m_expr_t>(rhs2)) {
             return false;
-        }
-        else {
+        } else {
             return true;
         }
     }
 
-    if (std::holds_alternative<unsigned int>(rhs1)){
-        if (std::holds_alternative<unsigned int>(rhs2)){
-            return std::get<unsigned int>(rhs1) < std::get<unsigned int>(rhs2);
-        }
-        else {
+    if (holds_alternative<unsigned int>(rhs1)) {
+        if (holds_alternative<unsigned int>(rhs2)) {
+            return get<unsigned int>(rhs1) < get<unsigned int>(rhs2);
+        } else {
             return false;
         }
     }
-    std::cout << "operator < for rhs: should not reach here" << endl;
+    cout << "operator < for rhs: should not reach here" << endl;
     return false;
 }
 
 //************************************* UNIQ *************************************//
 
-Unique::Unique(metric_t metric, qset_t qset):
-    metric(metric),
-    qset(qset)
-{}
+Unique::Unique(metric_t metric, qset_t qset): metric(metric), qset(qset) {
+}
 
 
-bool Unique::applies_to_queue(unsigned int queue) const{
+bool Unique::applies_to_queue(unsigned int queue) const {
     return (qset.find(queue) != qset.end());
 }
 
-qset_t Unique::get_qset() const{
+qset_t Unique::get_qset() const {
     return qset;
 }
 
-metric_t Unique::get_metric() const{
+metric_t Unique::get_metric() const {
     return metric;
 }
 
-std::ostream& operator<<(std::ostream& os, const Unique& u){
+ostream& operator<<(ostream& os, const Unique& u) {
     os << "Uniqe[" << u.metric << "(" << u.qset << ", t)]";
     return os;
 }
 
-bool operator== (const Unique& u1, const Unique& u2){
-    return (u1.metric == u2.metric &&
-            u1.qset == u2.qset);
+bool operator==(const Unique& u1, const Unique& u2) {
+    return (u1.metric == u2.metric && u1.qset == u2.qset);
 }
 
-bool operator<(const Unique& u1, const Unique& u2){
-    return (u1.metric < u2.metric ||
-            (u1.metric == u2.metric &&
-             u1.qset < u2.qset));
+bool operator<(const Unique& u1, const Unique& u2) {
+    return (u1.metric < u2.metric || (u1.metric == u2.metric && u1.qset < u2.qset));
 }
 
 //************************************* SAME *************************************//
 
-Same::Same(metric_t metric, unsigned int queue):
-metric(metric),
-queue(queue)
-{}
+Same::Same(metric_t metric, unsigned int queue): metric(metric), queue(queue) {
+}
 
 
-bool Same::applies_to_queue(unsigned int queue) const{
+bool Same::applies_to_queue(unsigned int queue) const {
     return this->queue == queue;
 }
 
-unsigned int Same::get_queue() const{
+unsigned int Same::get_queue() const {
     return queue;
 }
 
-metric_t Same::get_metric() const{
+metric_t Same::get_metric() const {
     return metric;
 }
 
-std::ostream& operator<<(std::ostream& os, const Same& s){
+ostream& operator<<(ostream& os, const Same& s) {
     os << "Same[" << s.metric << "(" << s.queue << ", t)]";
     return os;
 }
 
-bool operator== (const Same& s1, const Same& s2){
-    return (s1.metric == s2.metric &&
-            s1.queue == s2.queue);
+bool operator==(const Same& s1, const Same& s2) {
+    return (s1.metric == s2.metric && s1.queue == s2.queue);
 }
 
-bool operator<(const Same& s1, const Same& s2){
-    return (s1.metric < s2.metric ||
-            (s1.metric == s2.metric &&
-             s1.queue < s2.queue));
+bool operator<(const Same& s1, const Same& s2) {
+    return (s1.metric < s2.metric || (s1.metric == s2.metric && s1.queue < s2.queue));
 }
 
 //************************************* INCR *************************************//
 
-Incr::Incr(metric_t metric, unsigned int queue):
-metric(metric),
-queue(queue)
-{}
+Incr::Incr(metric_t metric, unsigned int queue): metric(metric), queue(queue) {
+}
 
 
-bool Incr::applies_to_queue(unsigned int queue) const{
+bool Incr::applies_to_queue(unsigned int queue) const {
     return this->queue == queue;
 }
 
-unsigned int Incr::get_queue() const{
+unsigned int Incr::get_queue() const {
     return queue;
 }
 
-metric_t Incr::get_metric() const{
+metric_t Incr::get_metric() const {
     return metric;
 }
 
-std::ostream& operator<<(std::ostream& os, const Incr& incr){
+ostream& operator<<(ostream& os, const Incr& incr) {
     os << "Incr[" << incr.metric << "(" << incr.queue << ", t)]";
     return os;
 }
 
-bool operator== (const Incr& incr1, const Incr& incr2){
-    return (incr1.metric == incr2.metric &&
-            incr1.queue == incr2.queue);
+bool operator==(const Incr& incr1, const Incr& incr2) {
+    return (incr1.metric == incr2.metric && incr1.queue == incr2.queue);
 }
 
-bool operator<(const Incr& incr1, const Incr& incr2){
+bool operator<(const Incr& incr1, const Incr& incr2) {
     return (incr1.metric < incr2.metric ||
-            (incr1.metric == incr2.metric &&
-             incr1.queue < incr2.queue));
+            (incr1.metric == incr2.metric && incr1.queue < incr2.queue));
 }
 
 //************************************* DECR *************************************//
 
-Decr::Decr(metric_t metric, unsigned int queue):
-metric(metric),
-queue(queue)
-{}
+Decr::Decr(metric_t metric, unsigned int queue): metric(metric), queue(queue) {
+}
 
 
-bool Decr::applies_to_queue(unsigned int queue) const{
+bool Decr::applies_to_queue(unsigned int queue) const {
     return this->queue == queue;
 }
 
-unsigned int Decr::get_queue() const{
+unsigned int Decr::get_queue() const {
     return queue;
 }
 
-metric_t Decr::get_metric() const{
+metric_t Decr::get_metric() const {
     return metric;
 }
 
-std::ostream& operator<<(std::ostream& os, const Decr& decr){
+ostream& operator<<(ostream& os, const Decr& decr) {
     os << "Decr[" << decr.metric << "(" << decr.queue << ", t)]";
     return os;
 }
 
-bool operator== (const Decr& decr1, const Decr& decr2){
-    return (decr1.metric == decr2.metric &&
-            decr1.queue == decr2.queue);
+bool operator==(const Decr& decr1, const Decr& decr2) {
+    return (decr1.metric == decr2.metric && decr1.queue == decr2.queue);
 }
 
-bool operator<(const Decr& decr1, const Decr& decr2){
+bool operator<(const Decr& decr1, const Decr& decr2) {
     return (decr1.metric < decr2.metric ||
             (decr1.metric == decr2.metric && decr1.queue < decr2.queue));
 }
@@ -445,23 +399,19 @@ bool operator<(const Decr& decr1, const Decr& decr2){
 //            is always normalized independent of the operation
 //            running on it.
 
-Comp::Comp(lhs_t lhs, op_t op, rhs_t rhs):
-lhs(lhs),
-op(op),
-rhs(rhs)
-{
+Comp::Comp(lhs_t lhs, op_t op, rhs_t rhs): lhs(lhs), op(op), rhs(rhs) {
     normalize();
 }
 
-bool Comp::applies_to_queue(unsigned int queue) const{
+bool Comp::applies_to_queue(unsigned int queue) const {
     bool lhs_applies = lhs_applies_to_queue(lhs, queue);
     bool rhs_applies = rhs_applies_to_queue(rhs, queue);
     return lhs_applies || rhs_applies;
 }
 
-void Comp::normalize(){
+void Comp::normalize() {
     // If the right hand side is TRF, we might be able to normalize
-    if (holds_alternative<m_expr_t>(rhs)){
+    if (holds_alternative<m_expr_t>(rhs)) {
 
         m_expr_t lhs_m_expr = lhs;
         m_expr_t rhs_m_expr = get<m_expr_t>(rhs);
@@ -473,114 +423,121 @@ void Comp::normalize(){
         bool rhs_is_indiv = holds_alternative<Indiv>(rhs_m_expr);
 
         // If both are QSum
-        if (lhs_is_qsum && rhs_is_qsum){
+        if (lhs_is_qsum && rhs_is_qsum) {
 
             QSum lhs_qsum = get<QSum>(lhs_m_expr);
             QSum rhs_qsum = get<QSum>(rhs_m_expr);
 
-            if (lhs_qsum.get_metric() == rhs_qsum.get_metric()){
+            if (lhs_qsum.get_metric() == rhs_qsum.get_metric()) {
                 qset_t lhs_qset = lhs_qsum.get_qset();
                 qset_t rhs_qset = rhs_qsum.get_qset();
 
                 set<unsigned int> inters;
-                set_intersection(lhs_qset.begin(), lhs_qset.end(),
-                                 rhs_qset.begin(), rhs_qset.end(),
-                                 std::inserter(inters, inters.begin()));
+                set_intersection(lhs_qset.begin(),
+                                 lhs_qset.end(),
+                                 rhs_qset.begin(),
+                                 rhs_qset.end(),
+                                 inserter(inters, inters.begin()));
                 bool intersect = inters.size() > 0;
 
-                if (lhs_qset == rhs_qset){
-                    if (op == op_t::GE ||
-                        op == op_t::LE) is_all = true;
-                    if (op == op_t::GT ||
-                        op == op_t::LT) is_empty = true;
-                }
-                else if (is_superset(rhs_qset, lhs_qset)){
+                if (lhs_qset == rhs_qset) {
+                    if (op == op_t::GE || op == op_t::LE) is_all = true;
+                    if (op == op_t::GT || op == op_t::LT) is_empty = true;
+                } else if (is_superset(rhs_qset, lhs_qset)) {
                     set<unsigned int> diff;
-                    set_difference(rhs_qset.begin(), rhs_qset.end(),
-                                   lhs_qset.begin(), lhs_qset.end(),
-                                   std::inserter(diff, diff.begin()));
+                    set_difference(rhs_qset.begin(),
+                                   rhs_qset.end(),
+                                   lhs_qset.begin(),
+                                   lhs_qset.end(),
+                                   inserter(diff, diff.begin()));
 
-                    if (op == op_t::LE) is_all = true;
-                    else if (op == op_t::GT) is_empty = true;
-                    else if (diff.size() == 1){
+                    if (op == op_t::LE)
+                        is_all = true;
+                    else if (op == op_t::GT)
+                        is_empty = true;
+                    else if (diff.size() == 1) {
                         lhs = Indiv(rhs_qsum.get_metric(), *(diff.begin()));
-                        if (op == op_t::EQ) op = op_t::LE;
-                        else op = neg_op(op);
+                        if (op == op_t::EQ)
+                            op = op_t::LE;
+                        else
+                            op = neg_op(op);
                         rhs = 0u;
-                    }
-                    else {
+                    } else {
                         lhs = QSum(qset_t(diff.begin(), diff.end()), rhs_qsum.get_metric());
-                        if (op == op_t::EQ) op = op_t::LE;
-                        else op = neg_op(op);
+                        if (op == op_t::EQ)
+                            op = op_t::LE;
+                        else
+                            op = neg_op(op);
                         rhs = 0u;
                     }
-                }
-                else if (is_superset(lhs_qset, rhs_qset)){
+                } else if (is_superset(lhs_qset, rhs_qset)) {
                     set<unsigned int> diff;
-                    set_difference(lhs_qset.begin(), lhs_qset.end(),
-                                   rhs_qset.begin(), rhs_qset.end(),
-                                   std::inserter(diff, diff.begin()));
+                    set_difference(lhs_qset.begin(),
+                                   lhs_qset.end(),
+                                   rhs_qset.begin(),
+                                   rhs_qset.end(),
+                                   inserter(diff, diff.begin()));
 
-                    if (op == op_t::LT) is_empty = true;
-                    else if (op == op_t::GE) is_all = true;
-                    else if (diff.size() == 1){
+                    if (op == op_t::LT)
+                        is_empty = true;
+                    else if (op == op_t::GE)
+                        is_all = true;
+                    else if (diff.size() == 1) {
                         lhs = Indiv(rhs_qsum.get_metric(), *(diff.begin()));
                         rhs = 0u;
-                    }
-                    else {
+                    } else {
                         lhs = QSum(qset_t(diff.begin(), diff.end()), rhs_qsum.get_metric());
                         rhs = 0u;
                     }
-                }
-                else if (intersect){
+                } else if (intersect) {
                     set<unsigned int> lhs_diff;
-                    set_difference(lhs_qset.begin(), lhs_qset.end(),
-                                   rhs_qset.begin(), rhs_qset.end(),
-                                   std::inserter(lhs_diff, lhs_diff.begin()));
+                    set_difference(lhs_qset.begin(),
+                                   lhs_qset.end(),
+                                   rhs_qset.begin(),
+                                   rhs_qset.end(),
+                                   inserter(lhs_diff, lhs_diff.begin()));
 
                     set<unsigned int> rhs_diff;
-                    set_difference(rhs_qset.begin(), rhs_qset.end(),
-                                   lhs_qset.begin(), lhs_qset.end(),
-                                   std::inserter(rhs_diff, rhs_diff.begin()));
+                    set_difference(rhs_qset.begin(),
+                                   rhs_qset.end(),
+                                   lhs_qset.begin(),
+                                   lhs_qset.end(),
+                                   inserter(rhs_diff, rhs_diff.begin()));
 
                     // set lhs
-                    if (lhs_diff.size() == 1){
+                    if (lhs_diff.size() == 1) {
                         lhs = Indiv(lhs_qsum.get_metric(), *(lhs_diff.begin()));
-                    }
-                    else {
-                        lhs = QSum(qset_t(lhs_diff.begin(), lhs_diff.end()),
-                                   lhs_qsum.get_metric());
+                    } else {
+                        lhs = QSum(qset_t(lhs_diff.begin(), lhs_diff.end()), lhs_qsum.get_metric());
                     }
 
                     // set rhs
-                    if (rhs_diff.size() == 1){
+                    if (rhs_diff.size() == 1) {
                         rhs = Indiv(rhs_qsum.get_metric(), *(rhs_diff.begin()));
-                    }
-                    else {
-                        rhs = QSum(qset_t(rhs_diff.begin(), rhs_diff.end()),
-                                   rhs_qsum.get_metric());
+                    } else {
+                        rhs = QSum(qset_t(rhs_diff.begin(), rhs_diff.end()), rhs_qsum.get_metric());
                     }
                 }
             }
         }
         // if both are Indiv
-        else if (lhs_is_indiv && rhs_is_indiv){
+        else if (lhs_is_indiv && rhs_is_indiv) {
             Indiv lhs_indiv = get<Indiv>(lhs_m_expr);
             Indiv rhs_indiv = get<Indiv>(rhs_m_expr);
-            if (lhs_indiv == rhs_indiv){
-                if (op == op_t::LE ||
-                    op == op_t::GE) is_all = true;
-                else if (op == op_t::LT ||
-                         op == op_t::GT) is_empty = true;
+            if (lhs_indiv == rhs_indiv) {
+                if (op == op_t::LE || op == op_t::GE)
+                    is_all = true;
+                else if (op == op_t::LT || op == op_t::GT)
+                    is_empty = true;
             }
             // TODO: generalize this to oparable metrics
-            if (lhs_indiv.get_metric() != rhs_indiv.get_metric()){
+            if (lhs_indiv.get_metric() != rhs_indiv.get_metric()) {
                 is_empty = true;
             }
         }
         // If lhs is Indiv and rhs is QSum, swap
         // Notice here we only have LT or LE as op
-        else if (lhs_is_indiv && rhs_is_qsum){
+        else if (lhs_is_indiv && rhs_is_qsum) {
             m_expr_t tmp = lhs_m_expr;
 
             lhs = rhs_m_expr;
@@ -600,25 +557,26 @@ void Comp::normalize(){
         // Both cases of one Indiv and one QSum
         // should end up here. Note that op
         // can be all of LT, LE, GT, GE now
-        if (lhs_is_qsum && rhs_is_indiv){
+        if (lhs_is_qsum && rhs_is_indiv) {
             QSum lhs_qsum = get<QSum>(lhs_m_expr);
             Indiv rhs_indiv = get<Indiv>(rhs_m_expr);
 
             qset_t lhs_qset = lhs_qsum.get_qset();
             unsigned int rhs_queue = rhs_indiv.get_queue();
 
-            if (lhs_qsum.get_metric() == rhs_indiv.get_metric()){
+            if (lhs_qsum.get_metric() == rhs_indiv.get_metric()) {
                 qset_t::iterator it = lhs_qset.find(rhs_queue);
-                if (it != lhs_qset.end()){
-                    if (op == op_t::GE) is_all = true;
-                    else if (op == op_t::LT) is_empty = true;
+                if (it != lhs_qset.end()) {
+                    if (op == op_t::GE)
+                        is_all = true;
+                    else if (op == op_t::LT)
+                        is_empty = true;
                     else {
                         lhs_qset.erase(it);
                         rhs = 0u;
-                        if (lhs_qset.size() == 1){
+                        if (lhs_qset.size() == 1) {
                             lhs = Indiv(lhs_qsum.get_metric(), *(lhs_qset.begin()));
-                        }
-                        else {
+                        } else {
                             lhs = QSum(lhs_qset, lhs_qsum.get_metric());
                         }
                     }
@@ -629,87 +587,72 @@ void Comp::normalize(){
 
     // If the right hand side is constant, op should either be
     // GE or LE
-    if (holds_alternative<unsigned int>(rhs)){
+    if (holds_alternative<unsigned int>(rhs)) {
         unsigned int c = get<unsigned int>(rhs);
-        if (op == op_t::GT){
+        if (op == op_t::GT) {
             op = op_t::GE;
             rhs = c + 1;
-        }
-        else if (op == op_t::LT){
-            if (c == 0) is_empty = true;
+        } else if (op == op_t::LT) {
+            if (c == 0)
+                is_empty = true;
             else {
                 op = op_t::LE;
                 rhs = c - 1;
             }
         }
-
     }
 
-    if (holds_alternative<Time>(rhs)){
+    if (holds_alternative<Time>(rhs)) {
         unsigned int c = get<Time>(rhs).get_coeff();
-        if (c == 0){
+        if (c == 0) {
             rhs = c;
-        }
-        else {
-            if (holds_alternative<Indiv>(lhs)){
-                if (op == op_t::GE &&
-                    c > MAX_ENQ) is_empty = true;
-                if (op == op_t::EQ &&
-                    c > MAX_ENQ) is_empty = true;
-                if (op == op_t::GT &&
-                    c >= MAX_ENQ) is_empty = true;
+        } else {
+            if (holds_alternative<Indiv>(lhs)) {
+                if (op == op_t::GE && c > MAX_ENQ) is_empty = true;
+                if (op == op_t::EQ && c > MAX_ENQ) is_empty = true;
+                if (op == op_t::GT && c >= MAX_ENQ) is_empty = true;
             }
-            if (holds_alternative<QSum>(lhs)){
+            if (holds_alternative<QSum>(lhs)) {
                 QSum qsum = get<QSum>(lhs);
-                if (op == op_t::GE &&
-                    c > (qsum.get_qset().size() - 1) * MAX_ENQ)
-                    is_empty = true;
-                if (op == op_t::EQ &&
-                    c > (qsum.get_qset().size() - 1) * MAX_ENQ)
-                    is_empty = true;
-                if (op == op_t::GT &&
-                    c >= (qsum.get_qset().size() - 1) * MAX_ENQ)
-                    is_empty = true;
+                if (op == op_t::GE && c > (qsum.get_qset().size() - 1) * MAX_ENQ) is_empty = true;
+                if (op == op_t::EQ && c > (qsum.get_qset().size() - 1) * MAX_ENQ) is_empty = true;
+                if (op == op_t::GT && c >= (qsum.get_qset().size() - 1) * MAX_ENQ) is_empty = true;
             }
         }
     }
 }
 
-bool Comp::spec_is_empty() const{
+bool Comp::spec_is_empty() const {
     return is_empty;
 }
 
-bool Comp::spec_is_all() const{
+bool Comp::spec_is_all() const {
     return is_all;
 }
 
-unsigned int Comp::ast_size() const{
+unsigned int Comp::ast_size() const {
     if (is_all) return 1u;
     if (is_empty) return 0u;
     return lhs_ast_size(lhs) + rhs_ast_size(rhs);
 }
 
-pair<metric_t, qset_t> Comp::get_zero_queues() const{
+pair<metric_t, qset_t> Comp::get_zero_queues() const {
     qset_t qset;
     metric_t metric;
 
-    if (op == op_t::LE &&
-        holds_alternative<unsigned int>(rhs) &&
-        get<unsigned int>(rhs) == 0){
-        if (holds_alternative<Indiv>(lhs)){
+    if (op == op_t::LE && holds_alternative<unsigned int>(rhs) && get<unsigned int>(rhs) == 0) {
+        if (holds_alternative<Indiv>(lhs)) {
             Indiv indiv = get<Indiv>(lhs);
             metric = indiv.get_metric();
-            if (Metric::properties.at(metric).non_negative){
+            if (Metric::properties.at(metric).non_negative) {
                 qset.insert(indiv.get_queue());
             }
-        }
-        else if (holds_alternative<QSum>(lhs)){
+        } else if (holds_alternative<QSum>(lhs)) {
             QSum qsum = get<QSum>(lhs);
             metric = qsum.get_metric();
-            if (Metric::properties.at(metric).non_negative){
+            if (Metric::properties.at(metric).non_negative) {
                 qset_t s_qset = qsum.get_qset();
-                for(qset_t::iterator it = s_qset.begin();
-                    it != s_qset.end(); it++){
+                for (qset_t::iterator it = s_qset.begin(); it != s_qset.end(); it++) {
                     qset.insert(*it);
                 }
             }
@@ -718,31 +661,34 @@ pair<metric_t, qset_t> Comp::get_zero_queues() const{
     return make_pair(metric, qset);
 }
 
-lhs_t Comp::get_lhs() const{
+lhs_t Comp::get_lhs() const {
     return lhs;
 }
 
-op_t Comp::get_op() const{
+op_t Comp::get_op() const {
     return op;
 }
 
-rhs_t Comp::get_rhs() const{
+rhs_t Comp::get_rhs() const {
     return rhs;
 }
 
-std::ostream& operator<<(std::ostream& os, const Comp& comp){
-    if (comp.is_all) os << "*";
-    else if (comp.is_empty) os << "FALSE";
-    else os << comp.lhs << " " << comp.op << " " << comp.rhs;
+ostream& operator<<(ostream& os, const Comp& comp) {
+    if (comp.is_all)
+        os << "*";
+    else if (comp.is_empty)
+        os << "FALSE";
+    else
+        os << comp.lhs << " " << comp.op << " " << comp.rhs;
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const Comp* comp){
+ostream& operator<<(ostream& os, const Comp* comp) {
     os << comp->lhs << " " << comp->op << " " << comp->rhs;
     return os;
 }
 
-bool operator==(const Comp& comp1, const Comp& comp2){
+bool operator==(const Comp& comp1, const Comp& comp2) {
     lhs_t lhs1 = comp1.lhs;
     op_t op1 = comp1.op;
     rhs_t rhs1 = comp1.rhs;
@@ -751,17 +697,15 @@ bool operator==(const Comp& comp1, const Comp& comp2){
     op_t op2 = comp2.op;
     rhs_t rhs2 = comp2.rhs;
 
-    bool res = (lhs1 == lhs2 &&
-                op1 == op2 &&
-                rhs1 == rhs2);
+    bool res = (lhs1 == lhs2 && op1 == op2 && rhs1 == rhs2);
     return res;
 }
 
-bool operator!=(const Comp& comp1, const Comp& comp2){
-    return ! (comp1 == comp2);
+bool operator!=(const Comp& comp1, const Comp& comp2) {
+    return !(comp1 == comp2);
 }
 
-bool operator<(const Comp& comp1, const Comp& comp2){
+bool operator<(const Comp& comp1, const Comp& comp2) {
     lhs_t lhs1 = comp1.lhs;
     op_t op1 = comp1.op;
     rhs_t rhs1 = comp1.rhs;
@@ -770,31 +714,25 @@ bool operator<(const Comp& comp1, const Comp& comp2){
     op_t op2 = comp2.op;
     rhs_t rhs2 = comp2.rhs;
 
-    return (lhs1 < lhs2 ||
-            (lhs1 == lhs2 &&
-            op1 < op2) ||
-            (lhs1 == lhs2 &&
-             op1 == op2 &&
-             rhs1 < rhs2));
+    return (lhs1 < lhs2 || (lhs1 == lhs2 && op1 < op2) ||
+            (lhs1 == lhs2 && op1 == op2 && rhs1 < rhs2));
 }
 
 //************************************* WlSpec *************************************//
-//TODO: Only checks COMP
-bool wl_spec_is_all(wl_spec_t spec){
-    if(holds_alternative<Comp>(spec))
-        return get<Comp>(spec).spec_is_all();
+// TODO: Only checks COMP
+bool wl_spec_is_all(wl_spec_t spec) {
+    if (holds_alternative<Comp>(spec)) return get<Comp>(spec).spec_is_all();
     return false;
 }
 
-//TODO: Only checks COMP
-bool wl_spec_is_empty(wl_spec_t spec){
-    if(holds_alternative<Comp>(spec))
-        return get<Comp>(spec).spec_is_empty();
+// TODO: Only checks COMP
+bool wl_spec_is_empty(wl_spec_t spec) {
+    if (holds_alternative<Comp>(spec)) return get<Comp>(spec).spec_is_empty();
     return false;
 }
 
-unsigned int wl_spec_ast_size(const wl_spec_t wl_spec){
-    if (holds_alternative<Comp>(wl_spec)){
+unsigned int wl_spec_ast_size(const wl_spec_t wl_spec) {
+    if (holds_alternative<Comp>(wl_spec)) {
         return get<Comp>(wl_spec).ast_size();
     } else
         return 1u;
@@ -811,7 +749,7 @@ bool wl_spec_applies_to_queue(wl_spec_t spec, unsigned int queue) {
     }
 }
 
-std::ostream& operator<<(std::ostream& os, const wl_spec_t& wl_spec){
+ostream& operator<<(ostream& os, const wl_spec_t& wl_spec) {
     switch (wl_spec.index()) {
         // Comp
         case 0: {
@@ -838,27 +776,23 @@ std::ostream& operator<<(std::ostream& os, const wl_spec_t& wl_spec){
             os << get<Unique>(wl_spec);
             break;
         }
-        default:
-            break;
+        default: break;
     }
     return os;
 }
 
 bool operator==(const wl_spec_t& spec1, const wl_spec_t& spec2) {
-    if (std::holds_alternative<Comp>(spec1) && std::holds_alternative<Comp>(spec2)) {
-        return std::get<Comp>(spec1) == std::get<Comp>(spec2);
+    if (holds_alternative<Comp>(spec1) && holds_alternative<Comp>(spec2)) {
+        return get<Comp>(spec1) == get<Comp>(spec2);
     }
-    if (std::holds_alternative<Same>(spec1) &&
-        std::holds_alternative<Same>(spec2)){
-        return std::get<Same>(spec1) == std::get<Same>(spec2);
+    if (holds_alternative<Same>(spec1) && holds_alternative<Same>(spec2)) {
+        return get<Same>(spec1) == get<Same>(spec2);
     }
-    if (std::holds_alternative<Incr>(spec1) &&
-        std::holds_alternative<Incr>(spec2)){
-        return std::get<Incr>(spec1) == std::get<Incr>(spec2);
+    if (holds_alternative<Incr>(spec1) && holds_alternative<Incr>(spec2)) {
+        return get<Incr>(spec1) == get<Incr>(spec2);
     }
-    if (std::holds_alternative<Decr>(spec1) &&
-        std::holds_alternative<Decr>(spec2)){
-        return std::get<Decr>(spec1) == std::get<Decr>(spec2);
+    if (holds_alternative<Decr>(spec1) && holds_alternative<Decr>(spec2)) {
+        return get<Decr>(spec1) == get<Decr>(spec2);
     }
     return false;
 }
@@ -866,61 +800,52 @@ bool operator==(const wl_spec_t& spec1, const wl_spec_t& spec2) {
 bool operator<(const wl_spec_t& spec1, const wl_spec_t& spec2) {
     // Comp < Same < Incr < Decr < Uniq
 
-    if (std::holds_alternative<Comp>(spec1)){
-        if (std::holds_alternative<Comp>(spec2)){
-            return std::get<Comp>(spec1) < std::get<Comp>(spec2);
-        }
-        else {
+    if (holds_alternative<Comp>(spec1)) {
+        if (holds_alternative<Comp>(spec2)) {
+            return get<Comp>(spec1) < get<Comp>(spec2);
+        } else {
             return true;
         }
     }
 
-    else if (std::holds_alternative<Same>(spec1)){
-        if (std::holds_alternative<Same>(spec2)){
-            return std::get<Same>(spec1) < std::get<Same>(spec2);
-        }
-        else if (std::holds_alternative<Comp>(spec2)){
+    else if (holds_alternative<Same>(spec1)) {
+        if (holds_alternative<Same>(spec2)) {
+            return get<Same>(spec1) < get<Same>(spec2);
+        } else if (holds_alternative<Comp>(spec2)) {
             return false;
-        }
-        else {
+        } else {
             return true;
         }
     }
 
-    else if (std::holds_alternative<Incr>(spec1)){
-        if (std::holds_alternative<Incr>(spec2)){
-            return std::get<Incr>(spec1) < std::get<Incr>(spec2);
-        }
-        else if (std::holds_alternative<Comp>(spec2) ||
-                 std::holds_alternative<Same>(spec2)){
+    else if (holds_alternative<Incr>(spec1)) {
+        if (holds_alternative<Incr>(spec2)) {
+            return get<Incr>(spec1) < get<Incr>(spec2);
+        } else if (holds_alternative<Comp>(spec2) || holds_alternative<Same>(spec2)) {
             return false;
-        }
-        else {
+        } else {
             return true;
         }
     }
 
-   else if (std::holds_alternative<Decr>(spec1)){
-        if (std::holds_alternative<Decr>(spec2)){
-            return std::get<Decr>(spec1) < std::get<Decr>(spec2);
-        }
-        else {
+    else if (holds_alternative<Decr>(spec1)) {
+        if (holds_alternative<Decr>(spec2)) {
+            return get<Decr>(spec1) < get<Decr>(spec2);
+        } else {
             return false;
         }
     }
 
-    else if (std::holds_alternative<Unique>(spec1)){
-        if (std::holds_alternative<Unique>(spec2)){
-            return std::get<Unique>(spec1) < std::get<Unique>(spec2);
-        }
-        else if (std::holds_alternative<Unique>(spec2)){
+    else if (holds_alternative<Unique>(spec1)) {
+        if (holds_alternative<Unique>(spec2)) {
+            return get<Unique>(spec1) < get<Unique>(spec2);
+        } else if (holds_alternative<Unique>(spec2)) {
             return false;
-        }
-        else {
+        } else {
             return true;
         }
     }
-    std::cout << "operator < for wl_spec_t: should not reach here" << endl;
+    cout << "operator < for wl_spec_t: should not reach here" << endl;
     return false;
 }
 
@@ -933,16 +858,14 @@ bool operator<(const wl_spec_t& spec1, const wl_spec_t& spec2) {
 TimedSpec::TimedSpec(wl_spec_t wl_spec, time_range_t time_range, unsigned int total_time):
 wl_spec(wl_spec),
 time_range(time_range),
-total_time(total_time)
-{
+total_time(total_time) {
     normalize();
 }
 
 TimedSpec::TimedSpec(wl_spec_t wl_spec, unsigned int until_time, unsigned int total_time):
 wl_spec(wl_spec),
 time_range(time_range_t(0, until_time - 1)),
-total_time(total_time)
-{
+total_time(total_time) {
     if (until_time == 0) time_range = time_range_t(1, 0);
     normalize();
 }
@@ -952,15 +875,16 @@ bool TimedSpec::applies_to_queue(unsigned int queue) const {
     return wl_spec_applies_to_queue(wl_spec, queue);
 }
 
-void TimedSpec::set_time_range_ub(unsigned int ub){
+void TimedSpec::set_time_range_ub(unsigned int ub) {
     time_range.second = ub;
     normalize();
 }
 
-void TimedSpec::normalize(){
-    if (wl_spec_is_empty(wl_spec)) is_empty = true;
-    else if (wl_spec_is_all(wl_spec) ||
-             time_range.first > time_range.second) is_all = true;
+void TimedSpec::normalize() {
+    if (wl_spec_is_empty(wl_spec))
+        is_empty = true;
+    else if (wl_spec_is_all(wl_spec) || time_range.first > time_range.second)
+        is_all = true;
     else {
         if (!holds_alternative<Comp>(wl_spec)) return;
 
@@ -971,21 +895,17 @@ void TimedSpec::normalize(){
         op_t op = comp.get_op();
         rhs_t rhs = comp.get_rhs();
 
-        if (holds_alternative<unsigned int>(rhs)){
+        if (holds_alternative<unsigned int>(rhs)) {
             metric_t metric;
-            if (holds_alternative<Indiv>(lhs)){
+            if (holds_alternative<Indiv>(lhs)) {
                 metric = get<Indiv>(lhs).get_metric();
-            }
-            else {
+            } else {
                 metric = get<QSum>(lhs).get_metric();
             }
-            if (Metric::properties.at(metric).non_decreasing){
-                if (op == op_t::GE ||
-                    op == op_t::GT){
+            if (Metric::properties.at(metric).non_decreasing) {
+                if (op == op_t::GE || op == op_t::GT) {
                     time_range.second = total_time - 1;
-                }
-                else if (op == op_t::LE ||
-                         op == op_t::LT){
+                } else if (op == op_t::LE || op == op_t::LT) {
                     time_range.first = 0;
                 }
             }
@@ -993,66 +913,61 @@ void TimedSpec::normalize(){
     }
 }
 
-bool TimedSpec::spec_is_empty() const{
+bool TimedSpec::spec_is_empty() const {
     return is_empty;
 }
 
-bool TimedSpec::spec_is_all() const{
+bool TimedSpec::spec_is_all() const {
     return is_all;
 }
 
-time_range_t TimedSpec::get_time_range() const{
+time_range_t TimedSpec::get_time_range() const {
     return time_range;
 }
 
-wl_spec_t TimedSpec::get_wl_spec() const{
+wl_spec_t TimedSpec::get_wl_spec() const {
     return wl_spec;
 }
 
-std::ostream& operator<<(std::ostream& os, const TimedSpec& spec){
+ostream& operator<<(ostream& os, const TimedSpec& spec) {
     os << spec.time_range << ": ";
     os << spec.wl_spec;
 
     return os;
 }
-std::ostream& operator<<(std::ostream& os, const TimedSpec* spec){
+ostream& operator<<(ostream& os, const TimedSpec* spec) {
     os << spec->time_range << ": ";
     os << spec->wl_spec;
 
     return os;
 }
 
-bool operator==(const TimedSpec& spec1, const TimedSpec& spec2){
+bool operator==(const TimedSpec& spec1, const TimedSpec& spec2) {
     wl_spec_t wl_spec1 = spec1.wl_spec;
     wl_spec_t wl_spec2 = spec2.wl_spec;
 
-    return (wl_spec1 == wl_spec2 &&
-            spec1.time_range == spec2.time_range);
+    return (wl_spec1 == wl_spec2 && spec1.time_range == spec2.time_range);
 }
 
-bool operator!=(const TimedSpec& spec1, const TimedSpec& spec2){
-    return ! (spec1 == spec2);
+bool operator!=(const TimedSpec& spec1, const TimedSpec& spec2) {
+    return !(spec1 == spec2);
 }
 
-bool operator<(const TimedSpec& spec1, const TimedSpec& spec2){
+bool operator<(const TimedSpec& spec1, const TimedSpec& spec2) {
     return (spec1.time_range < spec2.time_range ||
-            ((spec1.time_range == spec2.time_range) &&
-             (spec1.wl_spec < spec2.wl_spec)));
+            ((spec1.time_range == spec2.time_range) && (spec1.wl_spec < spec2.wl_spec)));
 }
 
 //************************************* Workload *************************************//
 
-Workload::Workload(unsigned int max_size,
-                   unsigned int queue_cnt,
-                   unsigned int total_time):
+Workload::Workload(unsigned int max_size, unsigned int queue_cnt, unsigned int total_time):
 max_size(max_size),
 queue_cnt(queue_cnt),
-total_time(total_time)
-{
+total_time(total_time) {
     timeline[time_range_t(0, total_time - 1)] = empty_set;
 }
 
-void Workload::clear(){
+void Workload::clear() {
     all_specs.clear();
     timeline.clear();
     timeline[time_range_t(0, total_time - 1)] = empty_set;
@@ -1060,50 +975,49 @@ void Workload::clear(){
     all = true;
 }
 
-void Workload::add_spec(TimedSpec spec){
+void Workload::add_spec(TimedSpec spec) {
     auto insert_res = all_specs.insert(spec);
-    if (insert_res.second){
+    if (insert_res.second) {
         time_range_t time_range = spec.get_time_range();
         set<time_range_t> affected_time_ranges = add_time_range(time_range);
 
         for (set<time_range_t>::iterator it = affected_time_ranges.begin();
-             it != affected_time_ranges.end(); it++){
+             it != affected_time_ranges.end();
+             it++) {
             timeline[*it].insert(spec.get_wl_spec());
         }
         normalize();
     }
 }
 
-void Workload::rm_spec(TimedSpec spec){
+void Workload::rm_spec(TimedSpec spec) {
     auto erase_res = all_specs.erase(spec);
     time_range_t spec_time_range = spec.get_time_range();
     wl_spec_t wl_spec = spec.get_wl_spec();
-    if (erase_res > 0){
-        for (timeline_t::iterator it = timeline.begin();
-             it != timeline.end(); it++){
-            if (is_superset(spec_time_range, it->first)){
+    if (erase_res > 0) {
+        for (timeline_t::iterator it = timeline.begin(); it != timeline.end(); it++) {
+            if (is_superset(spec_time_range, it->first)) {
                 (it->second).erase(wl_spec);
             }
         }
 
         normalize();
     }
-
 }
 
-void Workload::mod_spec(TimedSpec old_spec, TimedSpec new_spec){
-    if (all_specs.find(old_spec) != all_specs.end()){
+void Workload::mod_spec(TimedSpec old_spec, TimedSpec new_spec) {
+    if (all_specs.find(old_spec) != all_specs.end()) {
         rm_spec(old_spec);
         add_spec(new_spec);
     }
 }
 
 // TODO: anything different for empty or all?
-unsigned long Workload::size() const{
+unsigned long Workload::size() const {
     return all_specs.size();
 }
 
-unsigned int Workload::get_max_size() const{
+unsigned int Workload::get_max_size() const {
     return max_size;
 }
 
@@ -1111,22 +1025,21 @@ unsigned int Workload::get_queue_cnt() const {
     return queue_cnt;
 }
 
-unsigned int Workload::get_total_time() const{
+unsigned int Workload::get_total_time() const {
     return total_time;
 }
 
-timeline_t Workload::get_timeline() const{
+timeline_t Workload::get_timeline() const {
     return timeline;
 }
 
-set<TimedSpec> Workload::get_all_specs() const{
+set<TimedSpec> Workload::get_all_specs() const {
     return all_specs;
 }
 
-wl_cost_t Workload::cost() const{
+wl_cost_t Workload::cost() const {
     unsigned int ast_val = 0;
-    for (set<TimedSpec>::iterator it = all_specs.begin();
-         it != all_specs.end(); it++){
+    for (set<TimedSpec>::iterator it = all_specs.begin(); it != all_specs.end(); it++) {
         ast_val += wl_spec_ast_size(it->get_wl_spec());
     }
 
@@ -1135,11 +1048,10 @@ wl_cost_t Workload::cost() const{
     return ast_val + timeline_val;
 }
 
-bool Workload::is_empty() const{
+bool Workload::is_empty() const {
     if (empty) return true;
 
-    for (set<TimedSpec>::iterator it = all_specs.begin();
-         it != all_specs.end(); it++) {
+    for (set<TimedSpec>::iterator it = all_specs.begin(); it != all_specs.end(); it++) {
         if (it->spec_is_empty()) {
             return true;
         }
@@ -1148,11 +1060,11 @@ bool Workload::is_empty() const{
     return false;
 }
 
-bool Workload::is_all() const{
+bool Workload::is_all() const {
     return all_specs.size() == 0;
 }
 
-void Workload::normalize(){
+void Workload::normalize() {
     empty = false;
 
     // If total time is zero, we are not
@@ -1161,15 +1073,14 @@ void Workload::normalize(){
 
 
     // Normalize each timeline entry
-    for (timeline_t::iterator it = timeline.begin();
-         it != timeline.end(); it++){
+    for (timeline_t::iterator it = timeline.begin(); it != timeline.end(); it++) {
         normalize(it->first);
     }
 
     // TODO: what happens if an entry is "empty"?
     // do we just continue to this loop? or should we
     // check that first?
-    if (timeline.size() > 1){
+    if (timeline.size() > 1) {
         vector<time_range_t> to_erase;
 
         typedef pair<time_range_t, set<wl_spec_t>> timeline_entry;
@@ -1180,15 +1091,14 @@ void Workload::normalize(){
 
         // Merging consecutive timeline entries
         // with the same set of specs.
-        for (timeline_t::iterator it = timeline.begin();
-             it != prev(timeline.end()); it++){
+        for (timeline_t::iterator it = timeline.begin(); it != prev(timeline.end()); it++) {
 
             timeline_t::iterator next_it = next(it);
 
             set<wl_spec_t> specs1 = it->second;
             set<wl_spec_t> specs2 = next_it->second;
 
-            if (specs1 == specs2){
+            if (specs1 == specs2) {
                 time_range_t time_range_1 = it->first;
 
                 time_range_t time_range_2 = next(it)->first;
@@ -1198,32 +1108,30 @@ void Workload::normalize(){
 
                 time_range_t to_add_range(time_range_1.first, time_range_2.second);
 
-                if (valid_last_new_entry){
+                if (valid_last_new_entry) {
                     last_new_entry.first.second = to_add_range.second;
-                }
-                else {
+                } else {
                     last_new_entry.first = to_add_range;
                     last_new_entry.second = specs1;
                     valid_last_new_entry = true;
                 }
-            }
-            else {
-                if (valid_last_new_entry){
+            } else {
+                if (valid_last_new_entry) {
                     to_add.push_back(timeline_entry(last_new_entry));
                 }
                 valid_last_new_entry = false;
             }
         }
 
-        if (valid_last_new_entry){
+        if (valid_last_new_entry) {
             to_add.push_back(timeline_entry(last_new_entry));
         }
 
-        for (unsigned int i = 0; i < to_erase.size(); i++){
+        for (unsigned int i = 0; i < to_erase.size(); i++) {
             timeline.erase(to_erase[i]);
         }
 
-        for (unsigned int i = 0; i < to_add.size(); i++){
+        for (unsigned int i = 0; i < to_add.size(); i++) {
             timeline.insert(to_add[i]);
         }
     }
@@ -1237,7 +1145,7 @@ void Workload::normalize(){
     }
 }
 
-void Workload::normalize(time_range_t time_range){
+void Workload::normalize(time_range_t time_range) {
     set<wl_spec_t> specs = timeline[time_range];
 
     // if one is empty, the entire thing is empty
@@ -1277,11 +1185,10 @@ void Workload::normalize(time_range_t time_range){
     vector<Comp> non_zero_comps;
     vector<wl_spec_t> non_op_specs;
 
-    for (set<wl_spec_t>::iterator it = specs.begin();
-         it != specs.end(); it++){
+    for (set<wl_spec_t>::iterator it = specs.begin(); it != specs.end(); it++) {
         wl_spec_t spec = *it;
 
-        if (!holds_alternative<Comp>(spec)){
+        if (!holds_alternative<Comp>(spec)) {
             non_op_specs.push_back(spec);
             continue;
         }
@@ -1293,11 +1200,11 @@ void Workload::normalize(time_range_t time_range){
         bool has_zero = zero_queue_set.size() > 0;
 
 
-        if (has_zero){
+        if (has_zero) {
             metric_t metric = zero_queues.first;
 
-            for (qset_t::iterator z_it = zero_queue_set.begin();
-                 z_it != zero_queue_set.end(); z_it++){
+            for (qset_t::iterator z_it = zero_queue_set.begin(); z_it != zero_queue_set.end();
+                 z_it++) {
                 unsigned int q = *z_it;
                 zero_pair p(metric, q);
                 zeros.push_back(p);
@@ -1314,13 +1221,13 @@ void Workload::normalize(time_range_t time_range){
     vector<Comp> new_comps;
 
     unsigned int round = 0;
-    while (changed){
+    while (changed) {
         round++;
 
         changed = false;
         new_comps.clear();
 
-        for (unsigned int i = 0; i < non_zero_comps.size(); i++){
+        for (unsigned int i = 0; i < non_zero_comps.size(); i++) {
             bool spec_changed = false;
             bool empty_lhs = false;
 
@@ -1331,29 +1238,27 @@ void Workload::normalize(time_range_t time_range){
             rhs_t rhs = comp.get_rhs();
 
 
-            for (unsigned int j = 0; j < zeros.size(); j++){
+            for (unsigned int j = 0; j < zeros.size(); j++) {
                 metric_t z_metric = zeros[j].first;
                 unsigned int z_q = zeros[j].second;
 
-                if (rhs_applies_to_queue(rhs, z_q)){
+                if (rhs_applies_to_queue(rhs, z_q)) {
                     m_expr_t m_expr = get<m_expr_t>(rhs);
-                    if (holds_alternative<Indiv>(m_expr)){
+                    if (holds_alternative<Indiv>(m_expr)) {
                         Indiv indiv = get<Indiv>(m_expr);
-                        if (indiv.get_metric() == z_metric){
+                        if (indiv.get_metric() == z_metric) {
                             rhs = 0u;
                             spec_changed = true;
                         }
-                    }
-                    else if (holds_alternative<QSum>(m_expr)){
+                    } else if (holds_alternative<QSum>(m_expr)) {
                         QSum qsum = get<QSum>(m_expr);
-                        if (qsum.get_metric() == z_metric){
+                        if (qsum.get_metric() == z_metric) {
                             qset_t qset = qsum.get_qset();
                             qset.erase(z_q);
-                            if (qset.size() == 1){
+                            if (qset.size() == 1) {
                                 unsigned int q = *(qset.begin());
                                 rhs = Indiv(qsum.get_metric(), q);
-                            }
-                            else{
+                            } else {
                                 rhs = QSum(qset, qsum.get_metric());
                             }
                             spec_changed = true;
@@ -1361,23 +1266,21 @@ void Workload::normalize(time_range_t time_range){
                     }
                 }
 
-                if (lhs_applies_to_queue(lhs, z_q)){
-                    if (holds_alternative<Indiv>(lhs)){
+                if (lhs_applies_to_queue(lhs, z_q)) {
+                    if (holds_alternative<Indiv>(lhs)) {
                         Indiv indiv = get<Indiv>(lhs);
-                        if (indiv.get_metric() == z_metric){
+                        if (indiv.get_metric() == z_metric) {
                             empty_lhs = true;
                             spec_changed = true;
                         }
-                    }
-                    else if (holds_alternative<QSum>(lhs)){
+                    } else if (holds_alternative<QSum>(lhs)) {
                         QSum qsum = get<QSum>(lhs);
-                        if (qsum.get_metric() == z_metric){
+                        if (qsum.get_metric() == z_metric) {
                             qset_t qset = qsum.get_qset();
                             qset.erase(z_q);
-                            if (qset.size() == 1){
+                            if (qset.size() == 1) {
                                 lhs = Indiv(qsum.get_metric(), *(qset.begin()));
-                            }
-                            else {
+                            } else {
                                 lhs = QSum(qset, qsum.get_metric());
                             }
                             spec_changed = true;
@@ -1386,25 +1289,23 @@ void Workload::normalize(time_range_t time_range){
                 }
             }
 
-            if (spec_changed){
+            if (spec_changed) {
                 changed = true;
 
-                if (empty_lhs){
-                    if (holds_alternative<unsigned int>(rhs)){
+                if (empty_lhs) {
+                    if (holds_alternative<unsigned int>(rhs)) {
                         unsigned int c = get<unsigned int>(rhs);
                         if (!eval_op(0, op, c)) {
                             empty = true;
                         }
                         // If not, this spec is all and will not
                         // be added
-                    }
-                    else if (holds_alternative<Time>(rhs)){
+                    } else if (holds_alternative<Time>(rhs)) {
                         Time time = get<Time>(rhs);
                         bool is_false = false;
-                        for (unsigned int t = time_range.first;
-                             t <= time_range.second; t++){
+                        for (unsigned int t = time_range.first; t <= time_range.second; t++) {
                             unsigned int t_eval = time.get_coeff() * (t + 1);
-                            if (!eval_op(0, op, t_eval)){
+                            if (!eval_op(0, op, t_eval)) {
                                 is_false = true;
                                 break;
                             }
@@ -1414,8 +1315,7 @@ void Workload::normalize(time_range_t time_range){
                         }
                         // If not, this spec is all and will not
                         // be added
-                    }
-                    else {
+                    } else {
                         lhs = get<m_expr_t>(rhs);
                         rhs = 0u;
                         op = neg_op(op);
@@ -1424,48 +1324,45 @@ void Workload::normalize(time_range_t time_range){
 
                         auto zero_queues = new_comp.get_zero_queues();
                         bool is_zero = zero_queues.second.size() > 0;
-                        if (is_zero){
+                        if (is_zero) {
                             zero_comps.push_back(new_comp);
                             metric_t metric = zero_queues.first;
                             for (qset_t::iterator it = zero_queues.second.begin();
-                                 it != zero_queues.second.end(); it++){
+                                 it != zero_queues.second.end();
+                                 it++) {
                                 zero_pair p(metric, *it);
                                 zeros.push_back(p);
                             }
-                        }
-                        else {
+                        } else {
                             new_comps.push_back(new_comp);
                         }
                     }
-                }
-                else {
+                } else {
                     Comp new_comp = Comp(lhs, op, rhs);
 
                     auto zero_queues = new_comp.get_zero_queues();
                     bool is_zero = zero_queues.second.size() > 0;
-                    if (is_zero){
+                    if (is_zero) {
                         zero_comps.push_back(new_comp);
                         metric_t metric = zero_queues.first;
                         for (qset_t::iterator it = zero_queues.second.begin();
-                             it != zero_queues.second.end(); it++){
+                             it != zero_queues.second.end();
+                             it++) {
                             zero_pair p(metric, *it);
                             zeros.push_back(p);
                         }
-                    }
-                    else {
+                    } else {
                         new_comps.push_back(new_comp);
                     }
                 }
-            }
-            else {
+            } else {
                 new_comps.push_back(comp);
             }
         }
 
-        if (changed){
+        if (changed) {
             non_zero_comps.assign(new_comps.begin(), new_comps.end());
         }
-
     }
 
 
@@ -1478,32 +1375,30 @@ void Workload::normalize(time_range_t time_range){
     timeline[time_range] = final_specs;
 }
 
-void Workload::regenerate_spec_set(){
-    if (timeline.size() == 0){
+void Workload::regenerate_spec_set() {
+    if (timeline.size() == 0) {
         clear();
         return;
     }
 
     vector<TimedSpec> new_all_specs;
 
-    for (timeline_t::iterator it = timeline.begin();
-         it != timeline.end(); it++){
+    for (timeline_t::iterator it = timeline.begin(); it != timeline.end(); it++) {
         time_range_t time_range = it->first;
         set<wl_spec_t> specs = it->second;
 
-        for (set<wl_spec_t>::iterator s_it = specs.begin();
-             s_it != specs.end(); s_it++){
+        for (set<wl_spec_t>::iterator s_it = specs.begin(); s_it != specs.end(); s_it++) {
 
             bool already_exists = false;
-            for (unsigned int i = 0; i < new_all_specs.size(); i++){
+            for (unsigned int i = 0; i < new_all_specs.size(); i++) {
                 if (new_all_specs[i].get_wl_spec() == *s_it &&
-                    new_all_specs[i].get_time_range().second + 1 >= time_range.first){
+                    new_all_specs[i].get_time_range().second + 1 >= time_range.first) {
                     already_exists = true;
                     new_all_specs[i].set_time_range_ub(time_range.second);
                     break;
                 }
             }
-            if (!already_exists){
+            if (!already_exists) {
                 // Here is where we make new TimedSpec
                 TimedSpec tspec = TimedSpec(*s_it, time_range, total_time);
                 new_all_specs.push_back(tspec);
@@ -1511,34 +1406,31 @@ void Workload::regenerate_spec_set(){
         }
     }
 
-    all_specs = std::set<TimedSpec>(new_all_specs.begin(), new_all_specs.end());
+    all_specs = set<TimedSpec>(new_all_specs.begin(), new_all_specs.end());
 }
 
-unsigned int Workload::ast_size() const{
+unsigned int Workload::ast_size() const {
     unsigned int res = 0;
-    for (timeline_t::const_iterator it = timeline.cbegin();
-         it != timeline.cend(); it++){
+    for (timeline_t::const_iterator it = timeline.cbegin(); it != timeline.cend(); it++) {
         set<wl_spec_t> specs = it->second;
 
         if (specs.size() == 0) res++;
-        for (set<wl_spec_t>::iterator s_it = specs.begin();
-             s_it != specs.end(); s_it++){
+        for (set<wl_spec_t>::iterator s_it = specs.begin(); s_it != specs.end(); s_it++) {
             res += wl_spec_ast_size(*s_it);
         }
     }
     return res;
 }
 
-set<time_range_t> Workload::add_time_range(time_range_t time_range){
+set<time_range_t> Workload::add_time_range(time_range_t time_range) {
     set<time_range_t> res;
 
     timeline_t::iterator beginning;
     timeline_t::iterator end;
 
-    for (timeline_t::iterator it = timeline.begin();
-         it != timeline.end(); it++){
+    for (timeline_t::iterator it = timeline.begin(); it != timeline.end(); it++) {
         time_range_t entry_time_range = it->first;
-        if (includes(entry_time_range, time_range.first)){
+        if (includes(entry_time_range, time_range.first)) {
             beginning = it;
             break;
         }
@@ -1555,10 +1447,9 @@ set<time_range_t> Workload::add_time_range(time_range_t time_range){
         timeline.erase(beginning_time_range);
     }
 
-    for (timeline_t::iterator it = timeline.begin();
-         it != timeline.end(); it++){
+    for (timeline_t::iterator it = timeline.begin(); it != timeline.end(); it++) {
         time_range_t entry_time_range = it->first;
-        if (includes(entry_time_range, time_range.second)){
+        if (includes(entry_time_range, time_range.second)) {
             end = it;
             break;
         }
@@ -1567,20 +1458,17 @@ set<time_range_t> Workload::add_time_range(time_range_t time_range){
     time_range_t end_time_range = end->first;
     set<wl_spec_t> end_set = end->second;
 
-    if (time_range.second < end_time_range.second){
-        timeline[time_range_t(end_time_range.first,
-                              time_range.second)] = end_set;
+    if (time_range.second < end_time_range.second) {
+        timeline[time_range_t(end_time_range.first, time_range.second)] = end_set;
 
-        timeline[time_range_t(time_range.second + 1,
-                              end_time_range.second)] = end_set;
+        timeline[time_range_t(time_range.second + 1, end_time_range.second)] = end_set;
 
         timeline.erase(end_time_range);
     }
 
-    for (timeline_t::iterator it = timeline.begin();
-         it != timeline.end(); it++){
+    for (timeline_t::iterator it = timeline.begin(); it != timeline.end(); it++) {
         time_range_t entry_time_range = it->first;
-        if (is_superset(time_range, entry_time_range)){
+        if (is_superset(time_range, entry_time_range)) {
             res.insert(entry_time_range);
         }
     }
@@ -1588,46 +1476,43 @@ set<time_range_t> Workload::add_time_range(time_range_t time_range){
     return res;
 }
 
-string Workload::get_timeline_str(){
+string Workload::get_timeline_str() {
     stringstream ss;
-    if (is_empty()){
-        ss << "FALSE" << std::endl;
-    }
-    else if (is_all()){
-        ss << "*" << std::endl;
-    }
-    else {
-        for (timeline_t::iterator it = timeline.begin();
-             it != timeline.end(); it++){
+    if (is_empty()) {
+        ss << "FALSE" << endl;
+    } else if (is_all()) {
+        ss << "*" << endl;
+    } else {
+        for (timeline_t::iterator it = timeline.begin(); it != timeline.end(); it++) {
             ss << it->first << ": ";
             set<wl_spec_t> specs = it->second;
-            if (specs.size() == 0){
+            if (specs.size() == 0) {
                 ss << "*" << endl;
                 continue;
             }
 
             bool is_first = true;
-            for (set<wl_spec_t>::iterator it2 = specs.begin();
-                 it2 != specs.end(); it2++){
-                if (!is_first){
+            for (set<wl_spec_t>::iterator it2 = specs.begin(); it2 != specs.end(); it2++) {
+                if (!is_first) {
                     ss << "        ";
                 }
-                ss << *it2 << std::endl;
+                ss << *it2 << endl;
                 is_first = false;
             }
         }
-        ss << std::endl;
+        ss << endl;
     }
     return ss.str();
 }
 
-std::ostream& operator<<(std::ostream& os, const Workload& wl){
-    if (wl.is_empty()) os << "empty";
-    else if (wl.is_all()) os << "*";
+ostream& operator<<(ostream& os, const Workload& wl) {
+    if (wl.is_empty())
+        os << "empty";
+    else if (wl.is_all())
+        os << "*";
     else {
         set<TimedSpec> all_specs = wl.get_all_specs();
-        for (set<TimedSpec>::iterator it = all_specs.begin();
-             it != all_specs.end(); it++){
+        for (set<TimedSpec>::iterator it = all_specs.begin(); it != all_specs.end(); it++) {
             os << *it << endl;
         }
     }
@@ -1635,13 +1520,14 @@ std::ostream& operator<<(std::ostream& os, const Workload& wl){
 }
 
 
-std::ostream& operator<<(std::ostream& os, const Workload* wl){
-    if (wl->is_empty()) os << "empty";
-    else if (wl->is_all()) os << "*";
+ostream& operator<<(ostream& os, const Workload* wl) {
+    if (wl->is_empty())
+        os << "empty";
+    else if (wl->is_all())
+        os << "*";
     else {
         set<TimedSpec> all_specs = wl->get_all_specs();
-        for (set<TimedSpec>::iterator it = all_specs.begin();
-             it != all_specs.end(); it++){
+        for (set<TimedSpec>::iterator it = all_specs.begin(); it != all_specs.end(); it++) {
             os << *it << endl;
         }
     }
@@ -1649,6 +1535,6 @@ std::ostream& operator<<(std::ostream& os, const Workload* wl){
 }
 
 
-bool operator==(const Workload& wl1, const Workload& wl2){
+bool operator==(const Workload& wl1, const Workload& wl2) {
     return wl1.get_timeline() == wl2.get_timeline();
 }

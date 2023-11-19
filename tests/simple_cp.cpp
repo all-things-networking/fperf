@@ -55,7 +55,7 @@ void SimpleCP::add_metrics() {
   }
 }
 
-std::string SimpleCP::cp_model_str(model &m, NetContext &net_ctx,
+string SimpleCP::cp_model_str(model &m, NetContext &net_ctx,
                                    unsigned int t) {
   (void) m;
     (void) net_ctx;
@@ -65,15 +65,15 @@ std::string SimpleCP::cp_model_str(model &m, NetContext &net_ctx,
 
 SimpleQM::SimpleQM(cid_t id, unsigned int total_time, QueueInfo queue_info,
                    NetContext &net_ctx)
-    : QueuingModule(id, total_time, std::vector<QueueInfo>{queue_info},
-                    std::vector<QueueInfo>{queue_info}, net_ctx) {
+    : QueuingModule(id, total_time, vector<QueueInfo>{queue_info},
+                    vector<QueueInfo>{queue_info}, net_ctx) {
   init(net_ctx);
 }
 
 void SimpleQM::add_proc_vars(NetContext &net_ctx) { (void) net_ctx; }
 
 void SimpleQM::add_constrs(NetContext &net_ctx,
-                           std::map<std::string, expr> &constr_map) {
+                           map<string, expr> &constr_map) {
 
   Queue *in_queue = in_queues[0];
   Queue *out_queue = out_queues[0];

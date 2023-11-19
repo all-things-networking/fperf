@@ -6,8 +6,6 @@
 
 #define DASHES "---------------"
 
-using namespace std;
-
 TestRunner::TestRunner() {
   test_cases = map<string, test_case_t *>();
   results = map<string, bool>();

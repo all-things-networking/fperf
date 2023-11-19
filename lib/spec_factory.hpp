@@ -1,6 +1,6 @@
 //
 //  spec_factory.hpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 12/14/22.
 //  Copyright © 2022 Mina Tahmasbi Arashloo. All rights reserved.
@@ -9,18 +9,18 @@
 #ifndef spec_factory_hpp
 #define spec_factory_hpp
 
+#include <iostream>
+#include <map>
+#include <set>
+#include <tuple>
 #include <variant>
 #include <vector>
-#include <map>
-#include <iostream>
-#include <tuple>
-#include <set>
 
-#include "util.hpp"
-#include "metric.hpp"
-#include "example.hpp"
 #include "cost.hpp"
+#include "example.hpp"
+#include "metric.hpp"
 #include "shared_config.hpp"
+#include "util.hpp"
 #include "workload.hpp"
 
 struct RandomSpecGenerationParameters {
@@ -52,18 +52,17 @@ public:
     rhs_t random_rhs();
     rhs_t random_rhs(RandomSpecGenerationParameters params);
     void pick_rhs_neighbors(rhs_t rhs, vector<rhs_t>& neighbors);
-    void pick_rhs_neighbors(rhs_t rhs,
-                            vector<rhs_t>& neighbors,
-                            RandomSpecGenerationParameters params);
+    void
+    pick_rhs_neighbors(rhs_t rhs, vector<rhs_t>& neighbors, RandomSpecGenerationParameters params);
 
     //**** lhs_t ****//
     lhs_t random_lhs();
     void pick_lhs_neighbors(lhs_t lhs, vector<lhs_t>& neighbors);
- 
+
     //**** m_expr_t ****//
     m_expr_t random_m_expr();
     void pick_m_expr_neighbors(m_expr_t trf, vector<m_expr_t>& neighbors);
- 
+
     //**** QSUM ****//
     qset_t random_qsum_qset();
     QSum random_qsum();

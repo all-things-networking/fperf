@@ -1,6 +1,6 @@
 //
 //  dst.hpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 06/06/23.
 //  Copyright © 2023 Mina Tahmasbi Arashloo. All rights reserved.
@@ -14,16 +14,11 @@
 
 class Dst : public Metric {
 public:
-    Dst(Queue* queue,
-        unsigned int total_time,
-        NetContext& net_ctx);
-    
+    Dst(Queue* queue, unsigned int total_time, NetContext& net_ctx);
+
     void populate_val_exprs(NetContext& net_ctx);
 
-    void eval(const IndexedExample* eg,
-              unsigned int time,
-              unsigned int qind,
-              metric_val& res);
+    void eval(const IndexedExample* eg, unsigned int time, unsigned int qind, metric_val& res);
 };
 
 #endif /* dst_hpp */

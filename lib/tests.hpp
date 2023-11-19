@@ -1,6 +1,6 @@
 //
 //  tests.hpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 12/05/22.
 //  Copyright © 2022 Mina Tahmasbi Arashloo. All rights reserved.
@@ -11,19 +11,19 @@
 
 #include <string>
 
-void prio(std::string good_examples_file="",
-          std::string bad_examples_file="");
+using namespace std;
 
-void rr(std::string good_examples_file="",
-        std::string bad_examples_file="");
+typedef void e2e_test_func_t(string, string);
 
-void fq_codel(std::string good_examples_file="",
-              std::string bad_examples_file="");
+void prio(string good_examples_file = "", string bad_examples_file = "");
 
-void loom(std::string good_examples_file="",
-          std::string bad_examples_file="");
+void rr(string good_examples_file = "", string bad_examples_file = "");
 
-void leaf_spine_bw(std::string good_examples_file="",
-                   std::string bad_examples_file="");
+void fq_codel(string good_examples_file = "", string bad_examples_file = "");
 
+void loom(string good_examples_file = "", string bad_examples_file = "");
+
+void leaf_spine_bw(string good_examples_file = "", string bad_examples_file = "");
+
+void tbf(string good_examples_file = "", string bad_examples_file = "");
 #endif /* tests_hpp */

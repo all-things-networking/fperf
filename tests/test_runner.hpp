@@ -5,21 +5,23 @@
 #include "string"
 #include "vector"
 
+using namespace std;
+
 typedef bool test_case_t();
 
 class TestRunner {
 public:
   TestRunner();
 
-  void add_test_case(std::string name,test_case_t *test_case);
+  void add_test_case(string name,test_case_t *test_case);
 
-  bool run(std::vector<std::string> test_names);
+  bool run(vector<string> test_names);
 
-  std::string get_report();
+  string get_report();
 
 private:
-  std::map<std::string, test_case_t *> test_cases;
-  std::map<std::string, bool> results;
+  map<string, test_case_t *> test_cases;
+  map<string, bool> results;
 };
 
 #endif

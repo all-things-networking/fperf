@@ -1,6 +1,6 @@
 //
 //  params.hpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 12/5/20.
 //  Copyright © 2020 Mina Tahmasbi Arashloo. All rights reserved.
@@ -10,6 +10,8 @@
 #define params_hpp
 
 #include <vector>
+
+using namespace std;
 
 const unsigned int TOTAL_TIME = 10;
 const unsigned int MAX_ENQ = 4;
@@ -49,15 +51,15 @@ const unsigned int EG_RANDOM_MOD_START = 10;
 const unsigned int EG_RANDOM_MOD_MAX_TRIES = 2;
 
 
-const std::vector<double> DEFAULT_RHS_SELECTION_WEIGHTS{1, 1, 1};
+const vector<double> DEFAULT_RHS_SELECTION_WEIGHTS{1, 1, 1};
 const unsigned int DEFAULT_RHS_CONST_MIN = 0;
 const unsigned int DEFAULT_RHS_CONST_MAX = 3;
 const unsigned int DEFAULT_RHS_TIME_COEFF_MIN = 1;
 // TODO: if this is too large, it could cause inputs that flood the queues
 const unsigned int DEFAULT_RHS_TIME_COEFF_MAX = TOTAL_TIME;
 
-const std::vector<double> DEFAULT_TRF_SELECTION_WEIGHTS{1, 1};
-const std::vector<double> DEFAULT_WL_METRIC_SELECTION_WEIGHTS{1, 1, 1, 1};
+const vector<double> DEFAULT_TRF_SELECTION_WEIGHTS{1, 1};
+const vector<double> DEFAULT_WL_METRIC_SELECTION_WEIGHTS{1, 1, 1, 1};
 
 const unsigned int DEFAULT_COMP_RANGE_MIN = 0;
 const unsigned int DEFAULT_COMP_RANGE_MAX = 4;

@@ -1,6 +1,6 @@
 //
 //  shared_config.hpp
-//  AutoPerf
+//  FPerf
 //
 //  Created by Mina Tahmasbi Arashloo on 12/07/22.
 //  Copyright © 2022 Mina Tahmasbi Arashloo. All rights reserved.
@@ -12,12 +12,12 @@
 #include <random>
 #include <vector>
 
-#include "params.hpp"
 #include "metric.hpp"
+#include "params.hpp"
 #include "util.hpp"
 
-struct DistsParams{
-    std::vector<double> rhs_selection_weights = DEFAULT_RHS_SELECTION_WEIGHTS;
+struct DistsParams {
+    vector<double> rhs_selection_weights = DEFAULT_RHS_SELECTION_WEIGHTS;
 
     unsigned int rhs_const_min = DEFAULT_RHS_CONST_MIN;
     unsigned int rhs_const_max = DEFAULT_RHS_CONST_MAX;
@@ -25,10 +25,10 @@ struct DistsParams{
     unsigned int rhs_time_coeff_min = DEFAULT_RHS_TIME_COEFF_MIN;
     unsigned int rhs_time_coeff_max = DEFAULT_RHS_TIME_COEFF_MAX;
 
-    std::vector<double> trf_selection_weights = DEFAULT_TRF_SELECTION_WEIGHTS;
-    std::vector<double> wl_metric_selection_weights = DEFAULT_WL_METRIC_SELECTION_WEIGHTS;
+    vector<double> trf_selection_weights = DEFAULT_TRF_SELECTION_WEIGHTS;
+    vector<double> wl_metric_selection_weights = DEFAULT_WL_METRIC_SELECTION_WEIGHTS;
 
-    unsigned int in_queue_cnt = 0; 
+    unsigned int in_queue_cnt = 0;
     unsigned int total_time = 0;
 
     unsigned int op_range_min = DEFAULT_COMP_RANGE_MIN;
@@ -46,8 +46,8 @@ struct DistsParams{
 class Dists {
 public:
     Dists(DistsParams params);
-    
-    std::mt19937& get_gen();
+
+    mt19937& get_gen();
     double real_zero_to_one();
 
     unsigned int rhs();
@@ -55,7 +55,7 @@ public:
     unsigned int rhs_time_coeff();
 
     unsigned int trf();
-    
+
     metric_t wl_metric();
 
     unsigned int input_queue();
@@ -69,32 +69,32 @@ public:
     unsigned int pkt_metric1_val();
     unsigned int pkt_metric2_val();
 
-    std::uniform_int_distribution<unsigned int>& get_pkt_meta1_val_dist();
-    std::uniform_int_distribution<unsigned int>& get_pkt_meta2_val_dist();
-    std::uniform_int_distribution<unsigned int>& get_rhs_const_dist();
+    uniform_int_distribution<unsigned int>& get_pkt_meta1_val_dist();
+    uniform_int_distribution<unsigned int>& get_pkt_meta2_val_dist();
+    uniform_int_distribution<unsigned int>& get_rhs_const_dist();
 
 private:
-    std::mt19937 gen;
-    std::uniform_real_distribution<double> real_zero_to_one_dist;
+    mt19937 gen;
+    uniform_real_distribution<double> real_zero_to_one_dist;
 
-    std::discrete_distribution<unsigned int> rhs_dist;
-    std::uniform_int_distribution<unsigned int> rhs_const_dist;
-    std::uniform_int_distribution<unsigned int> rhs_time_coeff_dist;
-    std::discrete_distribution<unsigned int> trf_dist;
-    std::discrete_distribution<unsigned int> wl_metric_dist;
-    std::uniform_int_distribution<unsigned int> input_queue_dist;
-    std::uniform_int_distribution<unsigned int> input_queue_cnt_dist;
-    std::uniform_int_distribution<unsigned int> op_dist;
+    discrete_distribution<unsigned int> rhs_dist;
+    uniform_int_distribution<unsigned int> rhs_const_dist;
+    uniform_int_distribution<unsigned int> rhs_time_coeff_dist;
+    discrete_distribution<unsigned int> trf_dist;
+    discrete_distribution<unsigned int> wl_metric_dist;
+    uniform_int_distribution<unsigned int> input_queue_dist;
+    uniform_int_distribution<unsigned int> input_queue_cnt_dist;
+    uniform_int_distribution<unsigned int> op_dist;
 
-    std::uniform_int_distribution<unsigned int> timestep_dist;
-    std::uniform_int_distribution<unsigned int> enq_dist;
+    uniform_int_distribution<unsigned int> timestep_dist;
+    uniform_int_distribution<unsigned int> enq_dist;
 
-    std::uniform_int_distribution<unsigned int> pkt_meta1_val_dist;
-    std::uniform_int_distribution<unsigned int> pkt_meta2_val_dist;    
+    uniform_int_distribution<unsigned int> pkt_meta1_val_dist;
+    uniform_int_distribution<unsigned int> pkt_meta2_val_dist;
 };
 
 class SharedConfig {
-  public:
+public:
     SharedConfig(unsigned int total_time,
                  unsigned int in_queue_cnt,
                  qset_t target_queues,
@@ -105,7 +105,7 @@ class SharedConfig {
     qset_t get_target_queues();
     Dists* get_dists();
 
-  private:
+private:
     unsigned int total_time;
     unsigned int in_queue_cnt;
     qset_t target_queues;

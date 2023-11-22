@@ -73,6 +73,10 @@ expr NetContext::bool_const(char* name){
     return ctx.bool_const(name);
 }
 
+expr NetContext::get_bool_const(char* name) {
+    return ctx.bool_const(name);
+}
+
 expr NetContext::bool_val(bool b){
     return ctx.bool_val(b);
 }

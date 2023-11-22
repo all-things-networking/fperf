@@ -19,6 +19,7 @@
 #include "solver.hpp"
 #include "shared_config.hpp"
 
+// creae own modules in contention point. subclass 
 using namespace std;
 
 class ContentionPoint : public Solver {

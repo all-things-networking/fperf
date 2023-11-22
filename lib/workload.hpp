@@ -32,10 +32,20 @@ The Grammar:
  TRF         := TONE | TSUM
  TSUM        := sigma QSET MTRC
  TIME        := CONST t
+
+    WlSpec -> old, compare metric to value in paper
+    TRF = LHS
+
+    SAME = during that time period metric stays constant
+    UNIQUE = for same metric, the value of that metric should differ for the set of queues 
+
+
 ----------------------------------------------------------------- */
+
 
 //************************************* TSUM *************************************//
 
+// Metric of multiple queues
 class TSUM{
 
 public:
@@ -61,6 +71,7 @@ private:
 
 //************************************* TONE *************************************//
 
+// Metric of a single queue
 class TONE{
 
 public:
@@ -84,6 +95,7 @@ private:
 
 //************************************* TIME *************************************//
 
+// Time
 class TIME{
 
 public:

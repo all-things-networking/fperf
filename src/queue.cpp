@@ -92,6 +92,13 @@ void Queue::add_vars(NetContext& net_ctx){
         std::sprintf(vname, "%s_deq_cnt[%d]", id.c_str(), t);
         deq_cnt_.push_back(net_ctx.int_const(vname));
     }
+
+    // Number of packets in queue
+    for (unsigned int t = 0; t < total_time; t++) {
+        char vname[100];
+        std::sprintf(vname, "%s_curr_size_[%d]", id.c_str(), t);
+        curr_size_.push_back(net_ctx.int_const(vname));
+    }
     
     sliding_window_vars(net_ctx);
 }
@@ -108,13 +115,13 @@ void Queue::sliding_window_constrs(NetContext& net_ctx,
         for (unsigned int p = 0; p < size_; p++){
             for (unsigned int d = 0; d <= max_deq_; d++){
                 if (p + d < size_){
-                    sprintf(constr_name, "%s_tmp_val[%d][%d]_small_d_%d", id.c_str(), p, t, d);
+                    std::sprintf(constr_name, "%s_tmp_val[%d][%d]_small_d_%d", id.c_str(), p, t, d);
                     expr constr_expr = implies(deq_cnt_[t] == (int)d,
                                                tmp_val[p][t] == net_ctx.pkt2val(elems_[p + d][t]));
                     constr_map.insert(named_constr(constr_name, constr_expr));
                 }
                 else {
-                    sprintf(constr_name, "%s_tmp_val[%d][%d]_large_d_%d", id.c_str(), p, t, d);
+                    std::sprintf(constr_name, "%s_tmp_val[%d][%d]_large_d_%d", id.c_str(), p, t, d);
                     expr constr_expr = implies(deq_cnt_[t] == (int)d,
                                                !tmp_val[p][t]);
                     constr_map.insert(named_constr(constr_name, constr_expr));
@@ -125,7 +132,7 @@ void Queue::sliding_window_constrs(NetContext& net_ctx,
         // initially all packet are null
         if (t == 0){
             for (unsigned int p = 0; p < size_; p++){
-                sprintf(constr_name, "%s[%d]_null_at_0", id.c_str(), p);
+                std::sprintf(constr_name, "%s[%d]_null_at_0", id.c_str(), p);
                 expr constr_expr = elems_[p][0] == net_ctx.null_pkt();
                 constr_map.insert(named_constr(constr_name, constr_expr));
             }
@@ -144,7 +151,7 @@ void Queue::sliding_window_constrs(NetContext& net_ctx,
             for (unsigned int p = 0; p < size_; p++){
                 unsigned int max_relevant_d = std::min(max_deq_, size_ - p - 1);
                 for (unsigned int d = 0; d <= max_relevant_d; d++){
-                    sprintf(constr_name, "%s[%d][%d]_shift_forward_%d", id.c_str(), p, t, d);
+                    std::sprintf(constr_name, "%s[%d][%d]_shift_forward_%d", id.c_str(), p, t, d);
                     expr constr_expr = implies(tmp_val[p][prev_t] && deq_cnt_[prev_t] == (int)d,
                                                elems_[p][t] == elems_[p + d][prev_t]);
                     constr_map.insert(named_constr(constr_name, constr_expr));
@@ -154,7 +161,7 @@ void Queue::sliding_window_constrs(NetContext& net_ctx,
             // Sliding window
             
             for (unsigned int i = 0; i < max_enq_; i++){
-                sprintf(constr_name, "%s[%d][%d]_gets_enqs[%d]",
+                std::sprintf(constr_name, "%s[%d][%d]_gets_enqs[%d]",
                         id.c_str(), i, t, i);
                 expr constr_expr = implies(!tmp_val[0][prev_t],
                                            elems_[i][t] == enqs_[i][prev_t]);
@@ -165,7 +172,7 @@ void Queue::sliding_window_constrs(NetContext& net_ctx,
                 expr is_enq_wind = tmp_val[p][prev_t] && !tmp_val[p + 1][prev_t];
                 for (unsigned int i = 1; i <= max_enq_; i++){
                     if (p + i < size_){
-                        sprintf(constr_name, "%s[%d][%d]_gets_enqs[%d]",
+                        std::sprintf(constr_name, "%s[%d][%d]_gets_enqs[%d]",
                                 id.c_str(), p + i, t, i - 1);
                         expr constr_expr = implies(is_enq_wind,
                                                    elems_[p + i][t] == enqs_[i - 1][prev_t]);
@@ -175,7 +182,7 @@ void Queue::sliding_window_constrs(NetContext& net_ctx,
             }
                         
             for (unsigned int p = 0; p < size_ - max_enq_; p++){
-                sprintf(constr_name, "%s[%d][%d]_gets_null",
+                std::sprintf(constr_name, "%s[%d][%d]_gets_null",
                         id.c_str(), p + max_enq_, t);
                 expr constr_expr = implies(!tmp_val[p][prev_t],
                                            elems_[p + max_enq_][t] == net_ctx.null_pkt());
@@ -188,7 +195,7 @@ void Queue::sliding_window_constrs(NetContext& net_ctx,
         for (unsigned int p = 0; p < max_enq_ - 1; p++){
             expr enq1_val = net_ctx.pkt2val(enqs_[p][t]);
             expr enq2_val = net_ctx.pkt2val(enqs_[p + 1][t]);
-            sprintf(constr_name, "%s_no_enq_holes_%d_%d", id.c_str(), p, t);
+            std::sprintf(constr_name, "%s_no_enq_holes_%d_%d", id.c_str(), p, t);
             expr constr_expr = enq1_val || !enq2_val;
             constr_map.insert(named_constr(constr_name, constr_expr));
         }
@@ -204,24 +211,24 @@ void Queue::sliding_window_constrs(NetContext& net_ctx,
             enq_cnt_vec.push_back(implies(!net_ctx.pkt2val(enqs_[i][t]),
                                           enq_cnt_[t] <= (int) i));
         }
-        sprintf(constr_name, "%s_enq_cnt_bounds[%d]", id.c_str(), t);
+        std::sprintf(constr_name, "%s_enq_cnt_bounds[%d]", id.c_str(), t);
         expr constr_expr = mk_and(enq_cnt_vec);
         constr_map.insert(named_constr(constr_name, constr_expr));
         
 //        for (unsigned int p = 0; p < max_enq_ - 1; p++){
 //            expr enq1_val = net_ctx.pkt2val(enqs_[p][t]);
 //            expr enq2_val = net_ctx.pkt2val(enqs_[p + 1][t]);
-//            sprintf(constr_name, "%s_enq_cnt[%d]_is_%d", id.c_str(), t, p + 1);
+//            std::sprintf(constr_name, "%s_enq_cnt[%d]_is_%d", id.c_str(), t, p + 1);
 //            expr constr_expr = implies(enq1_val && !enq2_val,
 //                                       enq_cnt_[t] == (int) p + 1);
 //            constr_map.insert(named_constr(constr_name, constr_expr));
 //        }
-//        sprintf(constr_name, "%s_enq_cnt[%d]_is_0", id.c_str(), t);
+//        std::sprintf(constr_name, "%s_enq_cnt[%d]_is_0", id.c_str(), t);
 //        expr constr_expr = implies(!net_ctx.pkt2val(enqs_[0][t]),
 //                                   enq_cnt_[t] == 0);
 //        constr_map.insert(named_constr(constr_name, constr_expr));
 //
-//        sprintf(constr_name, "%s_enq_cnt[%d]_is_%d", id.c_str(), t, max_enq_);
+//        std::sprintf(constr_name, "%s_enq_cnt[%d]_is_%d", id.c_str(), t, max_enq_);
 //        constr_expr = implies(net_ctx.pkt2val(enqs_[max_enq_ - 1][t]),
 //                                   enq_cnt_[t] == (int) max_enq_);
 //        constr_map.insert(named_constr(constr_name, constr_expr));
@@ -235,12 +242,12 @@ void Queue::sliding_window_constrs(NetContext& net_ctx,
         }
         deq_cnt_ub_vec.push_back(deq_cnt_[t] <= (int) max_deq_);
         
-        sprintf(constr_name, "%s_deq_cnt_bounds[%d]", id.c_str(), t);
+        std::sprintf(constr_name, "%s_deq_cnt_bounds[%d]", id.c_str(), t);
         constr_expr = mk_and(deq_cnt_ub_vec);
         constr_map.insert(named_constr(constr_name, constr_expr));
         
         // deq_cnt should be greater than or equal to zero
-        sprintf(constr_name, "%s_deq_cnt_gt_zero[%d]", id.c_str(), t);
+        std::sprintf(constr_name, "%s_deq_cnt_gt_zero[%d]", id.c_str(), t);
         constr_expr = deq_cnt_[t] >= 0;
         constr_map.insert(named_constr(constr_name, constr_expr));
         
@@ -248,8 +255,29 @@ void Queue::sliding_window_constrs(NetContext& net_ctx,
         for (unsigned int p = 0; p < size_ - 1; p++){
             expr elem1_val = net_ctx.pkt2val(elems_[p][t]);
             expr elem2_val = net_ctx.pkt2val(elems_[p + 1][t]);
-            sprintf(constr_name, "%s_no_holes_%d_%d", id.c_str(), p, t);
+            std::sprintf(constr_name, "%s_no_holes_%d_%d", id.c_str(), p, t);
             constr_expr = elem1_val || !elem2_val;
+            constr_map.insert(named_constr(constr_name, constr_expr));
+        }
+
+        // Constraints on current size of queue
+        expr cur_size(net_ctx.z3_ctx());
+
+        std::sprintf(constr_name, "%s_queue_size%d_%d", id.c_str(), 0, t);
+        expr elem_val = net_ctx.pkt2val(elems_[0][t]);
+        constr_expr = implies(!elem_val, curr_size_[t] == net_ctx.int_val(0));
+        constr_map.insert(named_constr(constr_name, constr_expr));
+
+        std::sprintf(constr_name, "%s_queue_size%d_%d", id.c_str(), size_, t);
+        elem_val = net_ctx.pkt2val(elems_[size_ - 1][t]);
+        constr_expr = implies(elem_val, curr_size_[t] == net_ctx.int_val(size_));
+        constr_map.insert(named_constr(constr_name, constr_expr));
+
+        for (int i = 0; i < size_ - 1; i++) {
+            std::sprintf(constr_name, "%s_queue_size%d_%d", id.c_str(), i, t);
+            expr elem1_val = net_ctx.pkt2val(elems_[i][t]);
+            expr elem2_val = net_ctx.pkt2val(elems_[i + 1][t]);
+            constr_expr = implies(elem1_val && !elem2_val, curr_size_[t] == net_ctx.int_val(i + 1));
             constr_map.insert(named_constr(constr_name, constr_expr));
         }
     }
@@ -278,6 +306,10 @@ expr& Queue::enq_cnt(unsigned int time){
 
 expr& Queue::deq_cnt(unsigned int time){
     return deq_cnt_[time];
+}
+
+expr& Queue::curr_size(unsigned int time) {
+    return curr_size_[time];
 }
 
 void Queue::add_metric(metric_t metric_type, Metric* m){
@@ -397,13 +429,13 @@ void ImmQueue::sliding_window_constrs(NetContext& net_ctx,
         for (unsigned int p = 0; p < size_; p++){
             for (unsigned int d = 0; d <= max_deq_; d++){
                 if (p + d < size_){
-                    sprintf(constr_name, "%s_tmp_val[%d][%d]_small_d_%d", id.c_str(), p, t, d);
+                    std::sprintf(constr_name, "%s_tmp_val[%d][%d]_small_d_%d", id.c_str(), p, t, d);
                     expr constr_expr = implies(deq_cnt_[t] == (int)d,
                                                tmp_val[p][t] == net_ctx.pkt2val(elems_[p + d][t]));
                     constr_map.insert(named_constr(constr_name, constr_expr));
                 }
                 else {
-                    sprintf(constr_name, "%s_tmp_val[%d][%d]_large_d_%d", id.c_str(), p, t, d);
+                    std::sprintf(constr_name, "%s_tmp_val[%d][%d]_large_d_%d", id.c_str(), p, t, d);
                     expr constr_expr = implies(deq_cnt_[t] == (int)d,
                                                !tmp_val[p][t]);
                     constr_map.insert(named_constr(constr_name, constr_expr));
@@ -415,12 +447,12 @@ void ImmQueue::sliding_window_constrs(NetContext& net_ctx,
         // and the rest are null
         if (t == 0){
             for (unsigned int p = 0; p < max_enq_; p++){
-                sprintf(constr_name, "%s[%d]_is_enqs[%d]", id.c_str(), p, p);
+                std::sprintf(constr_name, "%s[%d]_is_enqs[%d]", id.c_str(), p, p);
                 expr constr_expr = elems_[p][0] == enqs_[p][0];
                 constr_map.insert(named_constr(constr_name, constr_expr));
             }
             for (unsigned int p = max_enq_; p < size_; p++){
-                sprintf(constr_name, "%s[%d]_null_at_0", id.c_str(), p);
+                std::sprintf(constr_name, "%s[%d]_null_at_0", id.c_str(), p);
                 expr constr_expr = elems_[p][0] == net_ctx.null_pkt();
                 constr_map.insert(named_constr(constr_name, constr_expr));
             }
@@ -439,7 +471,7 @@ void ImmQueue::sliding_window_constrs(NetContext& net_ctx,
             for (unsigned int p = 0; p < size_; p++){
                 unsigned int max_relevant_d = std::min(max_deq_, size_ - p - 1);
                 for (unsigned int d = 0; d <= max_relevant_d; d++){
-                    sprintf(constr_name, "%s[%d][%d]_shift_forward_%d", id.c_str(), p, t, d);
+                    std::sprintf(constr_name, "%s[%d][%d]_shift_forward_%d", id.c_str(), p, t, d);
                     expr constr_expr = implies(tmp_val[p][prev_t] && deq_cnt_[prev_t] == (int)d,
                                                elems_[p][t] == elems_[p + d][prev_t]);
                     constr_map.insert(named_constr(constr_name, constr_expr));
@@ -449,7 +481,7 @@ void ImmQueue::sliding_window_constrs(NetContext& net_ctx,
             // Sliding window
             
             for (unsigned int i = 0; i < max_enq_; i++){
-                sprintf(constr_name, "%s[%d][%d]_gets_enqs[%d]",
+                std::sprintf(constr_name, "%s[%d][%d]_gets_enqs[%d]",
                         id.c_str(), i, t, i);
                 expr constr_expr = implies(!tmp_val[0][prev_t],
                                            elems_[i][t] == enqs_[i][t]);
@@ -460,7 +492,7 @@ void ImmQueue::sliding_window_constrs(NetContext& net_ctx,
                 expr is_enq_wind = tmp_val[p][prev_t] && !tmp_val[p + 1][prev_t];
                 for (unsigned int i = 1; i <= max_enq_; i++){
                     if (p + i < size_){
-                        sprintf(constr_name, "%s[%d][%d]_gets_enqs[%d]",
+                        std::sprintf(constr_name, "%s[%d][%d]_gets_enqs[%d]",
                                 id.c_str(), p + i, t, i - 1);
                         expr constr_expr = implies(is_enq_wind,
                                                    elems_[p + i][t] == enqs_[i - 1][t]);
@@ -470,7 +502,7 @@ void ImmQueue::sliding_window_constrs(NetContext& net_ctx,
             }
                         
             for (unsigned int p = 0; p < size_ - max_enq_; p++){
-                sprintf(constr_name, "%s[%d][%d]_gets_null",
+                std::sprintf(constr_name, "%s[%d][%d]_gets_null",
                         id.c_str(), p + max_enq_, t);
                 expr constr_expr = implies(!tmp_val[p][prev_t],
                                            elems_[p + max_enq_][t] == net_ctx.null_pkt());
@@ -482,7 +514,7 @@ void ImmQueue::sliding_window_constrs(NetContext& net_ctx,
 //        for (unsigned int p = 0; p < max_enq_ - 1; p++){
 //            expr enq1_val = net_ctx.pkt2val(enqs_[p][t]);
 //            expr enq2_val = net_ctx.pkt2val(enqs_[p + 1][t]);
-//            sprintf(constr_name, "%s_no_enq_holes_%d_%d", id.c_str(), p, t);
+//            std::sprintf(constr_name, "%s_no_enq_holes_%d_%d", id.c_str(), p, t);
 //            expr constr_expr = enq1_val || !enq2_val;
 //            constr_map.insert(named_constr(constr_name, constr_expr));
 //        }
@@ -498,24 +530,24 @@ void ImmQueue::sliding_window_constrs(NetContext& net_ctx,
             enq_cnt_vec.push_back(implies(!net_ctx.pkt2val(enqs_[i][t]),
                                           enq_cnt_[t] <= (int) i));
         }
-        sprintf(constr_name, "%s_enq_cnt_bounds[%d]", id.c_str(), t);
+        std::sprintf(constr_name, "%s_enq_cnt_bounds[%d]", id.c_str(), t);
         expr constr_expr = mk_and(enq_cnt_vec);
         constr_map.insert(named_constr(constr_name, constr_expr));
         
 //        for (unsigned int p = 0; p < max_enq_ - 1; p++){
 //            expr enq1_val = net_ctx.pkt2val(enqs_[p][t]);
 //            expr enq2_val = net_ctx.pkt2val(enqs_[p + 1][t]);
-//            sprintf(constr_name, "%s_enq_cnt[%d]_is_%d", id.c_str(), t, p + 1);
+//            std::sprintf(constr_name, "%s_enq_cnt[%d]_is_%d", id.c_str(), t, p + 1);
 //            expr constr_expr = implies(enq1_val && !enq2_val,
 //                                       enq_cnt_[t] == (int) p + 1);
 //            constr_map.insert(named_constr(constr_name, constr_expr));
 //        }
-//        sprintf(constr_name, "%s_enq_cnt[%d]_is_0", id.c_str(), t);
+//        std::sprintf(constr_name, "%s_enq_cnt[%d]_is_0", id.c_str(), t);
 //        expr constr_expr = implies(!net_ctx.pkt2val(enqs_[0][t]),
 //                                   enq_cnt_[t] == 0);
 //        constr_map.insert(named_constr(constr_name, constr_expr));
 //
-//        sprintf(constr_name, "%s_enq_cnt[%d]_is_%d", id.c_str(), t, max_enq_);
+//        std::sprintf(constr_name, "%s_enq_cnt[%d]_is_%d", id.c_str(), t, max_enq_);
 //        constr_expr = implies(net_ctx.pkt2val(enqs_[max_enq_ - 1][t]),
 //                                   enq_cnt_[t] == (int) max_enq_);
 //        constr_map.insert(named_constr(constr_name, constr_expr));
@@ -529,12 +561,12 @@ void ImmQueue::sliding_window_constrs(NetContext& net_ctx,
         }
         deq_cnt_ub_vec.push_back(deq_cnt_[t] <= (int) max_deq_);
         
-        sprintf(constr_name, "%s_deq_cnt_bounds[%d]", id.c_str(), t);
+        std::sprintf(constr_name, "%s_deq_cnt_bounds[%d]", id.c_str(), t);
         constr_expr = mk_and(deq_cnt_ub_vec);
         constr_map.insert(named_constr(constr_name, constr_expr));
         
         // deq_cnt should be greater than or equal to zero
-        sprintf(constr_name, "%s_deq_cnt_gt_zero[%d]", id.c_str(), t);
+        std::sprintf(constr_name, "%s_deq_cnt_gt_zero[%d]", id.c_str(), t);
         constr_expr = deq_cnt_[t] >= 0;
         constr_map.insert(named_constr(constr_name, constr_expr));
         
@@ -542,7 +574,7 @@ void ImmQueue::sliding_window_constrs(NetContext& net_ctx,
         for (unsigned int p = 0; p < size_ - 1; p++){
             expr elem1_val = net_ctx.pkt2val(elems_[p][t]);
             expr elem2_val = net_ctx.pkt2val(elems_[p + 1][t]);
-            sprintf(constr_name, "%s_no_holes_%d_%d", id.c_str(), p, t);
+            std::sprintf(constr_name, "%s_no_holes_%d_%d", id.c_str(), p, t);
             constr_expr = elem1_val || !elem2_val;
             constr_map.insert(named_constr(constr_name, constr_expr));
         }
@@ -572,7 +604,7 @@ void Link::add_constrs(NetContext& net_ctx,
     for (unsigned int t = 0; t < total_time; t++){
 
         // deq_cnt is always one
-        sprintf(constr_name, "%s_deq_cnt_is_zero_or_one_at_%d", id.c_str(), t);
+        std::sprintf(constr_name, "%s_deq_cnt_is_zero_or_one_at_%d", id.c_str(), t);
         expr pkt_val = net_ctx.pkt2val(elems_[0][t]);
         expr constr_expr = implies(pkt_val, deq_cnt_[t] == 1) &&
                            implies(!pkt_val, deq_cnt_[t] == 0);
@@ -580,23 +612,23 @@ void Link::add_constrs(NetContext& net_ctx,
 
         // move enq to elem
         if (t == 0){
-            sprintf(constr_name, "%s[0]_is_null", id.c_str());
+            std::sprintf(constr_name, "%s[0]_is_null", id.c_str());
             constr_expr = elems_[0][0] == net_ctx.null_pkt();
             constr_map.insert(named_constr(constr_name, constr_expr));
         }
         else {
             unsigned int prev_t = t - 1;
-            sprintf(constr_name, "%s[0]_is_enqs[0][%d]_at_%d", id.c_str(), (t - 1), t);
+            std::sprintf(constr_name, "%s[0]_is_enqs[0][%d]_at_%d", id.c_str(), (t - 1), t);
             constr_expr = elems_[0][t] == enqs_[0][prev_t];
             constr_map.insert(named_constr(constr_name, constr_expr));
         }
 
         // set enq_cnt
-        sprintf(constr_name, "%s_enq_cnt_is_one_at_%d", id.c_str(), t);
+        std::sprintf(constr_name, "%s_enq_cnt_is_one_at_%d", id.c_str(), t);
         constr_expr = implies(net_ctx.pkt2val(enqs_[0][t]), enq_cnt_[t] == 1);
         constr_map.insert(named_constr(constr_name, constr_expr));
         
-        sprintf(constr_name, "%s_enq_cnt_is_zero_at_%d", id.c_str(), t);
+        std::sprintf(constr_name, "%s_enq_cnt_is_zero_at_%d", id.c_str(), t);
         constr_expr = implies(!net_ctx.pkt2val(enqs_[0][t]), enq_cnt_[t] == 0);
         constr_map.insert(named_constr(constr_name, constr_expr));
  

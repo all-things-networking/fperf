@@ -25,7 +25,8 @@ map<string, cp_test_func_t *> e2e_tests = {{"prio", prio},
                                           {"rr", rr},
                                           {"fq_codel", fq_codel},
                                           {"loom", loom},
-                                          {"leaf_spine_bw", leaf_spine_bw}};
+                                          {"leaf_spine_bw", leaf_spine_bw},
+                                          {"roce", roce}};
 
 const string help_message = "Usage: ./autoperf TEST_NAME";
 

@@ -55,6 +55,9 @@ void LeafSpine::add_nodes(){
     imm_info.type = queue_t::IMM_QUEUE;
 
     // Leaves
+    // if reduce_queues => ignore port to self & spines don't send to each other
+    // leaf_voq_input_map has [0, 0, 0, 1, 1, 1, 2, 2, 3, 3]
+    // leaf_voq_output_map has [1, 2, 3, 0, 2, 3, 0, 1, 0, 1]
     unsigned int leaf_voq_ind = 0;
     for (unsigned int i = 0; i < leaf_port_cnt; i++){
         for (unsigned int j = 0; j < leaf_port_cnt; j++){
@@ -70,6 +73,7 @@ void LeafSpine::add_nodes(){
         }
     }
 
+    // For each leaf, create its QM k
     for (unsigned int i = 0; i < leaf_cnt; i++){
         // Cross Bar
         cid_t m_id = "L" + to_string(i) + "_XBar";

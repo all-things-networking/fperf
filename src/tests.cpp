@@ -16,6 +16,7 @@
 #include "leaf_spine.hpp"
 #include "search.hpp"
 #include "query.hpp"
+#include "roce.hpp"
 
 void run(ContentionPoint* cp,
          IndexedExample* base_eg,
@@ -24,6 +25,74 @@ void run(ContentionPoint* cp,
          Query& query,
          unsigned int max_spec,
          SharedConfig* config);
+
+
+void roce(std::string good_examples_file,
+    std::string bad_examples_file) {
+    cout << "Roce" << endl;
+    time_typ start_time = noww();
+
+    unsigned int prio_levels = 4;
+    unsigned int query_thresh = 5;
+
+    unsigned int good_example_cnt = 50;
+    unsigned int bad_example_cnt = 50;
+    unsigned int total_time = 7;
+
+    RoceScheduler* roce = new RoceScheduler(total_time);
+
+
+    roce->solve();
+    
+    //cid_t query_qid = roce->get_in_queues()[2]->get_id();
+    //Query query(query_quant_t::EXISTS,
+    //    time_range_t(0, roce->get_total_time() - 1),
+    //    query_qid,
+    //    metric_t::CENQ, comp_t::GT, 2*query_thresh);
+
+    //roce->set_query(query);
+
+    //cout << "cp setup: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s" << endl;
+
+    ////// generate base example
+    //start_time = noww();
+    //IndexedExample* base_eg = new IndexedExample();
+    //qset_t target_queues;
+
+    //bool res = roce->generate_base_example(base_eg, target_queues, prio_levels);
+
+    //if (!res) {
+    //    cout << "ERROR: couldn't generate base example" << endl;
+    //    return;
+    //}
+
+    //cout << "base example generation: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s" << endl;
+
+
+    ////// Set shared config
+    //DistsParams dists_params;
+    //dists_params.in_queue_cnt = roce->in_queue_cnt();
+    //dists_params.total_time = total_time;
+    //dists_params.pkt_meta1_val_max = 1;
+    //dists_params.pkt_meta2_val_max = 3;
+
+    //Dists* dists = new Dists(dists_params);
+    //SharedConfig* config = new SharedConfig(total_time,
+    //    roce->in_queue_cnt(),
+    //    target_queues,
+    //    dists);
+    //bool config_set = roce->set_shared_config(config);
+    //if (!config_set) return;
+
+    //run(roce,
+    //    base_eg,
+    //    good_example_cnt, good_examples_file,
+    //    bad_example_cnt, bad_examples_file,
+    //    query,
+    //    8,
+    //    config);
+}
+
 
 void prio(std::string good_examples_file,
           std::string bad_examples_file){

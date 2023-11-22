@@ -35,6 +35,7 @@ public:
     expr int_val(int n);
     
     expr bool_const(char *name);
+    expr get_bool_const(char* name);
     expr bool_val(bool b);
     
     context& z3_ctx();

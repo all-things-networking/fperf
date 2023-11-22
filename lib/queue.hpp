@@ -20,6 +20,7 @@
 class Metric;
 enum class metric_t;
 
+
 enum class queue_t {QUEUE = 0, IMM_QUEUE, LINK};
 
 struct QueueInfo{
@@ -52,6 +53,7 @@ public:
     std::vector<expr>& enqs(unsigned int ind);
     expr& enq_cnt(unsigned int t);
     expr& deq_cnt(unsigned int t);
+    expr& curr_size(unsigned int t);
     
     void add_metric(metric_t metric_type, Metric* m);
     Metric* get_metric(metric_t metric_type);
@@ -77,6 +79,7 @@ protected:
     std::vector<expr>* enqs_;
     std::vector<expr> enq_cnt_;
     std::vector<expr> deq_cnt_;
+    std::vector<expr> curr_size_;
     
     std::vector<expr>* tmp_val;
     std::vector<expr>* enq_ind;

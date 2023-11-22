@@ -1495,6 +1495,7 @@ void ContentionPoint::generate_good_examples2(IndexedExample* base_eg,
     }
 
     expr_vector smooth_flow_vec(net_ctx.z3_ctx());
+
     for (qset_t::iterator it = target_queues.begin();
          it != target_queues.end(); it++){
         unsigned int q = *it;

@@ -42,6 +42,8 @@ private:
     void add_edges();
     void add_metrics();
 
+    std::string cp_model_metric(model& m, unsigned int t, string qid, bool in_q, int q_index, metric_t metric);
+
     std::string cp_model_str(model& m, NetContext& net_ctx, unsigned int t);
 };
 

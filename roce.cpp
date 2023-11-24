@@ -140,10 +140,6 @@ void RoceScheduler::add_edges()
         cid_t switch_in1 = "roce" + to_string((i + 1) % switch_cnt);
         cid_t switch_in2 = i == 0 ? "roce" + to_string(switch_cnt - 1) : "roce" + to_string(i - 1);
 
-        //module edges
-        module_edges[switch_out].push_back(switch_in1);
-        module_edges[switch_out].push_back(switch_in2);
-
         // queue edges
         vector<qpair> q_edges;
         unsigned int k = i % 2 == 0 ? 0 : 1;
@@ -152,10 +148,14 @@ void RoceScheduler::add_edges()
         queue_edges[cid_pair(switch_out, switch_in1)] = q_edges;
 
         q_edges = {};
-        k = k == 0 ? 1 : 0;
+        k = k == 0 ? 1 : 0; 
         q_edges.push_back(qpair(k, 0));
         switch_in2 += "_" + to_string(k);
         queue_edges[cid_pair(switch_out, switch_in2)] = q_edges;
+
+        //module edges
+        module_edges[switch_out].push_back(switch_in1);
+        module_edges[switch_out].push_back(switch_in2);
     }
 }
 
@@ -217,6 +217,31 @@ void RoceScheduler::add_metrics() {
     metrics[metric_t::QSIZE][s3_1_queue->get_id()] = s3_1_qsize;
     s3_1_queue->add_metric(metric_t::QSIZE, s3_1_qsize);
 
+    Queue* s_0_queue = id_to_qm["roce0_1"]->get_out_queue(1);
+    QSize* s0_1_qsize = new QSize(s_0_queue, total_time, net_ctx);
+    qsize.push_back(s0_1_qsize);
+    metrics[metric_t::QSIZE][s0_1_qsize->get_id()] = s0_1_qsize;
+    s_0_queue->add_metric(metric_t::QSIZE, s0_1_qsize);
+
+}
+
+std::string RoceScheduler::cp_model_metric(model& m, unsigned int t, string qid, bool in_q, int q_index, metric_t metric) {
+    Queue* q;
+    if (in_q) {
+        q = id_to_qm[qid]->get_in_queue(q_index);
+    }
+    else {
+        q = id_to_qm[qid]->get_out_queue(q_index);
+    } 
+    Metric* m1 = q->get_metric(metric);
+
+    string s = "";
+    s += m1->get_id() + ": ";
+    expr val1 = m.eval(m1->val(t));
+    if (val1.is_numeral())
+        s += to_string(val1.get_numeral_int());
+    s += "\n";
+    return s;
 }
 
 std::string RoceScheduler::cp_model_str(model& m,
@@ -263,10 +288,14 @@ std::string RoceScheduler::cp_model_str(model& m,
     if (val3.is_numeral()) ss << val3.get_numeral_int();
     ss << endl;
 
-    ss << m4->get_id() << ": ";
+    /*ss << m4->get_id() << ": ";
     expr val4 = m.eval(m3->val(t));
     if (val3.is_numeral()) ss << val4.get_numeral_int();
 
-    ss << endl;
+    ss << endl;*/
+    
+    string test = cp_model_metric(m, t, "roce0_1", false, 1, metric_t::QSIZE);
+    
+    ss << test;
     return ss.str();
 }

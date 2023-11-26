@@ -22,8 +22,6 @@ void CEnq::eval(const IndexedExample* eg, unsigned int time, unsigned int qind, 
 }
 
 void CEnq::populate_val_exprs(NetContext& net_ctx) {
-    char constr_name[100];
-
     // value
     value_[0] = queue->enq_cnt(0);
     for (unsigned int t = 1; t < total_time; t++) {

@@ -32,7 +32,7 @@ void QSize::populate_val_exprs(NetContext& net_ctx) {
     // Value
     for (unsigned int t = 0; t < total_time; t++) {
         expr size_expr = net_ctx.int_val(0);
-        for (int e = 0; e <= queue->size() - 1; e++) {
+        for (unsigned int e = 0; e <= queue->size() - 1; e++) {
             expr pkt = queue->elem(e)[t];
             expr val = net_ctx.pkt2val(pkt);
             size_expr = ite(val, net_ctx.int_val(e + 1), size_expr);

@@ -37,8 +37,6 @@ void CBlocked::eval(const IndexedExample* eg,
 }
 
 void CBlocked::populate_val_exprs(NetContext& net_ctx) {
-    char constr_name[100];
-
     // Value
     expr blocked = net_ctx.pkt2val(queue->elem(0)[0]) && queue->deq_cnt(0) == 0;
     value_[0] = ite(blocked, net_ctx.int_val(1), net_ctx.int_val(0));

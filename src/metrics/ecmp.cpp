@@ -15,7 +15,7 @@ Metric(metric_t::CENQ, queue, total_time, net_ctx) {
 
 void Ecmp::eval(const IndexedExample* eg, unsigned int time, unsigned int qind, metric_val& res) {
 
-    vector<int> enqs_meta2 = eg->enqs_meta2[qind][time];
+    vector<unsigned int> enqs_meta2 = eg->enqs_meta2[qind][time];
     if (enqs_meta2.size() == 0) {
         res.valid = false;
         return;

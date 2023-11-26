@@ -1025,8 +1025,6 @@ void ContentionPoint::generate_good_examples_from_base_flow(deque<IndexedExample
 void ContentionPoint::generate_good_examples_flow(deque<IndexedExample*>& examples,
                                                   unsigned int count) {
 
-    time_typ start = noww();
-
     // PUSH
     z3_optimizer->push();
     z3_optimizer->add(base_wl_expr, "base_wl");
@@ -1644,11 +1642,11 @@ void ContentionPoint::populate_example_from_model(model& m, IndexedExample* eg) 
     // Adding enqs_meta1 and enqs_meta2
     for (unsigned int q = 0; q < in_queues.size(); q++) {
         Queue* queue = in_queues[q];
-        vector<vector<int>> enqs_meta1;
-        vector<vector<int>> enqs_meta2;
+        vector<vector<unsigned int>> enqs_meta1;
+        vector<vector<unsigned int>> enqs_meta2;
         for (unsigned int t = 0; t < total_time; t++) {
-            vector<int> meta1;
-            vector<int> meta2;
+            vector<unsigned int> meta1;
+            vector<unsigned int> meta2;
 
             for (unsigned int p = 0; p < queue->max_enq(); p++) {
                 expr pkt = queue->enqs(p)[t];
@@ -2188,7 +2186,7 @@ bool ContentionPoint::timedspec_satisfies_example(TimedSpec spec, IndexedExample
 
 bool ContentionPoint::eval_spec(Unique uniq, IndexedExample* eg, time_range_t time_range) const {
     for (unsigned int t = time_range.first + 1; t <= time_range.second; t++) {
-        int vals_count = 0;
+        set<int>::size_type vals_count = 0;
         set<int> unique_vals;
         for (unsigned int queue : uniq.get_qset()) {
             Metric* metric = in_queues[queue]->get_metric(uniq.get_metric());

@@ -15,7 +15,6 @@
 #include "util.hpp"
 
 SpecFactory::SpecFactory(SharedConfig* shared_config):
-shared_config(shared_config),
 dists(shared_config->get_dists()) {
     total_time = shared_config->get_total_time();
     in_queue_cnt = shared_config->get_in_queue_cnt();
@@ -348,7 +347,7 @@ void SpecFactory::pick_neighbors(Indiv& indiv, vector<m_expr_t>& neighbors) {
 
     // changing queue
     unsigned int queue_neighbor = dists->input_queue();
-    while (queue_neighbor == indiv.get_queue() && target_queues.size() > 1 ||
+    while ((queue_neighbor == indiv.get_queue() && target_queues.size() > 1) ||
            target_queues.find(queue_neighbor) == target_queues.end()) {
         queue_neighbor = dists->input_queue();
     }

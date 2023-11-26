@@ -53,7 +53,7 @@ void LoomNICEnqQM::constrs_if_not_taken(NetContext& net_ctx, map<string, expr>& 
                 expr pkt_val = net_ctx.pkt2val(in_pkt);
 
                 // Set deq_cnt bounds
-                sprintf(constr_name, "%s_input_deq_cnt_lb[%d][%d]_%d", id.c_str(), q, t, i);
+                snprintf(constr_name, 100, "%s_input_deq_cnt_lb[%d][%d]_%d", id.c_str(), q, t, i);
                 expr constr_expr = implies(pkt_val, inq->deq_cnt(t) > (int) i);
                 constr_map.insert(named_constr(constr_name, constr_expr));
             }
@@ -76,13 +76,14 @@ void LoomNICEnqQM::constrs_if_not_taken(NetContext& net_ctx, map<string, expr>& 
                 expr pkt_val = net_ctx.pkt2val(src_pkt);
                 expr pkt_class = net_ctx.pkt2meta1(src_pkt);
 
-                sprintf(constr_name,
-                        "%s_memcached_enq[%d]_in[%d][%d]_%d",
-                        id.c_str(),
-                        i,
-                        src_qid,
-                        src_elem_id,
-                        t);
+                snprintf(constr_name,
+                         100,
+                         "%s_memcached_enq[%d]_in[%d][%d]_%d",
+                         id.c_str(),
+                         i,
+                         src_qid,
+                         src_elem_id,
+                         t);
                 expr cond = (prev_elems_invalid && pkt_val && pkt_class == (int) tenant2_memcached);
                 expr constr_expr = implies(cond && !le_i_gets_j[j], dst_pkt == src_pkt);
                 constr_map.insert(named_constr(constr_name, constr_expr));
@@ -94,7 +95,7 @@ void LoomNICEnqQM::constrs_if_not_taken(NetContext& net_ctx, map<string, expr>& 
                 le_i_gets_j[j] = le_i_gets_j[j] || cond;
             }
 
-            sprintf(constr_name, "%s_memcached_enq[%d]_null_%d", id.c_str(), i, t);
+            snprintf(constr_name, 100, "%s_memcached_enq[%d]_null_%d", id.c_str(), i, t);
             expr constr_expr = implies(prev_elems_invalid, dst_pkt == net_ctx.null_pkt());
             constr_map.insert(named_constr(constr_name, constr_expr));
         }
@@ -115,13 +116,14 @@ void LoomNICEnqQM::constrs_if_not_taken(NetContext& net_ctx, map<string, expr>& 
                 expr pkt_val = net_ctx.pkt2val(src_pkt);
                 expr pkt_class = net_ctx.pkt2meta1(src_pkt);
 
-                sprintf(constr_name,
-                        "%s_spark_enq[%d]_in[%d][%d]_%d",
-                        id.c_str(),
-                        i,
-                        src_qid,
-                        src_elem_id,
-                        t);
+                snprintf(constr_name,
+                         100,
+                         "%s_spark_enq[%d]_in[%d][%d]_%d",
+                         id.c_str(),
+                         i,
+                         src_qid,
+                         src_elem_id,
+                         t);
                 expr cond = (prev_elems_invalid && pkt_val &&
                              (pkt_class == (int) tenant1_spark ||
                               pkt_class == (int) tenant2_spark));
@@ -136,7 +138,7 @@ void LoomNICEnqQM::constrs_if_not_taken(NetContext& net_ctx, map<string, expr>& 
                 le_i_gets_j[j] = le_i_gets_j[j] || cond;
             }
 
-            sprintf(constr_name, "%s_spark_enq[%d]_null_%d", id.c_str(), i, t);
+            snprintf(constr_name, 100, "%s_spark_enq[%d]_null_%d", id.c_str(), i, t);
             expr constr_expr = implies(prev_elems_invalid, dst_pkt == net_ctx.null_pkt());
             constr_map.insert(named_constr(constr_name, constr_expr));
         }
@@ -145,7 +147,7 @@ void LoomNICEnqQM::constrs_if_not_taken(NetContext& net_ctx, map<string, expr>& 
         for (unsigned int q = 0; q < out_queues.size(); q++) {
             Queue* outq = out_queues[q];
             for (unsigned int i = per_queue_share * in_queue_cnt; i < outq->max_enq(); i++) {
-                sprintf(constr_name, "%s_null_rest_of_output_%d_%d_%d", id.c_str(), q, i, t);
+                snprintf(constr_name, 100, "%s_null_rest_of_output_%d_%d_%d", id.c_str(), q, i, t);
                 expr constr_expr = outq->enqs(i)[t] == net_ctx.null_pkt();
                 constr_map.insert(named_constr(constr_name, constr_expr));
             }

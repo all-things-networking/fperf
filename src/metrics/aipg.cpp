@@ -65,7 +65,7 @@ void AIPG::populate_val_exprs(NetContext& net_ctx) {
         // TODO: total_time or total_time - t1?
         expr val_expr = net_ctx.int_val(total_time);
 
-        for (int t2 = total_time - 1; t2 > t1; t2--) {
+        for (unsigned int t2 = total_time - 1; t2 > t1; t2--) {
             val_expr = ite(queue->enq_cnt(t2) > 0, net_ctx.int_val(t2 - t1), val_expr);
         }
 

@@ -104,12 +104,14 @@ void Buggy2LRRQM::add_constrs(NetContext& net_ctx, map<string, expr>& constr_map
 
         // Don't allow extra random enqs
         for (unsigned int ind = 0; ind < in_queue_cnt; ind++) {
-            snprintf(constr_name, 100, "%s_new_queues_enq_cnt_bounds1_%d_at_%d", id.c_str(), ind, t);
+            snprintf(
+                constr_name, 100, "%s_new_queues_enq_cnt_bounds1_%d_at_%d", id.c_str(), ind, t);
             expr constr_expr = implies(net_ctx.pkt2val(new_queues->enqs(ind)[t]),
                                        sum(activated_vec) > (int) ind);
             constr_map.insert(named_constr(constr_name, constr_expr));
 
-            snprintf(constr_name, 100, "%s_new_queues_enq_cnt_bounds2_%d_at_%d", id.c_str(), ind, t);
+            snprintf(
+                constr_name, 100, "%s_new_queues_enq_cnt_bounds2_%d_at_%d", id.c_str(), ind, t);
             constr_expr = implies(sum(activated_vec) <= (int) ind,
                                   new_queues->enqs(ind)[t] == net_ctx.null_pkt());
             constr_map.insert(named_constr(constr_name, constr_expr));

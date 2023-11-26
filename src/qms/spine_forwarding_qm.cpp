@@ -53,13 +53,14 @@ void SpineForwardingQM::add_constrs(NetContext& net_ctx, map<string, expr>& cons
             unsigned int dst_port = dst / servers_per_leaf;
             if (output_voq_map.find(dst_port) == output_voq_map.end()) continue;
             unsigned int voq_ind = output_voq_map[dst_port];
-            snprintf(constr_name, 100,
-                    "%s_forward_dst_%d_to_port%d(q%d)_at_%d",
-                    id.c_str(),
-                    dst,
-                    dst_port,
-                    voq_ind,
-                    t);
+            snprintf(constr_name,
+                     100,
+                     "%s_forward_dst_%d_to_port%d(q%d)_at_%d",
+                     id.c_str(),
+                     dst,
+                     dst_port,
+                     voq_ind,
+                     t);
             constr_expr = implies(pkt_val && pkt_dst == (int) dst,
                                   out_queues[voq_ind]->enqs(0)[t] == in_pkt);
             constr_map.insert(named_constr(constr_name, constr_expr));
@@ -84,12 +85,13 @@ void SpineForwardingQM::add_constrs(NetContext& net_ctx, map<string, expr>& cons
                 expr pkt_val = net_ctx.pkt2val(pkt);
                 expr pkt_meta = net_ctx.pkt2meta2(pkt);
 
-                snprintf(constr_name, 100,
-                        "%s_flow_meta_bounds_input_queue[%d][%d][%d]",
-                        id.c_str(),
-                        q,
-                        p,
-                        t);
+                snprintf(constr_name,
+                         100,
+                         "%s_flow_meta_bounds_input_queue[%d][%d][%d]",
+                         id.c_str(),
+                         q,
+                         p,
+                         t);
                 constr_expr = implies(pkt_val, pkt_meta == (int) spine_id);
                 constr_map.insert(named_constr(constr_name, constr_expr));
             }
@@ -102,12 +104,13 @@ void SpineForwardingQM::add_constrs(NetContext& net_ctx, map<string, expr>& cons
                 expr pkt_val = net_ctx.pkt2val(pkt);
                 expr pkt_meta = net_ctx.pkt2meta2(pkt);
 
-                snprintf(constr_name, 100,
-                        "%s_flow_meta_bounds_output_queue[%d][%d][%d]",
-                        id.c_str(),
-                        q,
-                        p,
-                        t);
+                snprintf(constr_name,
+                         100,
+                         "%s_flow_meta_bounds_output_queue[%d][%d][%d]",
+                         id.c_str(),
+                         q,
+                         p,
+                         t);
                 constr_expr = implies(pkt_val, pkt_meta == (int) spine_id);
                 constr_map.insert(named_constr(constr_name, constr_expr));
             }
@@ -137,8 +140,8 @@ void SpineForwardingQM::add_constrs(NetContext& net_ctx, map<string, expr>& cons
                 expr pkt = queue->enqs(e)[t];
                 expr meta3 = net_ctx.pkt2meta3(pkt);
 
-                snprintf(constr_name, 100, "%s_in_%d_enqs[%d][%d]_meta3_bound", id.c_str(), i, e, t);
-                expr constr_expr = meta3 <= (int) t && meta3 >= 0;
+                snprintf(constr_name, 100, "%s_in_%d_enqs[%d][%d]_meta3_bound", id.c_str(), i, e,
+        t); expr constr_expr = meta3 <= (int) t && meta3 >= 0;
                 constr_map.insert(named_constr(constr_name, constr_expr));
             }
         }
@@ -149,8 +152,8 @@ void SpineForwardingQM::add_constrs(NetContext& net_ctx, map<string, expr>& cons
                 expr pkt = queue->enqs(e)[t];
                 expr meta3 = net_ctx.pkt2meta3(pkt);
 
-                snprintf(constr_name, 100, "%s_out_%d_enqs[%d][%d]_meta3_bound", id.c_str(), i, e, t);
-                expr constr_expr = meta3 <= (int) t && meta3 >= 0;
+                snprintf(constr_name, 100, "%s_out_%d_enqs[%d][%d]_meta3_bound", id.c_str(), i, e,
+        t); expr constr_expr = meta3 <= (int) t && meta3 >= 0;
                 constr_map.insert(named_constr(constr_name, constr_expr));
             }
         }

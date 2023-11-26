@@ -76,13 +76,14 @@ void LoomFlowEnqQM::constrs_if_not_taken(NetContext& net_ctx, map<string, expr>&
                 expr in_pkt = in_queues[qid]->elem(offset)[t];
                 expr cond = (prev_elems_invalid && net_ctx.pkt2val(in_pkt));
 
-                snprintf(constr_name, 100,
-                        "%s_tenant2_out_enqs[%d][%d]_is_inq[%d][%d]",
-                        id.c_str(),
-                        i,
-                        t,
-                        qid,
-                        offset);
+                snprintf(constr_name,
+                         100,
+                         "%s_tenant2_out_enqs[%d][%d]_is_inq[%d][%d]",
+                         id.c_str(),
+                         i,
+                         t,
+                         qid,
+                         offset);
                 expr constr_expr = implies(cond && !le_i_gets_j[j],
                                            tenant2_outq->enqs(i)[t] == in_pkt);
                 constr_map.insert(named_constr(constr_name, constr_expr));
@@ -90,13 +91,14 @@ void LoomFlowEnqQM::constrs_if_not_taken(NetContext& net_ctx, map<string, expr>&
                 string app_name = "spark";
                 if (qid == 2) app_name = "memcached";
 
-                snprintf(constr_name, 100,
-                        "%s_tenant2_%s_deq_cnt[%d]_is_gt_%d_because_%d",
-                        id.c_str(),
-                        app_name.c_str(),
-                        t,
-                        offset,
-                        i);
+                snprintf(constr_name,
+                         100,
+                         "%s_tenant2_%s_deq_cnt[%d]_is_gt_%d_because_%d",
+                         id.c_str(),
+                         app_name.c_str(),
+                         t,
+                         offset,
+                         i);
                 constr_expr = implies(cond && !le_i_gets_j[j],
                                       in_queues[qid]->deq_cnt(t) > (int) offset);
                 constr_map.insert(named_constr(constr_name, constr_expr));
@@ -122,7 +124,8 @@ void LoomFlowEnqQM::constrs_if_not_taken(NetContext& net_ctx, map<string, expr>&
             if (q == 2) queue_class = tenant2_memcached;
 
             for (unsigned int i = 0; i < in_queues[q]->max_enq(); i++) {
-                snprintf(constr_name, 100, "%s_only_valid_meta_in_enq[%d][%d][%d]", id.c_str(), q, i, t);
+                snprintf(
+                    constr_name, 100, "%s_only_valid_meta_in_enq[%d][%d][%d]", id.c_str(), q, i, t);
                 expr pkt = in_queues[q]->enqs(i)[t];
                 expr pkt_class = net_ctx.pkt2meta1(pkt);
                 expr constr_expr = implies(net_ctx.pkt2val(pkt), pkt_class == queue_class);

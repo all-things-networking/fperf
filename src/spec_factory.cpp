@@ -348,7 +348,7 @@ void SpecFactory::pick_neighbors(Indiv& indiv, vector<m_expr_t>& neighbors) {
 
     // changing queue
     unsigned int queue_neighbor = dists->input_queue();
-    while (queue_neighbor == indiv.get_queue() && target_queues.size() > 1 ||
+    while ((queue_neighbor == indiv.get_queue() && target_queues.size() > 1) ||
            target_queues.find(queue_neighbor) == target_queues.end()) {
         queue_neighbor = dists->input_queue();
     }

@@ -2187,6 +2187,20 @@ bool ContentionPoint::timedspec_satisfies_example(TimedSpec spec, IndexedExample
 }
 
 bool ContentionPoint::eval_spec(Unique uniq, IndexedExample* eg, time_range_t time_range) const {
+    for (unsigned int t = time_range.first + 1; t <= time_range.second; t++) {
+        int vals_count = 0;
+        set<int> unique_vals;
+        for (unsigned int queue : uniq.get_qset()) {
+            Metric* metric = in_queues[queue]->get_metric(uniq.get_metric());
+            metric_val m_val;
+            metric->eval(eg, t, queue, m_val);
+            if (m_val.valid) {
+                vals_count++;
+                unique_vals.insert(m_val.value);
+            }
+        }
+        if (vals_count != unique_vals.size()) return false;
+    }
     return true;
 }
 

@@ -29,7 +29,4 @@ bool operator>=(const cost_t cost1, const cost_t cost2);
 bool operator==(const cost_t cost1, const cost_t cost2);
 bool operator!=(const cost_t cost1, const cost_t cost2);
 
-// ostream& operator<<(ostream& os, const cost_t cost);
-
-
 #endif /* cost_hpp */

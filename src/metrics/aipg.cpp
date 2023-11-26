@@ -77,51 +77,6 @@ void AIPG::populate_val_exprs(NetContext& net_ctx) {
                          net_ctx.int_val(0),
                          ite(queue->enq_cnt(t1) <= 0, value_[t1 - 1], val_expr));
 
-        /*
-        snprintf(constr_name, 100, "%s_value[%d]_1", id.c_str(), t1);
-        constr_expr = implies(queue->enq_cnt(t1) > 1, value_[t1] == 0);
-        constr_map.insert(named_constr(constr_name, constr_expr));
-
-        expr prev_zero = net_ctx.bool_val(true);
-        for (int t2 = t1 - 1; t2 >= 0; t2--){
-            int new_val = t1 - t2;
-
-            snprintf(constr_name, 100, "%s_value[%d]_2_%d", id.c_str(), t1, t2);
-            constr_expr = implies(queue->enq_cnt(t1) == 1 &&
-                                  prev_zero &&
-                                  queue->enq_cnt(t2) > 0,
-                                  value_[t1] == new_val);
-            constr_map.insert(named_constr(constr_name, constr_expr));
-
-            prev_zero = prev_zero && queue->enq_cnt(t2) <= 0;
-        }
-
-        expr next_zero = net_ctx.bool_val(true);
-        for (unsigned int t2 = t1 + 1; t2 < total_time; t2++){
-            int new_val = t2 - t1;
-            snprintf(constr_name, 100, "%s_value[%d]_3", id.c_str(), t1);
-            constr_expr = implies(queue->enq_cnt(t1) == 1 &&
-                                  prev_zero &&
-                                  next_zero &&
-                                  queue->enq_cnt(t2) > 0,
-                                  value_[t1] == new_val);
-            constr_map.insert(named_constr(constr_name, constr_expr));
-
-            next_zero = next_zero && queue->enq_cnt(t2) <= 0;
-        }
-
-        snprintf(constr_name, 100, "%s_value[%d]_4", id.c_str(), t1);
-        constr_expr = implies(queue->enq_cnt(t1) == 1 &&
-                              prev_zero && next_zero,
-                              value_[t1] == (int) total_time);
-        constr_map.insert(named_constr(constr_name, constr_expr));
-
-        snprintf(constr_name, 100, "%s_value[%d]_5", id.c_str(), t1);
-        constr_expr = implies(queue->enq_cnt(t1) <= 0, value_[t1] == value_[t1 - 1]);
-        constr_map.insert(named_constr(constr_name, constr_expr));
-    }
-    */
-
         // valid
         for (unsigned int t = 0; t < total_time; t++) {
             valid_[t] = net_ctx.bool_val(true);

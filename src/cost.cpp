@@ -52,12 +52,3 @@ bool operator==(const cost_t cost1, const cost_t cost2) {
 bool operator!=(const cost_t cost1, const cost_t cost2) {
     return uint_val(cost1) != uint_val(cost2);
 }
-
-
-// ostream& operator<<(ostream& os, const cost_t cost)
-//{
-//     os << "[";
-//     os << cost.first << ", ";
-//     os << cost.second << "]";
-//     return os;
-// }

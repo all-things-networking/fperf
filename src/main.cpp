@@ -33,7 +33,7 @@ const string help_message = "Usage: ./fperf TEST_NAME";
 int main(int argc, const char* argv[]) {
     vector<string> arguments(argv + 1, argv + argc);
 
-    if (arguments.size() != 1) throw invalid_argument("Invalid number of arguments");
+    if (arguments.size() != 2) throw invalid_argument("Invalid number of arguments");
 
     if (arguments[0] == "--help") {
         cout << help_message << endl;
@@ -43,8 +43,11 @@ int main(int argc, const char* argv[]) {
     string test_name = arguments[0];
     if (e2e_tests.find(test_name) == e2e_tests.end())
         throw invalid_argument("Unknown test: " + test_name);
+    string rand_seed = arguments[1];
 
-    e2e_tests.find(test_name)->second("", "");
+    e2e_tests.find(test_name)->second(rand_seed, "");
+
+    cout << "FINISHED " << rand_seed << endl;
 
     return 0;
 }

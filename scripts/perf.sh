@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
+TEST_NAME=$1
+FPERF_PATH="../build/fperf"
+
 function cleanup() {
   pkill -f fperf
 }
@@ -25,7 +28,7 @@ function main() {
   for i in $(seq 1 6); do
     RAND="$(get_random)"
     echo "$RAND" >> rands.log
-    ./build/fperf "$RAND"  >> output.log &
+    $FPERF_PATH "$TEST_NAME" "$RAND"  >> output.log &
   done
 
   ELAPSED_TIME=0

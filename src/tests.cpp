@@ -69,13 +69,15 @@ void prio(string good_examples_file, string bad_examples_file) {
     cout << "base example generation: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s"
          << endl;
 
+    int rand_seed = stoi(good_examples_file);
+    good_examples_file = "";
     // Set shared config
     DistsParams dists_params;
     dists_params.in_queue_cnt = prio->in_queue_cnt();
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = 2;
     dists_params.pkt_meta2_val_max = 2;
-    dists_params.random_seed = 2000;
+    dists_params.random_seed = rand_seed;
 
     Dists* dists = new Dists(dists_params);
     SharedConfig* config = new SharedConfig(total_time, prio->in_queue_cnt(), target_queues, dists);
@@ -164,13 +166,15 @@ void rr(string good_examples_file, string bad_examples_file) {
          << endl;
 
 
+    int rand_seed = stoi(good_examples_file);
+    good_examples_file = "";
     // Set shared config
     DistsParams dists_params;
     dists_params.in_queue_cnt = rr->in_queue_cnt();
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = 2;
     dists_params.pkt_meta2_val_max = 2;
-    dists_params.random_seed = 29663;
+    dists_params.random_seed = rand_seed;
 
     Dists* dists = new Dists(dists_params);
     SharedConfig* config = new SharedConfig(total_time, rr->in_queue_cnt(), target_queues, dists);
@@ -242,13 +246,15 @@ void fq_codel(string good_examples_file, string bad_examples_file) {
          << endl;
 
 
+    int rand_seed = stoi(good_examples_file);
+    good_examples_file = "";
     // Set shared config
     DistsParams dists_params;
     dists_params.in_queue_cnt = cp->in_queue_cnt();
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = 2;
     dists_params.pkt_meta2_val_max = 2;
-    dists_params.random_seed = 4854;
+    dists_params.random_seed = rand_seed;
 
     Dists* dists = new Dists(dists_params);
     SharedConfig* config = new SharedConfig(total_time, cp->in_queue_cnt(), target_queues, dists);
@@ -340,13 +346,15 @@ void loom(string good_examples_file, string bad_examples_file) {
          << endl;
 
 
+    int rand_seed = stoi(good_examples_file);
+    good_examples_file = "";
     // Set shared config
     DistsParams dists_params;
     dists_params.in_queue_cnt = cp->in_queue_cnt();
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = 3;
     dists_params.pkt_meta2_val_max = 2;
-    dists_params.random_seed = 13388;
+    dists_params.random_seed = rand_seed;
 
     Dists* dists = new Dists(dists_params);
     SharedConfig* config = new SharedConfig(total_time, cp->in_queue_cnt(), target_queues, dists);
@@ -440,13 +448,15 @@ void leaf_spine_bw(string good_examples_file, string bad_examples_file) {
          << endl;
 
 
+    int rand_seed = stoi(good_examples_file);
+    good_examples_file = "";
     // Set shared config
     DistsParams dists_params;
     dists_params.in_queue_cnt = cp->in_queue_cnt();
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = server_cnt - 1;
     dists_params.pkt_meta2_val_max = spine_cnt - 1;
-    dists_params.random_seed = 24212;
+    dists_params.random_seed = rand_seed;
 
     Dists* dists = new Dists(dists_params);
     SharedConfig* config = new SharedConfig(total_time, cp->in_queue_cnt(), target_queues, dists);

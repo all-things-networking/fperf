@@ -24,8 +24,8 @@ struct Example {
     map<cid_t, vector<unsigned int>> enqs;
     map<cid_t, vector<unsigned int>> deqs;
 
-    map<cid_t, vector<vector<int>>> enqs_meta1;
-    map<cid_t, vector<vector<int>>> enqs_meta2;
+    map<cid_t, vector<vector<unsigned int>>> enqs_meta1;
+    map<cid_t, vector<vector<unsigned int>>> enqs_meta2;
 
     friend ostream& operator<<(ostream& os, const Example& eg);
 };
@@ -35,8 +35,8 @@ struct IndexedExample {
     cid_t query_qid;
     vector<vector<unsigned int>> enqs;
     vector<vector<unsigned int>> deqs;
-    vector<vector<vector<int>>> enqs_meta1;
-    vector<vector<vector<int>>> enqs_meta2;
+    vector<vector<vector<unsigned int>>> enqs_meta1;
+    vector<vector<vector<unsigned int>>> enqs_meta2;
 
     friend ostream& operator<<(ostream& os, const IndexedExample& eg);
 };

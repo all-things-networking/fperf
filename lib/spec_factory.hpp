@@ -79,7 +79,6 @@ public:
     op_t random_op();
 
 private:
-    SharedConfig* shared_config = NULL;
     unsigned int total_time;
     unsigned int in_queue_cnt;
     qset_t target_queues;

@@ -777,7 +777,6 @@ void Search::pick_neighbors(Workload wl, vector<Workload>& neighbors) {
             unsigned int new_neighbors = 0;
             for (unsigned int tries = 0; tries <= 5 && new_neighbors == 0; tries++) {
                 set<TimedSpec> wl_specs = wl.get_all_specs();
-                unsigned int ind = 0;
                 for (set<TimedSpec>::iterator it = wl_specs.begin(); it != wl_specs.end(); it++) {
                     TimedSpec to_modify = *it;
 
@@ -796,8 +795,6 @@ void Search::pick_neighbors(Workload wl, vector<Workload>& neighbors) {
                             new_neighbors++;
                         }
                     }
-
-                    ind++;
                 }
             }
         }

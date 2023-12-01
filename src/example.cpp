@@ -35,14 +35,14 @@ ostream& operator<<(ostream& os, const Example& eg) {
     }
 
     os << "pkts metadata: " << endl;
-    for (map<cid_t, vector<vector<int>>>::const_iterator it = eg.enqs_meta1.begin();
+    for (map<cid_t, vector<vector<unsigned int>>>::const_iterator it = eg.enqs_meta1.begin();
          it != eg.enqs_meta1.end();
          it++) {
         cid_t qid = it->first;
         os << qid << " ";
         for (unsigned int t = 0; t < it->second.size(); t++) {
-            vector<int> meta1 = it->second[t];
-            vector<int> meta2 = eg.enqs_meta2.at(qid)[t];
+            vector<unsigned int> meta1 = it->second[t];
+            vector<unsigned int> meta2 = eg.enqs_meta2.at(qid)[t];
             for (unsigned int p = 0; p < meta1.size(); p++) {
                 os << "[" << meta1[p] << ", " << meta2[p] << "] ";
             }
@@ -74,12 +74,12 @@ void write_examples_to_file(deque<Example*>& examples, string fname) {
             out << endl;
         }
 
-        for (map<cid_t, vector<vector<int>>>::iterator it = eg->enqs_meta1.begin();
+        for (map<cid_t, vector<vector<unsigned int>>>::iterator it = eg->enqs_meta1.begin();
              it != eg->enqs_meta1.end();
              it++) {
             out << it->first << " ";
             for (unsigned int t = 0; t < it->second.size(); t++) {
-                vector<int> meta = it->second[t];
+                vector<unsigned int> meta = it->second[t];
                 for (unsigned int p = 0; p < meta.size(); p++) {
                     out << meta[p] << " ";
                 }
@@ -88,12 +88,12 @@ void write_examples_to_file(deque<Example*>& examples, string fname) {
             out << endl;
         }
 
-        for (map<cid_t, vector<vector<int>>>::iterator it = eg->enqs_meta2.begin();
+        for (map<cid_t, vector<vector<unsigned int>>>::iterator it = eg->enqs_meta2.begin();
              it != eg->enqs_meta2.end();
              it++) {
             out << it->first << " ";
             for (unsigned int t = 0; t < it->second.size(); t++) {
-                vector<int> meta = it->second[t];
+                vector<unsigned int> meta = it->second[t];
                 for (unsigned int p = 0; p < meta.size(); p++) {
                     out << meta[p] << " ";
                 }
@@ -128,8 +128,8 @@ vector<unsigned int> u_split_line(string line) {
     return parts;
 }
 
-vector<int> s_split_line(string line) {
-    vector<int> parts;
+vector<unsigned int> s_split_line(string line) {
+    vector<unsigned int> parts;
 
     size_t next_part = line.find(" ", 0);
     while (next_part != string::npos) {
@@ -204,7 +204,7 @@ void read_examples_from_file(deque<Example*>& examples, string fname) {
             cid_t qid = line.substr(0, next_part);
             line = line.substr(next_part + 1);
 
-            vector<vector<int>> enqs_meta1;
+            vector<vector<unsigned int>> enqs_meta1;
             for (unsigned int t = 0; t < eg->total_time; t++) {
                 size_t next_part = line.find("|", 0);
 
@@ -217,7 +217,7 @@ void read_examples_from_file(deque<Example*>& examples, string fname) {
                 string enqs_meta_str = line.substr(0, next_part);
                 line = line.substr(next_part + 1);
 
-                vector<int> s_parts = s_split_line(enqs_meta_str);
+                vector<unsigned int> s_parts = s_split_line(enqs_meta_str);
                 enqs_meta1.push_back(s_parts);
             }
 
@@ -230,7 +230,7 @@ void read_examples_from_file(deque<Example*>& examples, string fname) {
             cid_t qid = line.substr(0, next_part);
             line = line.substr(next_part + 1);
 
-            vector<vector<int>> enqs_meta2;
+            vector<vector<unsigned int>> enqs_meta2;
             for (unsigned int t = 0; t < eg->total_time; t++) {
                 size_t next_part = line.find("|", 0);
 
@@ -243,7 +243,7 @@ void read_examples_from_file(deque<Example*>& examples, string fname) {
                 string enqs_meta_str = line.substr(0, next_part);
                 line = line.substr(next_part + 1);
 
-                vector<int> s_parts = s_split_line(enqs_meta_str);
+                vector<unsigned int> s_parts = s_split_line(enqs_meta_str);
                 enqs_meta2.push_back(s_parts);
             }
 
@@ -298,8 +298,8 @@ ostream& operator<<(ostream& os, const IndexedExample& eg) {
     for (unsigned int i = 0; i < eg.enqs_meta1.size(); i++) {
         os << i << " ";
         for (unsigned int t = 0; t < eg.enqs_meta1[i].size(); t++) {
-            vector<int> meta1 = eg.enqs_meta1[i][t];
-            vector<int> meta2 = eg.enqs_meta2[i][t];
+            vector<unsigned int> meta1 = eg.enqs_meta1[i][t];
+            vector<unsigned int> meta2 = eg.enqs_meta2[i][t];
             for (unsigned int p = 0; p < meta1.size(); p++) {
                 os << "[" << meta1[p] << ", " << meta2[p] << "] ";
             }

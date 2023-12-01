@@ -1642,11 +1642,11 @@ void ContentionPoint::populate_example_from_model(model& m, IndexedExample* eg) 
     // Adding enqs_meta1 and enqs_meta2
     for (unsigned int q = 0; q < in_queues.size(); q++) {
         Queue* queue = in_queues[q];
-        vector<vector<int>> enqs_meta1;
-        vector<vector<int>> enqs_meta2;
+        vector<vector<unsigned int>> enqs_meta1;
+        vector<vector<unsigned int>> enqs_meta2;
         for (unsigned int t = 0; t < total_time; t++) {
-            vector<int> meta1;
-            vector<int> meta2;
+            vector<unsigned int> meta1;
+            vector<unsigned int> meta2;
 
             for (unsigned int p = 0; p < queue->max_enq(); p++) {
                 expr pkt = queue->enqs(p)[t];

@@ -1220,10 +1220,7 @@ void Workload::normalize(time_range_t time_range) {
     bool changed = true;
     vector<Comp> new_comps;
 
-    unsigned int round = 0;
     while (changed) {
-        round++;
-
         changed = false;
         new_comps.clear();
 

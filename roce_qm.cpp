@@ -83,11 +83,8 @@ void RoCEQM::add_constrs(NetContext& net_ctx,
             // ports full
             expr voq_sum = net_ctx.int_val(0);
             for (int i = 0; i < out_queues.size(); i++) {
-                int switch_id = sid.back() - '0';
-                int port_num = return_to_sender + (i * 3);
-                std::sprintf(vname, "roce%d.%d_curr_size_[%d]", switch_id, port_num, t);
                 sprintf(constr_name, "%s_full_port%d_at_%d", id.c_str(), i, t);
-                voq_sum = voq_sum + net_ctx.get_int_const(vname);
+                voq_sum = voq_sum + out_queues[i]->curr_size(t);
             }
             send_pause = voq_sum > thresh && !sent_pause[t-1];
             send_unpause = voq_sum <= thresh && sent_pause[t - 1];

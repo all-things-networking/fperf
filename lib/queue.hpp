@@ -80,6 +80,7 @@ protected:
     std::vector<expr> enq_cnt_;
     std::vector<expr> deq_cnt_;
     std::vector<expr> curr_size_;
+    std::vector<expr> paused_;
     
     std::vector<expr>* tmp_val;
     std::vector<expr>* enq_ind;

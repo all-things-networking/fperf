@@ -99,6 +99,13 @@ void Queue::add_vars(NetContext& net_ctx){
         std::sprintf(vname, "%s_curr_size_[%d]", id.c_str(), t);
         curr_size_.push_back(net_ctx.int_const(vname));
     }
+
+    // Whether this queue is paused or not
+    for (unsigned int t = 0; t < total_time; t++) {
+        char vname[100];
+        std::sprintf(vname, "%s_pause_status_[%d]", id.c_str(), t);
+        paused_.push_back(net_ctx.int_const(vname));
+    }
     
     sliding_window_vars(net_ctx);
 }
@@ -261,14 +268,12 @@ void Queue::sliding_window_constrs(NetContext& net_ctx,
         }
 
         // Constraints on current size of queue
-        expr cur_size(net_ctx.z3_ctx());
-
-        std::sprintf(constr_name, "%s_queue_size%d_%d", id.c_str(), 0, t);
+        std::sprintf(constr_name, "%s_queue_size_empty_%d_%d", id.c_str(), 0, t);
         expr elem_val = net_ctx.pkt2val(elems_[0][t]);
         constr_expr = implies(!elem_val, curr_size_[t] == net_ctx.int_val(0));
         constr_map.insert(named_constr(constr_name, constr_expr));
 
-        std::sprintf(constr_name, "%s_queue_size%d_%d", id.c_str(), size_, t);
+        std::sprintf(constr_name, "%s_queue_size_full_%d_%d", id.c_str(), size_, t);
         elem_val = net_ctx.pkt2val(elems_[size_ - 1][t]);
         constr_expr = implies(elem_val, curr_size_[t] == net_ctx.int_val(size_));
         constr_map.insert(named_constr(constr_name, constr_expr));
@@ -576,6 +581,26 @@ void ImmQueue::sliding_window_constrs(NetContext& net_ctx,
             expr elem2_val = net_ctx.pkt2val(elems_[p + 1][t]);
             std::sprintf(constr_name, "%s_no_holes_%d_%d", id.c_str(), p, t);
             constr_expr = elem1_val || !elem2_val;
+            constr_map.insert(named_constr(constr_name, constr_expr));
+        }
+
+        // Constraints on current size of queue
+
+        std::sprintf(constr_name, "%s_queue_size_empty_%d_%d", id.c_str(), 0, t);
+        expr elem_val = net_ctx.pkt2val(elems_[0][t]);
+        constr_expr = implies(!elem_val, curr_size_[t] == net_ctx.int_val(0));
+        constr_map.insert(named_constr(constr_name, constr_expr));
+
+        std::sprintf(constr_name, "%s_queue_size_full_%d_%d", id.c_str(), size_, t);
+        elem_val = net_ctx.pkt2val(elems_[size_ - 1][t]);
+        constr_expr = implies(elem_val, curr_size_[t] == net_ctx.int_val(size_));
+        constr_map.insert(named_constr(constr_name, constr_expr));
+
+        for (int i = 0; i < size_ - 1; i++) {
+            std::sprintf(constr_name, "%s_queue_size%d_%d", id.c_str(), i, t);
+            expr elem1_val = net_ctx.pkt2val(elems_[i][t]);
+            expr elem2_val = net_ctx.pkt2val(elems_[i + 1][t]);
+            constr_expr = implies(elem1_val && !elem2_val, curr_size_[t] == net_ctx.int_val(i + 1));
             constr_map.insert(named_constr(constr_name, constr_expr));
         }
     }

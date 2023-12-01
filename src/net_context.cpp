@@ -64,6 +64,10 @@ expr NetContext::int_const(char* name){
     return ctx.int_const(name);
 }
 
+expr NetContext::get_int_const(char* name) {
+    return ctx.int_const(name);
+}
+
 expr NetContext::int_val(int n){
     return ctx.int_val(n);
 }

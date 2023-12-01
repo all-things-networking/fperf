@@ -240,7 +240,7 @@ void RoceSwitchXBarQM::add_constrs(NetContext& net_ctx,
                 Queue* voq = in_queues[voq_ind];
                 expr cond3 = net_ctx.pkt2val(voq->elem(0)[t]);
 
-                std::sprintf(vname, "%s_%d_pause_state_[%d]", sid.c_str(), i_ind_of_j, t + 1);
+                std::sprintf(vname, "%s_%d_pause_state_[%d]", sid.c_str(), i_ind_of_j, t);
 
                 expr match_cond = mk_and(cond1) && mk_and(cond2) && cond3 && !net_ctx.get_bool_const(vname);
 

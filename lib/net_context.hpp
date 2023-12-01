@@ -32,6 +32,7 @@ public:
     expr null_pkt();
     
     expr int_const(char *name);
+    expr get_int_const(char* name);
     expr int_val(int n);
     
     expr bool_const(char *name);

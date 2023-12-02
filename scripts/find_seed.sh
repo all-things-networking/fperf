@@ -1,5 +1,12 @@
 #!/bin/bash
+
+# This script can be used to find good random seeds.
+# It does not work with the current code, because it depends on a
+# log line with the "FINISHED ${RAND_SEED}" format in the output of the program.
+
 set -euo pipefail
+
+trap 'pkill -f fperf; exit;' SIGINT SIGTERM
 
 function cleanup() {
   pkill -f fperf
@@ -19,7 +26,7 @@ function get_best_time() {
 }
 
 
-function main() {
+function run_round() {
   truncate -s 0 output.log
 
   for i in $(seq 1 6); do
@@ -47,6 +54,14 @@ function main() {
   done
 
   cleanup
+}
+
+function main() {
+  for i in $(seq 1 1000); do
+      echo "Round: $i"
+      run_round
+      echo "----------------------"
+  done
 }
 
 main

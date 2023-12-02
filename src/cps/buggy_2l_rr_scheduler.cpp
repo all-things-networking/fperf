@@ -65,25 +65,25 @@ void Buggy2LRRScheduler::add_metrics() {
     }
 }
 
-std::string Buggy2LRRScheduler::cp_model_str(model& m, NetContext& net_ctx, unsigned int t) {
+string Buggy2LRRScheduler::cp_model_str(model& m, NetContext& net_ctx, unsigned int t) {
     stringstream ss;
 
     cid_t rr_id = nodes[0];
     Buggy2LRRQM* rr_qm = (Buggy2LRRQM*) id_to_qm[rr_id];
 
     Queue* new_queues = rr_qm->new_fifo();
-    ss << new_queues->get_model_str(m, net_ctx, t) << std::endl;
+    ss << new_queues->get_model_str(m, net_ctx, t) << endl;
     Queue* old_queues = rr_qm->old_fifo();
-    ss << old_queues->get_model_str(m, net_ctx, t) << std::endl;
+    ss << old_queues->get_model_str(m, net_ctx, t) << endl;
     for (unsigned int q = 0; q < in_queues.size(); q++) {
         ss << (m.eval(rr_qm->inactive(q, t)).is_true() ? 1 : 0);
     }
-    ss << std::endl;
+    ss << endl;
 
-    ss << "qid: cdeq" << std::endl;
+    ss << "qid: cdeq" << endl;
     for (unsigned int q = 0; q < in_queues.size(); q++) {
         Queue* queue = in_queues[q];
-        ss << queue->get_id() << ": " << m.eval(cdeq[q]->val(t)).get_numeral_int() << std::endl;
+        ss << queue->get_id() << ": " << m.eval(cdeq[q]->val(t).second).get_numeral_int() << endl;
     }
     return ss.str();
 }

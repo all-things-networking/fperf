@@ -156,7 +156,7 @@ void LoomMQPrio::add_metrics() {
     }
 }
 
-std::string LoomMQPrio::cp_model_str(model& m, NetContext& net_ctx, unsigned int t) {
+string LoomMQPrio::cp_model_str(model& m, NetContext& net_ctx, unsigned int t) {
     // TODO: implement
     (void) net_ctx;
 
@@ -164,7 +164,7 @@ std::string LoomMQPrio::cp_model_str(model& m, NetContext& net_ctx, unsigned int
     for (unsigned int q = 0; q < out_queues.size(); q++) {
         Queue* queue = out_queues[q];
         ss << queue->get_id() << ": "
-           << m.eval(queue->get_metric(metric_t::CENQ)->val(t)).get_numeral_int() << std::endl;
+           << m.eval(queue->get_metric(metric_t::CENQ)->val(t).second).get_numeral_int() << endl;
     }
     return ss.str();
 }

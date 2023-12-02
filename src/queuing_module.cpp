@@ -10,8 +10,8 @@
 
 QueuingModule::QueuingModule(cid_t id,
                              unsigned int total_time,
-                             std::vector<QueueInfo> in_queue_info,
-                             std::vector<QueueInfo> out_queue_info,
+                             vector<QueueInfo> in_queue_info,
+                             vector<QueueInfo> out_queue_info,
                              NetContext& net_ctx):
 id(id),
 total_time(total_time),
@@ -25,12 +25,12 @@ out_queue_info(out_queue_info) {
         Queue* q;
         switch (qinfo.type) {
             case queue_t::LINK: {
-                q = new Link(base_in_id, std::to_string(qid), total_time, net_ctx);
+                q = new Link(base_in_id, to_string(qid), total_time, net_ctx);
                 break;
             }
             case queue_t::IMM_QUEUE: {
                 q = new ImmQueue(base_in_id,
-                                 std::to_string(qid),
+                                 to_string(qid),
                                  qinfo.size,
                                  qinfo.max_enq,
                                  qinfo.max_deq,
@@ -40,7 +40,7 @@ out_queue_info(out_queue_info) {
             }
             default: {
                 q = new Queue(base_in_id,
-                              std::to_string(qid),
+                              to_string(qid),
                               qinfo.size,
                               qinfo.max_enq,
                               qinfo.max_deq,

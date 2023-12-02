@@ -13,9 +13,9 @@
 #include "util.hpp"
 #include "workload.hpp"
 
-typedef std::vector<cid_t> qsum_t;
-typedef std::pair<cid_t, cid_t> qdiff_t;
-typedef std::variant<cid_t, qdiff_t, qsum_t> query_lhs_t;
+typedef vector<cid_t> qsum_t;
+typedef pair<cid_t, cid_t> qdiff_t;
+typedef variant<cid_t, qdiff_t, qsum_t> query_lhs_t;
 
 enum class query_quant_t { FORALL = 0, EXISTS };
 
@@ -26,14 +26,14 @@ public:
           time_range_t time_range,
           query_lhs_t query_lhs,
           metric_t metric,
-          comp_t comp,
+          op_t op,
           unsigned int thresh);
 
     query_quant_t get_quant();
     time_range_t get_time_range();
     metric_t get_metric();
     query_lhs_t get_lhs();
-    comp_t get_comp();
+    op_t get_op();
     cid_t get_qid();
     unsigned int get_thresh();
 
@@ -42,7 +42,7 @@ private:
     time_range_t time_range;
     metric_t metric;
     query_lhs_t lhs;
-    comp_t comp;
+    op_t op;
     unsigned int thresh;
 };
 

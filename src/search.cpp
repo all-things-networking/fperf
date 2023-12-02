@@ -108,7 +108,7 @@ bool Search::satisfies_bad_example(Workload wl) {
         //        DEBUG_MSG("call time: " << get_diff_microsec(start, noww()) << endl);
 
         if (satisfies) {
-            //            DEBUG_MSG("bad example" << endl << **it << std::endl);
+            //            DEBUG_MSG("bad example" << endl << **it << endl);
             return true;
         }
     }
@@ -128,6 +128,7 @@ bool Search::check(Workload wl) {
         return false;
     }
 
+    // TODO: Make use of a real input_only_solver
     solver_res_t input_only_res = input_only_solver->check_workload_without_query(wl);
 
     bool res = false;
@@ -140,6 +141,7 @@ bool Search::check(Workload wl) {
             input_only_solver_call++;
             query_only_solver_call++;
 
+            // wl & !query
             solver_res_t query_only_res = cp->check_workload_with_query(wl, counter_eg);
 
             // add counter example
@@ -148,9 +150,8 @@ bool Search::check(Workload wl) {
                 used_example = true;
             }
             if (query_only_res == solver_res_t::UNKNOWN) {
-                std::cout << "UNKNOWN from full solver::check_without_query for workload: "
-                          << std::endl;
-                std::cout << wl << std::endl;
+                cout << "UNKNOWN from full solver::check_without_query for workload: " << endl;
+                cout << wl << endl;
             }
 
             res = query_only_res == solver_res_t::UNSAT;
@@ -175,7 +176,7 @@ bool Search::check(Workload wl) {
                 case solver_res_t::SAT: {
                     solver_res_t query_only_res = cp->check_workload_with_query(wl, counter_eg);
 
-                    DEBUG_MSG("query satisfied " << query_only_res << endl);
+                    DEBUG_MSG("not query satisfied " << query_only_res << endl);
 
                     // add counter example
                     if (query_only_res == solver_res_t::SAT) {
@@ -184,9 +185,9 @@ bool Search::check(Workload wl) {
                         DEBUG_MSG(*counter_eg << endl);
                     }
                     if (query_only_res == solver_res_t::UNKNOWN) {
-                        std::cout << "UNKNOWN from full solver::check_without_query for workload: "
-                                  << std::endl;
-                        std::cout << wl << std::endl;
+                        cout << "UNKNOWN from full solver::check_without_query for workload: "
+                             << endl;
+                        cout << wl << endl;
                     }
 
                     res = query_only_res == solver_res_t::UNSAT;
@@ -200,9 +201,8 @@ bool Search::check(Workload wl) {
                 }
                 case solver_res_t::UNKNOWN: {
                     res = false;
-                    std::cout << "UNKNOWN from full solver::check_without_query for workload: "
-                              << std::endl;
-                    std::cout << wl << std::endl;
+                    cout << "UNKNOWN from full solver::check_without_query for workload: " << endl;
+                    cout << wl << endl;
                     break;
                 }
             }
@@ -210,6 +210,8 @@ bool Search::check(Workload wl) {
         }
     }
 
+    // TODO: It only being populated in SAT case, where we need the eg.
+    //  Otherwise it does not get populated, thus no need for deletion.
     if (!used_example) {
         delete counter_eg;
     }
@@ -244,12 +246,12 @@ void Search::search(Workload wl) {
         /* ******************** check the current workload ******************** */
 
         // print current wl
-        std::cout << "----------------------------------------------------------" << std::endl;
+        cout << "----------------------------------------------------------" << endl;
         if (call_cnt > 0) {
             DEBUG_MSG("avg call time: " << (sum_call_time / call_cnt) << endl);
         }
-        std::cout << "round " << round_no << endl;
-        std::cout << wl << std::endl;
+        cout << "round " << round_no << endl;
+        cout << wl << endl;
 
         // check if it is the answer
 
@@ -258,12 +260,14 @@ void Search::search(Workload wl) {
         to_check = wl;
         for (unsigned int q = 0; q < cp->in_queue_cnt(); q++) {
             if (target_queues.find(q) == target_queues.end()) {
-                TONE n_tone = TONE(metric_t::CENQ, q);
-                WlSpec n_wl_spec = WlSpec(n_tone, comp_t::LE, 0u);
+                Indiv n_indiv = Indiv(metric_t::CENQ, q);
+                Comp n_wl_spec = Comp(n_indiv, op_t::LE, 0u);
                 TimedSpec n_spec = TimedSpec(n_wl_spec, total_time, total_time);
-                to_check.add_wl_spec(n_spec);
+                to_check.add_spec(n_spec);
             }
         }
+        // true <=> (wl & !query): UNSAT
+        // false -> bad_examples += eg
         bool satisfies_query = check(to_check);
         // bool satisfies_query = check(wl);
 
@@ -274,6 +278,7 @@ void Search::search(Workload wl) {
             found = true;
         }
         if (found) {
+            // TODO: Currently the SOLUTION_REFINEMENT_MAX_ROUNDS is zero
             solution_refinement_rounds++;
             if (solution_refinement_rounds > SOLUTION_REFINEMENT_MAX_ROUNDS) break;
         }
@@ -281,12 +286,13 @@ void Search::search(Workload wl) {
 
         // Undo the last move if the current spec if infeasible
         // record the infeasible wl
+        // last_input_infeasible <=> (base_wl & wl): UNSAT
         if (last_input_infeasible) {
             infeasible_wls.push_back(wl);
             wl = wl_last_step;
-            std::cout << "Undoing last step " << std::endl;
-            std::cout << "----------------------------------------------------------" << std::endl;
-            std::cout << wl << std::endl;
+            cout << "Undoing last step " << endl;
+            cout << "----------------------------------------------------------" << endl;
+            cout << wl << endl;
             backtrack_count++;
         } else {
             infeasible_wls.clear();
@@ -302,7 +308,7 @@ void Search::search(Workload wl) {
 
         if (close_count > RESET_THRESH_SLOW_PROGRESS || backtrack_count > RESET_THRESH_BACKTRACK) {
 
-            std::cout << banner("RESETTING") << std::endl;
+            cout << banner("RESETTING") << endl;
             reset_cnt++;
             init_wl(wl);
             close_count = 0;
@@ -321,6 +327,7 @@ void Search::search(Workload wl) {
 
         DEBUG_MSG("local search: " << local_search << endl);
 
+        // Find a modified workload with lower cost
         while (!found_next) {
             unsigned int hops = 1;
             if (local_search) hops = LOCAL_SEARCH_MAX_HOPS;
@@ -350,11 +357,10 @@ void Search::search(Workload wl) {
             }
 
             if (found_next) {
-                DEBUG_MSG("candidate: " << candidate_cost << ": "
-                                        << good_example_match_count(candidate) << " "
-                                        << bad_example_match_count(candidate) << " "
-                                        << candidate.cost() << std::endl);
-                DEBUG_MSG(candidate << std::endl);
+                DEBUG_MSG("candidate: "
+                          << candidate_cost << ": " << good_example_match_count(candidate) << " "
+                          << bad_example_match_count(candidate) << " " << candidate.cost() << endl);
+                DEBUG_MSG(candidate << endl);
             }
         }
 
@@ -384,14 +390,15 @@ void Search::search(Workload wl) {
     }
 }
 
+// TODO: Most of the refinement steps are only applied on COMP
 Workload Search::refine(Workload wl) {
 
     // Add specs for "zero queues" back in
     for (unsigned int q = 0; q < cp->in_queue_cnt(); q++) {
         if (target_queues.find(q) == target_queues.end()) {
-            TONE n_tone = TONE(metric_t::CENQ, q);
-            WlSpec n_wl_spec = WlSpec(n_tone, comp_t::LE, 0u);
-            wl.add_wl_spec(TimedSpec(n_wl_spec, total_time, total_time));
+            Indiv n_indiv = Indiv(metric_t::CENQ, q);
+            Comp n_wl_spec = Comp(n_indiv, op_t::LE, 0u);
+            wl.add_spec(TimedSpec(n_wl_spec, total_time, total_time));
         }
     }
 
@@ -409,7 +416,7 @@ Workload Search::refine(Workload wl) {
         set<TimedSpec> specs = wl.get_all_specs();
         for (set<TimedSpec>::iterator it = specs.begin(); it != specs.end(); it++) {
             candidate = wl;
-            candidate.rm_wl_spec(*it);
+            candidate.rm_spec(*it);
 
             if (candidate.is_empty() || candidate.is_all()) continue;
 
@@ -424,8 +431,7 @@ Workload Search::refine(Workload wl) {
         done = !changed;
     }
 
-    std::cout << "refinement 1 time: " << (get_diff_millisec(start, noww()) / 1000.0) << " s"
-              << endl;
+    cout << "refinement 1 time: " << (get_diff_millisec(start, noww()) / 1000.0) << " s" << endl;
 
     start = noww();
 
@@ -434,21 +440,25 @@ Workload Search::refine(Workload wl) {
     set<TimedSpec> specs = wl.get_all_specs();
     for (set<TimedSpec>::iterator it = specs.begin(); it != specs.end(); it++) {
         TimedSpec tspec = *it;
-        WlSpec wspec = tspec.get_wl_spec();
-        lhs_t lhs = wspec.get_lhs();
-        if (holds_alternative<TONE>(lhs)) {
-            TONE tone = get<TONE>(lhs);
-            metric_t m = tone.get_metric();
-            if (m == metric_t::META1 || m == metric_t::META2) {
-                unsigned int q = tone.get_queue();
-                unsigned int c = std::get<unsigned int>(wspec.get_rhs());
+        wl_spec_t wspec = tspec.get_wl_spec();
+        // TODO: Generalize to other constructs?
+        if (!holds_alternative<Comp>(wspec)) continue;
+        Comp comp = get<Comp>(wspec);
+        lhs_t lhs = comp.get_lhs();
+        if (holds_alternative<Indiv>(lhs)) {
+            Indiv indiv = get<Indiv>(lhs);
+            metric_t m = indiv.get_metric();
+            // TODO: This assumes that rhs is constant
+            if (m == metric_t::DST || m == metric_t::ECMP) {
+                unsigned int q = indiv.get_queue();
+                unsigned int c = get<unsigned int>(comp.get_rhs());
                 if (c < 1) c = 1;
 
                 candidate = wl;
-                TONE n_tone = TONE(metric_t::CENQ, q);
-                WlSpec n_wl_spec = WlSpec(n_tone, comp_t::GE, TIME(c));
-                TimedSpec new_spec = TimedSpec(n_wl_spec, tspec.get_time_range(), total_time);
-                candidate.mod_wl_spec(*it, new_spec);
+                Indiv n_indiv = Indiv(metric_t::CENQ, q);
+                Comp n_comp = Comp(n_indiv, op_t::GE, Time(c));
+                TimedSpec new_spec = TimedSpec(n_comp, tspec.get_time_range(), total_time);
+                candidate.mod_spec(*it, new_spec);
 
 
                 if (candidate.is_empty() || candidate.is_all()) continue;
@@ -461,8 +471,7 @@ Workload Search::refine(Workload wl) {
         }
     }
 
-    std::cout << "refinement 3 time: " << (get_diff_millisec(start, noww()) / 1000.0) << " s"
-              << endl;
+    cout << "refinement 3 time: " << (get_diff_millisec(start, noww()) / 1000.0) << " s" << endl;
 
     start = noww();
     // Find tighter bounds when the
@@ -470,12 +479,14 @@ Workload Search::refine(Workload wl) {
     specs = wl.get_all_specs();
     for (set<TimedSpec>::iterator it = specs.begin(); it != specs.end(); it++) {
         TimedSpec tspec = *it;
-        WlSpec wspec = tspec.get_wl_spec();
-        rhs_t rhs = wspec.get_rhs();
-        comp_t comp = wspec.get_comp();
-        if (comp == comp_t::GT || comp == comp_t::GE) {
-            if (holds_alternative<TIME>(rhs)) {
-                TIME time = get<TIME>(rhs);
+        wl_spec_t wspec = tspec.get_wl_spec();
+        if (!holds_alternative<Comp>(wspec)) continue;
+        Comp comp = get<Comp>(wspec);
+        rhs_t rhs = comp.get_rhs();
+        op_t op = comp.get_op();
+        if (op == op_t::GT || op == op_t::GE) {
+            if (holds_alternative<Time>(rhs)) {
+                Time time = get<Time>(rhs);
                 unsigned int coeff = time.get_coeff();
                 Workload last_working_candidate = wl;
                 bool coeff_changed = false;
@@ -484,10 +495,10 @@ Workload Search::refine(Workload wl) {
 
                     candidate = wl;
                     unsigned int n_coeff = (unsigned int) new_coeff;
-                    TIME n_time = TIME(n_coeff);
-                    WlSpec n_wl_spec = WlSpec(wspec.get_lhs(), wspec.get_comp(), n_time);
-                    TimedSpec new_spec = TimedSpec(n_wl_spec, tspec.get_time_range(), total_time);
-                    candidate.mod_wl_spec(*it, new_spec);
+                    Time n_time = Time(n_coeff);
+                    Comp n_comp = Comp(comp.get_lhs(), comp.get_op(), n_time);
+                    TimedSpec new_spec = TimedSpec(n_comp, tspec.get_time_range(), total_time);
+                    candidate.mod_spec(*it, new_spec);
 
                     if (candidate.is_empty() || candidate.is_all()) continue;
 
@@ -514,9 +525,9 @@ Workload Search::refine(Workload wl) {
 
                     candidate = wl;
                     unsigned int n_c = (unsigned int) new_c;
-                    WlSpec n_wl_spec = WlSpec(wspec.get_lhs(), wspec.get_comp(), n_c);
-                    TimedSpec new_spec = TimedSpec(n_wl_spec, tspec.get_time_range(), total_time);
-                    candidate.mod_wl_spec(*it, new_spec);
+                    Comp n_comp = Comp(comp.get_lhs(), comp.get_op(), n_c);
+                    TimedSpec new_spec = TimedSpec(n_comp, tspec.get_time_range(), total_time);
+                    candidate.mod_spec(*it, new_spec);
 
                     if (candidate.is_empty() || candidate.is_all()) continue;
 
@@ -535,21 +546,22 @@ Workload Search::refine(Workload wl) {
             }
         }
     }
-    std::cout << "refinement 4 time: " << (get_diff_millisec(start, noww()) / 1000.0) << " s"
-              << endl;
+    cout << "refinement 4 time: " << (get_diff_millisec(start, noww()) / 1000.0) << " s" << endl;
 
     start = noww();
 
     qset_t in_wl;
     specs = wl.get_all_specs();
     for (set<TimedSpec>::iterator it = specs.begin(); it != specs.end(); it++) {
-        WlSpec spec = it->get_wl_spec();
-        lhs_t lhs = spec.get_lhs();
+        wl_spec_t spec = it->get_wl_spec();
+        if (!holds_alternative<Comp>(spec)) continue;
+        Comp comp = get<Comp>(spec);
+        lhs_t lhs = comp.get_lhs();
 
-        if (holds_alternative<TONE>(lhs)) {
-            in_wl.insert(get<TONE>(lhs).get_queue());
+        if (holds_alternative<Indiv>(lhs)) {
+            in_wl.insert(get<Indiv>(lhs).get_queue());
         } else {
-            qset_t tsum_qset = get<TSUM>(lhs).get_qset();
+            qset_t tsum_qset = get<QSum>(lhs).get_qset();
             for (qset_t::iterator it2 = tsum_qset.begin(); it2 != tsum_qset.end(); it2++) {
                 in_wl.insert(*it2);
             }
@@ -559,18 +571,20 @@ Workload Search::refine(Workload wl) {
     qset_t zero_in_base;
     set<TimedSpec> base_specs = cp->get_base_workload().get_all_specs();
     for (set<TimedSpec>::iterator it = base_specs.begin(); it != base_specs.end(); it++) {
-        WlSpec spec = it->get_wl_spec();
-        lhs_t lhs = spec.get_lhs();
-        rhs_t rhs = spec.get_rhs();
+        wl_spec_t spec = it->get_wl_spec();
+        if (!holds_alternative<Comp>(spec)) continue;
+        Comp comp = get<Comp>(spec);
+        lhs_t lhs = comp.get_lhs();
+        rhs_t rhs = comp.get_rhs();
 
         if (it->get_time_range() == time_range_t(0, cp->get_total_time() - 1) &&
             holds_alternative<unsigned int>(rhs) && get<unsigned int>(rhs) == 0 &&
-            spec.get_comp() == comp_t::LE) {
-            if (holds_alternative<TONE>(lhs)) {
-                zero_in_base.insert(get<TONE>(lhs).get_queue());
+            comp.get_op() == op_t::LE) {
+            if (holds_alternative<Indiv>(lhs)) {
+                zero_in_base.insert(get<Indiv>(lhs).get_queue());
             }
-            if (holds_alternative<TSUM>(lhs)) {
-                qset_t tsum_qset = get<TSUM>(lhs).get_qset();
+            if (holds_alternative<QSum>(lhs)) {
+                qset_t tsum_qset = get<QSum>(lhs).get_qset();
                 for (qset_t::iterator it2 = tsum_qset.begin(); it2 != tsum_qset.end(); it2++) {
                     zero_in_base.insert(*it2);
                 }
@@ -588,18 +602,20 @@ Workload Search::refine(Workload wl) {
         for (set<TimedSpec>::iterator it = specs.begin(); it != specs.end(); it++) {
             candidate = wl;
 
-            WlSpec wl_spec = it->get_wl_spec();
-            rhs_t rhs = wl_spec.get_rhs();
+            wl_spec_t wl_spec = it->get_wl_spec();
+            if (!holds_alternative<Comp>(wl_spec)) continue;
+            Comp comp = get<Comp>(wl_spec);
+            rhs_t rhs = comp.get_rhs();
 
             if (holds_alternative<unsigned int>(rhs) && get<unsigned int>(rhs) == 0 &&
-                wl_spec.get_comp() == comp_t::LE)
+                comp.get_op() == op_t::LE)
                 continue;
 
-            lhs_t lhs = wl_spec.get_lhs();
+            lhs_t lhs = comp.get_lhs();
             lhs_t new_lhs = lhs;
 
-            if (holds_alternative<TONE>(lhs)) {
-                TONE tone = get<TONE>(lhs);
+            if (holds_alternative<Indiv>(lhs)) {
+                Indiv tone = get<Indiv>(lhs);
 
                 // TODO: aggregatable
                 if (tone.get_metric() != metric_t::CENQ) continue;
@@ -607,21 +623,21 @@ Workload Search::refine(Workload wl) {
                 qset_t new_qset;
                 new_qset.insert(q);
                 new_qset.insert(tone.get_queue());
-                new_lhs = TSUM(new_qset, tone.get_metric());
-            } else if (holds_alternative<TSUM>(lhs)) {
-                TSUM tsum = get<TSUM>(lhs);
+                new_lhs = QSum(new_qset, tone.get_metric());
+            } else if (holds_alternative<QSum>(lhs)) {
+                QSum tsum = get<QSum>(lhs);
 
                 // TODO: aggregatable
                 if (tsum.get_metric() != metric_t::CENQ) continue;
                 qset_t new_qset = tsum.get_qset();
                 new_qset.insert(q);
-                new_lhs = TSUM(new_qset, tsum.get_metric());
+                new_lhs = QSum(new_qset, tsum.get_metric());
             }
 
-            WlSpec n_wl_spec = WlSpec(new_lhs, wl_spec.get_comp(), wl_spec.get_rhs());
-            TimedSpec new_spec = TimedSpec(n_wl_spec, it->get_time_range(), total_time);
+            Comp n_comp = Comp(new_lhs, comp.get_op(), comp.get_rhs());
+            TimedSpec new_spec = TimedSpec(n_comp, it->get_time_range(), total_time);
 
-            candidate.mod_wl_spec(*it, new_spec);
+            candidate.mod_spec(*it, new_spec);
 
             if (candidate == wl || candidate.is_empty() || candidate.is_all()) continue;
 
@@ -632,8 +648,7 @@ Workload Search::refine(Workload wl) {
             }
         }
     }
-    std::cout << "refinement 2 time: " << (get_diff_millisec(start, noww()) / 1000.0) << " s"
-              << endl;
+    cout << "refinement 2 time: " << (get_diff_millisec(start, noww()) / 1000.0) << " s" << endl;
     return wl;
 }
 
@@ -648,15 +663,15 @@ void Search::run() {
 
     print_stats();
 
-    std::cout << "search time: " << (get_diff_millisec(start, noww()) / 1000.0) << " s" << endl;
+    cout << "search time: " << (get_diff_millisec(start, noww()) / 1000.0) << " s" << endl;
 
     for (unsigned int i = 0; i < solutions.size(); i++) {
-        std::cout << "Solution " << i << endl;
+        cout << "Solution " << i << endl;
         Workload refined_ans = refine(solutions[i]);
-        std::cout << refined_ans << endl << endl;
+        cout << refined_ans << endl << endl;
     }
 
-    // std::cout << "total Search::run time: " << get_diff_sec(start, noww()) << endl;
+    // cout << "total Search::run time: " << get_diff_sec(start, noww()) << endl;
 }
 
 
@@ -710,7 +725,7 @@ void Search::pick_neighbors(Workload wl, vector<Workload>& neighbors) {
             for (unsigned int i = 0; i < RANDOM_ADD_CNT; i++) {
                 TimedSpec spec = spec_factory.random_timed_spec();
                 Workload candidate_neighbor = wl;
-                candidate_neighbor.add_wl_spec(spec);
+                candidate_neighbor.add_spec(spec);
                 if (!(candidate_neighbor.is_empty() || candidate_neighbor.is_all() ||
                       candidate_neighbor == wl)) {
                     //                    DEBUG_MSG(candidate_neighbor << endl);
@@ -728,7 +743,7 @@ void Search::pick_neighbors(Workload wl, vector<Workload>& neighbors) {
 
                 Workload candidate_neighbor = wl;
 
-                candidate_neighbor.rm_wl_spec(to_remove);
+                candidate_neighbor.rm_spec(to_remove);
                 if (!(candidate_neighbor.is_empty() || candidate_neighbor.is_all() ||
                       candidate_neighbor == wl)) {
                     //                    DEBUG_MSG(candidate_neighbor << endl);
@@ -747,7 +762,7 @@ void Search::pick_neighbors(Workload wl, vector<Workload>& neighbors) {
 
                 Workload candidate_neighbor = wl;
 
-                candidate_neighbor.mod_wl_spec(to_replace, spec);
+                candidate_neighbor.mod_spec(to_replace, spec);
                 if (!(candidate_neighbor.is_empty() || candidate_neighbor.is_all() ||
                       candidate_neighbor == wl)) {
                     //                    DEBUG_MSG(candidate_neighbor << endl);
@@ -772,7 +787,7 @@ void Search::pick_neighbors(Workload wl, vector<Workload>& neighbors) {
                     for (unsigned int j = 0; j < modified_specs.size(); j++) {
                         Workload candidate_neighbor = wl;
 
-                        candidate_neighbor.mod_wl_spec(to_modify, modified_specs[j]);
+                        candidate_neighbor.mod_spec(to_modify, modified_specs[j]);
 
                         if (!(candidate_neighbor.is_empty() || candidate_neighbor.is_all() ||
                               candidate_neighbor == wl)) {
@@ -869,32 +884,32 @@ Workload Search::random_neighbor(Workload wl, unsigned int hops) {
     uniform_int_distribution<unsigned int> nei_dist(0, (unsigned int) candidates.size() - 1);
 
     DEBUG_MSG("done picking the candidate" << endl);
-    std::mt19937& gen = dists->get_gen();
+    mt19937& gen = dists->get_gen();
     return candidates[nei_dist(gen)];
 }
 
 void Search::print_stats() {
-    std::cout << "-------------------- STATS -----------------------" << std::endl;
-    std::cout << "number of rounds: " << round_no << endl;
-    std::cout << "rounds in local search: " << rounds_in_local_search << endl;
-    std::cout << "number of resets: " << reset_cnt << endl;
-    std::cout << "no_solver_call: " << no_solver_call << endl;
-    std::cout << "input_only_solver_call: " << input_only_solver_call << endl;
-    std::cout << "query_only_solver_call: " << query_only_solver_call << endl;
-    std::cout << "full_solver_call: " << full_solver_call << endl;
-    std::cout << "infeasible_input_cnt: " << infeasible_input_cnt << endl;
-    std::cout << "full solver stats:\n";
-    std::cout << "   w/o query: " << (cp->get_check_workload_without_query_avg_time() / 1000.0)
-              << " " << (cp->get_check_workload_without_query_max_time() / 1000.0) << endl;
-    std::cout << "   w/ query: " << (cp->get_check_workload_with_query_avg_time() / 1000.0) << " "
-              << (cp->get_check_workload_with_query_max_time() / 1000.0) << endl;
-    std::cout << round_no << "\t" << reset_cnt << "\t" << rounds_in_local_search << "\t"
-              << no_solver_call << "\t" << full_solver_call << "\t"
-              << cp->get_check_workload_without_query_avg_time() << " ("
-              << cp->get_check_workload_without_query_max_time() << ")"
-              << "\t" << (full_solver_call - infeasible_input_cnt) << "\t"
-              << cp->get_check_workload_with_query_avg_time() << " ("
-              << cp->get_check_workload_with_query_max_time() << ")"
-              << "\t" << endl;
-    std::cout << "--------------------------------------------------" << std::endl;
+    cout << "-------------------- STATS -----------------------" << endl;
+    cout << "number of rounds: " << round_no << endl;
+    cout << "rounds in local search: " << rounds_in_local_search << endl;
+    cout << "number of resets: " << reset_cnt << endl;
+    cout << "no_solver_call: " << no_solver_call << endl;
+    cout << "input_only_solver_call: " << input_only_solver_call << endl;
+    cout << "query_only_solver_call: " << query_only_solver_call << endl;
+    cout << "full_solver_call: " << full_solver_call << endl;
+    cout << "infeasible_input_cnt: " << infeasible_input_cnt << endl;
+    cout << "full solver stats:\n";
+    cout << "   w/o query: " << (cp->get_check_workload_without_query_avg_time() / 1000.0) << " "
+         << (cp->get_check_workload_without_query_max_time() / 1000.0) << endl;
+    cout << "   w/ query: " << (cp->get_check_workload_with_query_avg_time() / 1000.0) << " "
+         << (cp->get_check_workload_with_query_max_time() / 1000.0) << endl;
+    cout << round_no << "\t" << reset_cnt << "\t" << rounds_in_local_search << "\t"
+         << no_solver_call << "\t" << full_solver_call << "\t"
+         << cp->get_check_workload_without_query_avg_time() << " ("
+         << cp->get_check_workload_without_query_max_time() << ")"
+         << "\t" << (full_solver_call - infeasible_input_cnt) << "\t"
+         << cp->get_check_workload_with_query_avg_time() << " ("
+         << cp->get_check_workload_with_query_max_time() << ")"
+         << "\t" << endl;
+    cout << "--------------------------------------------------" << endl;
 }

@@ -12,8 +12,10 @@
 #include <iostream>
 #include <tuple>
 
+using namespace std;
+
 typedef unsigned int wl_cost_t;
-typedef std::pair<unsigned int, wl_cost_t> cost_t;
+typedef pair<unsigned int, wl_cost_t> cost_t;
 
 unsigned int uint_val(const wl_cost_t cost);
 unsigned int uint_val(const cost_t cost);
@@ -26,8 +28,5 @@ bool operator>(const cost_t cost1, const cost_t cost2);
 bool operator>=(const cost_t cost1, const cost_t cost2);
 bool operator==(const cost_t cost1, const cost_t cost2);
 bool operator!=(const cost_t cost1, const cost_t cost2);
-
-// std::ostream& operator<<(std::ostream& os, const cost_t cost);
-
 
 #endif /* cost_hpp */

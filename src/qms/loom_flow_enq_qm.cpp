@@ -11,15 +11,12 @@
 
 LoomFlowEnqQM::LoomFlowEnqQM(cid_t id,
                              unsigned int total_time,
-                             std::vector<QueueInfo> in_queue_info,
+                             vector<QueueInfo> in_queue_info,
                              QueueInfo out_queue_info1,
                              QueueInfo out_queue_info2,
                              NetContext& net_ctx):
-QueuingModule(id,
-              total_time,
-              in_queue_info,
-              std::vector<QueueInfo>{out_queue_info1, out_queue_info2},
-              net_ctx) {
+QueuingModule(
+    id, total_time, in_queue_info, vector<QueueInfo>{out_queue_info1, out_queue_info2}, net_ctx) {
     // Ensure the outqueue for tenant 2's max enq is even even number
     if (out_queue_info2.max_enq % 2 != 0) {
         throw "LoomFlowEnqQM invalid configuartion";
@@ -33,8 +30,7 @@ void LoomFlowEnqQM::add_proc_vars(NetContext& net_ctx) {
     (void) net_ctx;
 }
 
-void LoomFlowEnqQM::constrs_if_not_taken(NetContext& net_ctx,
-                                         std::map<std::string, expr>& constr_map) {
+void LoomFlowEnqQM::constrs_if_not_taken(NetContext& net_ctx, map<string, expr>& constr_map) {
     char constr_name[100];
 
     const unsigned int tenant1_spark = 1;
@@ -135,6 +131,6 @@ void LoomFlowEnqQM::constrs_if_not_taken(NetContext& net_ctx,
         }
     }
 }
-void LoomFlowEnqQM::add_constrs(NetContext& net_ctx, std::map<std::string, expr>& constr_map) {
+void LoomFlowEnqQM::add_constrs(NetContext& net_ctx, map<string, expr>& constr_map) {
     constrs_if_not_taken(net_ctx, constr_map);
 }

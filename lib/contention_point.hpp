@@ -26,8 +26,6 @@ public:
     ContentionPoint(unsigned int total_time);
 
     void set_base_workload(Workload wl);
-    void add_same_to_base(Same same, time_range_t time_range);
-    void add_unique_to_base(Unique unique, time_range_t time_range);
     Workload get_base_workload();
     expr get_base_wl_expr();
 
@@ -97,9 +95,9 @@ protected:
     map<cid_t, QueuingModule*> id_to_qm;
     map<cid_t, Queue*> id_to_ioq;
 
-    std::vector<Queue*> in_queues;
-    std::vector<Queue*> out_queues;
-    std::map<metric_t, map<cid_t, Metric*>> metrics;
+    vector<Queue*> in_queues;
+    vector<Queue*> out_queues;
+    map<metric_t, map<cid_t, Metric*>> metrics;
 
     void init();
 
@@ -135,7 +133,7 @@ private:
     void add_constr_from_map(map<string, expr> constr_map);
 
     string get_model_str(model& m);
-    virtual std::string cp_model_str(model& m, NetContext& net_ctx, unsigned int t) = 0;
+    virtual string cp_model_str(model& m, NetContext& net_ctx, unsigned int t) = 0;
     void populate_example_from_model(model& m, IndexedExample* eg);
 
     expr get_random_eg_mod(IndexedExample* eg, unsigned int mod_cnt, qset_t queue_set);
@@ -147,28 +145,35 @@ private:
     expr get_expr(IndexedExample* eg, vector<metric_t>& metrics);
     expr get_expr(IndexedExample* eg);
     expr get_expr(Workload wl);
-    expr get_expr(Workload wl, unsigned int t);
-    expr get_expr(TimedSpec tspec, unsigned int t);
-    expr get_expr(WlSpec spec, unsigned int t);
-    expr get_expr(rhs_t rhs, unsigned int t);
-    expr get_expr(lhs_t lhs, unsigned int t);
-    expr get_expr(unsigned int c, unsigned int t);
-    expr get_expr(TIME time, unsigned int t);
-    expr get_expr(TONE t_one, unsigned int t);
-    expr get_expr(TSUM t_sum, unsigned int t);
+    expr get_expr(TimedSpec tspec);
+    expr get_expr(Unique uniq, time_range_t time_range);
+    expr get_expr(Same same, time_range_t time_range);
+    expr get_expr(Incr incr, time_range_t time_range);
+    expr get_expr(Decr decr, time_range_t time_range);
+    expr get_expr(Comp comp, time_range_t time_range);
+    expr get_expr(Comp comp, unsigned int t);
+    m_val_expr_t get_expr(rhs_t rhs, unsigned int t);
+    m_val_expr_t get_expr(lhs_t lhs, unsigned int t);
+    m_val_expr_t get_expr(unsigned int c, unsigned int t);
+    m_val_expr_t get_expr(Time time, unsigned int t);
+    m_val_expr_t get_expr(Indiv indiv, unsigned int t);
+    m_val_expr_t get_expr(QSum qsum, unsigned int t);
 
-    expr mk_comp(expr lhs, comp_t comp, expr rhs);
+    expr mk_op(expr lhs, op_t op, expr rhs);
 
     /* *********** Workload Satisifes Example ************ */
     bool timedspec_satisfies_example(TimedSpec spec, IndexedExample* eg);
-    bool eval_spec(TimedSpec spec, IndexedExample* eg, unsigned int time) const;
-    bool eval_spec(WlSpec spec, IndexedExample* eg, unsigned int time) const;
-    unsigned int eval_rhs(rhs_t rhs, IndexedExample* eg, unsigned int time) const;
-    unsigned int eval_lhs(lhs_t lhs, IndexedExample* eg, unsigned int time) const;
-    unsigned int eval_trf(trf_t trf, IndexedExample* eg, unsigned int time) const;
-    unsigned int eval_trf(TSUM tsum, IndexedExample* eg, unsigned int time) const;
-    unsigned int eval_trf(TONE tone, IndexedExample* eg, unsigned int time) const;
-    unsigned int eval_TIME(TIME time, IndexedExample* eg, unsigned int t) const;
+    bool eval_spec(Unique uniq, IndexedExample* eg, time_range_t time_range) const;
+    bool eval_spec(Same same, IndexedExample* eg, time_range_t time_range) const;
+    bool eval_spec(Incr incr, IndexedExample* eg, time_range_t time_range) const;
+    bool eval_spec(Decr decr, IndexedExample* eg, time_range_t time_range) const;
+    bool eval_spec(Comp comp, IndexedExample* eg, time_range_t time_range) const;
+    void eval_rhs(rhs_t rhs, IndexedExample* eg, unsigned int time, metric_val& res) const;
+    void eval_lhs(lhs_t lhs, IndexedExample* eg, unsigned int time, metric_val& res) const;
+    void eval_m_expr(m_expr_t m_expr, IndexedExample* eg, unsigned int time, metric_val& res) const;
+    void eval_m_expr(QSum tsum, IndexedExample* eg, unsigned int time, metric_val& res) const;
+    void eval_m_expr(Indiv tone, IndexedExample* eg, unsigned int time, metric_val& res) const;
+    void eval_Time(Time time, IndexedExample* eg, unsigned int t, metric_val& res) const;
 };
 
 #endif /* contention_point_hpp */

@@ -22,8 +22,6 @@
 #include "spec_factory.hpp"
 #include "workload.hpp"
 
-using namespace std;
-
 class Search {
 public:
     Search(ContentionPoint* cp,

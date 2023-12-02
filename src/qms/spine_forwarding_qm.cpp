@@ -15,9 +15,9 @@ SpineForwardingQM::SpineForwardingQM(cid_t id,
                                      unsigned int servers_per_leaf,
                                      map<unsigned int, unsigned int> output_voq_map,
                                      QueueInfo in_queue_info,
-                                     std::vector<QueueInfo> out_queue_info,
+                                     vector<QueueInfo> out_queue_info,
                                      NetContext& net_ctx):
-QueuingModule(id, total_time, std::vector<QueueInfo>{in_queue_info}, out_queue_info, net_ctx),
+QueuingModule(id, total_time, vector<QueueInfo>{in_queue_info}, out_queue_info, net_ctx),
 spine_id(spine_id),
 leaf_cnt(leaf_cnt),
 servers_per_leaf(servers_per_leaf),
@@ -30,7 +30,7 @@ void SpineForwardingQM::add_proc_vars(NetContext& net_ctx) {
     (void) net_ctx;
 }
 
-void SpineForwardingQM::add_constrs(NetContext& net_ctx, std::map<std::string, expr>& constr_map) {
+void SpineForwardingQM::add_constrs(NetContext& net_ctx, map<string, expr>& constr_map) {
     char constr_name[100];
 
     Queue* in_queue = in_queues[0];

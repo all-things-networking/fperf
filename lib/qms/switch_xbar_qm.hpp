@@ -11,17 +11,19 @@
 
 #include "queuing_module.hpp"
 
+using namespace std;
+
 class SwitchXBarQM : public QueuingModule {
 public:
     SwitchXBarQM(cid_t id,
                  unsigned int total_time,
-                 std::vector<unsigned int> voq_input_map,
-                 std::vector<unsigned int> voq_output_map,
-                 std::vector<QueueInfo> in_queue_info,
-                 std::vector<QueueInfo> out_queue_info,
+                 vector<unsigned int> voq_input_map,
+                 vector<unsigned int> voq_output_map,
+                 vector<QueueInfo> in_queue_info,
+                 vector<QueueInfo> out_queue_info,
                  NetContext& net_ctx);
 
-    virtual void add_constrs(NetContext& net_ctx, std::map<std::string, expr>& constr_map);
+    virtual void add_constrs(NetContext& net_ctx, map<string, expr>& constr_map);
 
     bool connected(unsigned int in_port, unsigned int out_port);
     expr in_to_out(unsigned int in_port, unsigned int out_port, unsigned int t);
@@ -55,13 +57,13 @@ public:
                unsigned int servers_per_leaf,
                unsigned int spine_cnt,
                unsigned int total_time,
-               std::vector<unsigned int> voq_input_map,
-               std::vector<unsigned int> voq_output_map,
-               std::vector<QueueInfo> in_queue_info,
-               std::vector<QueueInfo> out_queue_info,
+               vector<unsigned int> voq_input_map,
+               vector<unsigned int> voq_output_map,
+               vector<QueueInfo> in_queue_info,
+               vector<QueueInfo> out_queue_info,
                NetContext& net_ctx);
 
-    void add_constrs(NetContext& net_ctx, std::map<std::string, expr>& constr_map);
+    void add_constrs(NetContext& net_ctx, map<string, expr>& constr_map);
 
 private:
     unsigned int leaf_id;
@@ -77,13 +79,13 @@ public:
                       unsigned int servers_per_leaf,
                       unsigned int spine_cnt,
                       unsigned int total_time,
-                      std::vector<unsigned int> voq_input_map,
-                      std::vector<unsigned int> voq_output_map,
-                      std::vector<QueueInfo> in_queue_info,
-                      std::vector<QueueInfo> out_queue_info,
+                      vector<unsigned int> voq_input_map,
+                      vector<unsigned int> voq_output_map,
+                      vector<QueueInfo> in_queue_info,
+                      vector<QueueInfo> out_queue_info,
                       NetContext& net_ctx);
 
-    void add_constrs(NetContext& net_ctx, std::map<std::string, expr>& constr_map);
+    void add_constrs(NetContext& net_ctx, map<string, expr>& constr_map);
 
 private:
     unsigned int leaf_id;

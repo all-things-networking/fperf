@@ -14,21 +14,23 @@
 #include "cenq.hpp"
 #include "contention_point.hpp"
 
+using namespace std;
+
 class PrioScheduler : public ContentionPoint {
 public:
     PrioScheduler(unsigned int prio_levels, unsigned int total_time);
 
 private:
     unsigned int prio_levels;
-    std::vector<CBlocked*> cblocked;
-    std::vector<CEnq*> cenq;
-    std::vector<AIPG*> aipg;
+    vector<CBlocked*> cblocked;
+    vector<CEnq*> cenq;
+    vector<AIPG*> aipg;
 
     void add_nodes();
     void add_edges();
     void add_metrics();
 
-    std::string cp_model_str(model& m, NetContext& net_ctx, unsigned int t);
+    string cp_model_str(model& m, NetContext& net_ctx, unsigned int t);
 };
 
 #endif /* priority_scheduler_hpp */

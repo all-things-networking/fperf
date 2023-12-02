@@ -20,7 +20,7 @@ public:
                 QueueInfo out_queue_info2,
                 NetContext& net_ctx);
 
-    void add_constrs(NetContext& net_ctx, std::map<std::string, expr>& constr_map);
+    void add_constrs(NetContext& net_ctx, map<string, expr>& constr_map);
 
 
 private:

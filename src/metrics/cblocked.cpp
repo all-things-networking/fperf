@@ -13,8 +13,11 @@ Metric(metric_t::CBLOCKED, queue, total_time, net_ctx) {
     init(net_ctx);
 }
 
-unsigned int CBlocked::eval(const IndexedExample* eg, unsigned int time, unsigned int qind) {
-    unsigned int res = 0;
+void CBlocked::eval(const IndexedExample* eg,
+                    unsigned int time,
+                    unsigned int qind,
+                    metric_val& res) {
+    res.valid = true;
     unsigned int enq_sum = 0;
     unsigned int deq_sum = 0;
     unsigned int cblocked = 0;
@@ -30,27 +33,21 @@ unsigned int CBlocked::eval(const IndexedExample* eg, unsigned int time, unsigne
         enq_sum += eg->enqs[qind][t];
         deq_sum += eg->deqs[qind][t];
     }
-    return res;
+    res.value = cblocked;
 }
 
-void CBlocked::add_vars(NetContext& net_ctx) {
-    (void) net_ctx;
-}
-
-
-void CBlocked::add_constrs(NetContext& net_ctx, std::map<std::string, expr>& constr_map) {
-
-    char constr_name[100];
-
+void CBlocked::populate_val_exprs(NetContext& net_ctx) {
+    // Value
     expr blocked = net_ctx.pkt2val(queue->elem(0)[0]) && queue->deq_cnt(0) == 0;
-    expr constr_expr = val_[0] == ite(blocked, net_ctx.int_val(1), net_ctx.int_val(0));
-    sprintf(constr_name, "%s_val[0]", id.c_str());
-    constr_map.insert(named_constr(constr_name, constr_expr));
+    value_[0] = ite(blocked, net_ctx.int_val(1), net_ctx.int_val(0));
 
     for (unsigned int t = 1; t < total_time; t++) {
         blocked = net_ctx.pkt2val(queue->elem(0)[t]) && queue->deq_cnt(t) == 0;
-        constr_expr = val_[t] == ite(blocked, val_[t - 1] + 1, net_ctx.int_val(0));
-        sprintf(constr_name, "%s_val[%d]", id.c_str(), t);
-        constr_map.insert(named_constr(constr_name, constr_expr));
+        value_[t] = ite(blocked, value_[t - 1] + 1, net_ctx.int_val(0));
+    }
+
+    // Valid
+    for (unsigned int t = 0; t < total_time; t++) {
+        valid_[t] = net_ctx.bool_val(true);
     }
 }

@@ -46,10 +46,10 @@ public:
     unsigned int max_enq();
     unsigned int max_deq();
 
-    std::vector<expr>& operator[](int ind);
-    std::vector<expr>& elem(int ind);
+    vector<expr>& operator[](int ind);
+    vector<expr>& elem(int ind);
 
-    std::vector<expr>& enqs(unsigned int ind);
+    vector<expr>& enqs(unsigned int ind);
     expr& enq_cnt(unsigned int t);
     expr& deq_cnt(unsigned int t);
 
@@ -58,11 +58,11 @@ public:
 
     cid_t get_id() const;
 
-    virtual void add_constrs(NetContext& net_ctx, std::map<std::string, expr>& constr_map);
+    virtual void add_constrs(NetContext& net_ctx, map<string, expr>& constr_map);
 
-    std::string get_model_str(model& m, NetContext& net_ctx, unsigned int t);
+    string get_model_str(model& m, NetContext& net_ctx, unsigned int t);
 
-    friend std::ostream& operator<<(std::ostream& os, const Queue& q);
+    friend ostream& operator<<(ostream& os, const Queue& q);
 
 protected:
     cid_t id;
@@ -72,23 +72,22 @@ protected:
 
     unsigned int total_time;
 
-    std::vector<expr>* elems_;
-    std::vector<expr>* enqs_;
-    std::vector<expr> enq_cnt_;
-    std::vector<expr> deq_cnt_;
+    vector<expr>* elems_;
+    vector<expr>* enqs_;
+    vector<expr> enq_cnt_;
+    vector<expr> deq_cnt_;
 
-    std::vector<expr>* tmp_val;
-    std::vector<expr>* enq_ind;
-    std::vector<expr> tail;
-    std::vector<expr> tmp_tail;
+    vector<expr>* tmp_val;
+    vector<expr>* enq_ind;
+    vector<expr> tail;
+    vector<expr> tmp_tail;
 
-    std::map<metric_t, Metric*> metrics;
+    map<metric_t, Metric*> metrics;
 
     void add_vars(NetContext& net_ctx);
 
     void sliding_window_vars(NetContext& net_ctx);
-    virtual void sliding_window_constrs(NetContext& net_ctx,
-                                        std::map<std::string, expr>& constr_map);
+    virtual void sliding_window_constrs(NetContext& net_ctx, map<string, expr>& constr_map);
 };
 
 /* *********************** ImmQueue ********************** */
@@ -104,10 +103,10 @@ public:
              unsigned int total_time,
              NetContext& net_ctx);
 
-    friend std::ostream& operator<<(std::ostream& os, const ImmQueue& q);
+    friend ostream& operator<<(ostream& os, const ImmQueue& q);
 
 protected:
-    void sliding_window_constrs(NetContext& net_ctx, std::map<std::string, expr>& constr_map);
+    void sliding_window_constrs(NetContext& net_ctx, map<string, expr>& constr_map);
 };
 
 /* *********************** Link ********************** */
@@ -117,9 +116,9 @@ class Link : public Queue {
 public:
     Link(cid_t module_id, cid_t queue_id, unsigned int total_time, NetContext& net_ctx);
 
-    void add_constrs(NetContext& net_ctx, std::map<std::string, expr>& constr_map);
+    void add_constrs(NetContext& net_ctx, map<string, expr>& constr_map);
 
 
-    friend std::ostream& operator<<(std::ostream& os, const Link& q);
+    friend ostream& operator<<(ostream& os, const Link& q);
 };
 #endif /* Queue_hpp */

@@ -16,8 +16,8 @@ LoomDemuxQM::LoomDemuxQM(cid_t id,
                          NetContext& net_ctx):
 QueuingModule(id,
               total_time,
-              std::vector<QueueInfo>{in_queue_info},
-              std::vector<QueueInfo>{out_queue_info1, out_queue_info2},
+              vector<QueueInfo>{in_queue_info},
+              vector<QueueInfo>{out_queue_info1, out_queue_info2},
               net_ctx) {
     init(net_ctx);
 }
@@ -27,7 +27,7 @@ void LoomDemuxQM::add_proc_vars(NetContext& net_ctx) {
     (void) net_ctx;
 }
 
-void LoomDemuxQM::add_constrs(NetContext& net_ctx, std::map<std::string, expr>& constr_map) {
+void LoomDemuxQM::add_constrs(NetContext& net_ctx, map<string, expr>& constr_map) {
     char constr_name[100];
 
     const unsigned int tenant1_spark = 1;

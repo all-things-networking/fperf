@@ -13,7 +13,7 @@
 #include "workload.hpp"
 
 enum class solver_res_t { SAT = 0, UNSAT, UNKNOWN };
-std::ostream& operator<<(std::ostream& os, const solver_res_t& res);
+ostream& operator<<(ostream& os, const solver_res_t& res);
 
 class Solver {
 public:

@@ -19,11 +19,11 @@ class QueuingModule {
 public:
     QueuingModule(cid_t id,
                   unsigned int total_time,
-                  std::vector<QueueInfo> in_queue_info,
-                  std::vector<QueueInfo> out_queue_info,
+                  vector<QueueInfo> in_queue_info,
+                  vector<QueueInfo> out_queue_info,
                   NetContext& net_ctx);
 
-    virtual void add_constrs(NetContext& net_ctx, std::map<std::string, expr>& constr_map) = 0;
+    virtual void add_constrs(NetContext& net_ctx, map<string, expr>& constr_map) = 0;
 
     unsigned long in_queue_cnt();
     unsigned long out_queue_cnt();
@@ -38,9 +38,9 @@ public:
 protected:
     cid_t id;
     unsigned int total_time;
-    std::vector<Queue*> in_queues;
-    std::vector<Queue*> out_queues;
-    std::vector<QueueInfo> out_queue_info;
+    vector<Queue*> in_queues;
+    vector<Queue*> out_queues;
+    vector<QueueInfo> out_queue_info;
 
     void init(NetContext& net_ctx);
 

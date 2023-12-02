@@ -10,10 +10,10 @@
 
 Buggy2LRRQM::Buggy2LRRQM(cid_t id,
                          unsigned int total_time,
-                         std::vector<QueueInfo> in_queue_info,
+                         vector<QueueInfo> in_queue_info,
                          QueueInfo out_queue_info,
                          NetContext& net_ctx):
-QueuingModule(id, total_time, in_queue_info, std::vector<QueueInfo>{out_queue_info}, net_ctx) {
+QueuingModule(id, total_time, in_queue_info, vector<QueueInfo>{out_queue_info}, net_ctx) {
     new_queues = new Queue(
         id, "new_queues", in_queues.size() + 2, in_queues.size(), 1, total_time, net_ctx);
 
@@ -29,13 +29,13 @@ void Buggy2LRRQM::add_proc_vars(NetContext& net_ctx) {
 
     for (unsigned int q = 0; q < in_queues.size(); q++) {
         for (unsigned int t = 0; t < total_time; t++) {
-            std::sprintf(vname, "%s_inactive[%d][%d]", id.c_str(), q, t);
+            sprintf(vname, "%s_inactive[%d][%d]", id.c_str(), q, t);
             inactive_[q].push_back(net_ctx.bool_const(vname));
         }
     }
 }
 
-void Buggy2LRRQM::add_constrs(NetContext& net_ctx, std::map<std::string, expr>& constr_map) {
+void Buggy2LRRQM::add_constrs(NetContext& net_ctx, map<string, expr>& constr_map) {
     new_queues->add_constrs(net_ctx, constr_map);
     old_queues->add_constrs(net_ctx, constr_map);
 

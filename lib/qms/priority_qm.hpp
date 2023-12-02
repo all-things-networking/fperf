@@ -15,11 +15,11 @@ class PriorityQM : public QueuingModule {
 public:
     PriorityQM(cid_t id,
                unsigned int total_time,
-               std::vector<QueueInfo> in_queue_info,
+               vector<QueueInfo> in_queue_info,
                QueueInfo out_queue_info,
                NetContext& net_ctx);
 
-    void add_constrs(NetContext& net_ctx, std::map<std::string, expr>& constr_map);
+    void add_constrs(NetContext& net_ctx, map<string, expr>& constr_map);
 
 
 private:

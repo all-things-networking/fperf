@@ -12,10 +12,10 @@
 
 SwitchXBarQM::SwitchXBarQM(cid_t id,
                            unsigned int total_time,
-                           std::vector<unsigned int> voq_input_map,
-                           std::vector<unsigned int> voq_output_map,
-                           std::vector<QueueInfo> in_queue_info,
-                           std::vector<QueueInfo> out_queue_info,
+                           vector<unsigned int> voq_input_map,
+                           vector<unsigned int> voq_output_map,
+                           vector<QueueInfo> in_queue_info,
+                           vector<QueueInfo> out_queue_info,
                            NetContext& net_ctx):
 QueuingModule(id, total_time, in_queue_info, out_queue_info, net_ctx),
 voq_input_map(voq_input_map),
@@ -84,7 +84,7 @@ void SwitchXBarQM::add_proc_vars(NetContext& net_ctx) {
         for (unsigned int q2 = 0; q2 < input_voq_map[q1].size(); q2++) {
             in_to_out_[q1].push_back(vector<expr>());
             for (unsigned int t = 0; t < total_time; t++) {
-                std::sprintf(vname, "%s_in_to_out[%d][%d][%d]", id.c_str(), q1, q2, t);
+                sprintf(vname, "%s_in_to_out[%d][%d][%d]", id.c_str(), q1, q2, t);
                 in_to_out_[q1][q2].push_back(net_ctx.bool_const(vname));
             }
         }
@@ -94,7 +94,7 @@ void SwitchXBarQM::add_proc_vars(NetContext& net_ctx) {
         for (unsigned int q2 = 0; q2 < output_voq_map[q1].size(); q2++) {
             out_from_in_[q1].push_back(vector<expr>());
             for (unsigned int t = 0; t < total_time; t++) {
-                std::sprintf(vname, "%s_out_from_in[%d][%d][%d]", id.c_str(), q1, q2, t);
+                sprintf(vname, "%s_out_from_in[%d][%d][%d]", id.c_str(), q1, q2, t);
                 out_from_in_[q1][q2].push_back(net_ctx.bool_const(vname));
             }
         }
@@ -104,7 +104,7 @@ void SwitchXBarQM::add_proc_vars(NetContext& net_ctx) {
         for (unsigned int q2 = 0; q2 < input_voq_map[q1].size(); q2++) {
             in_prio_head_[q1].push_back(vector<expr>());
             for (unsigned int t = 0; t < total_time; t++) {
-                std::sprintf(vname, "%s_in_prio_head[%d][%d][%d]", id.c_str(), q1, q2, t);
+                sprintf(vname, "%s_in_prio_head[%d][%d][%d]", id.c_str(), q1, q2, t);
                 in_prio_head_[q1][q2].push_back(net_ctx.bool_const(vname));
             }
         }
@@ -114,14 +114,14 @@ void SwitchXBarQM::add_proc_vars(NetContext& net_ctx) {
         for (unsigned int q2 = 0; q2 < output_voq_map[q1].size(); q2++) {
             out_prio_head_[q1].push_back(vector<expr>());
             for (unsigned int t = 0; t < total_time; t++) {
-                std::sprintf(vname, "%s_out_prio_head[%d][%d][%d]", id.c_str(), q1, q2, t);
+                sprintf(vname, "%s_out_prio_head[%d][%d][%d]", id.c_str(), q1, q2, t);
                 out_prio_head_[q1][q2].push_back(net_ctx.bool_const(vname));
             }
         }
     }
 }
 
-void SwitchXBarQM::add_constrs(NetContext& net_ctx, std::map<std::string, expr>& constr_map) {
+void SwitchXBarQM::add_constrs(NetContext& net_ctx, map<string, expr>& constr_map) {
 
     char constr_name[100];
 
@@ -572,10 +572,10 @@ LeafXBarQM::LeafXBarQM(cid_t id,
                        unsigned int servers_per_leaf,
                        unsigned int spine_cnt,
                        unsigned int total_time,
-                       std::vector<unsigned int> voq_input_map,
-                       std::vector<unsigned int> voq_output_map,
-                       std::vector<QueueInfo> in_queue_info,
-                       std::vector<QueueInfo> out_queue_info,
+                       vector<unsigned int> voq_input_map,
+                       vector<unsigned int> voq_output_map,
+                       vector<QueueInfo> in_queue_info,
+                       vector<QueueInfo> out_queue_info,
                        NetContext& net_ctx):
 SwitchXBarQM(id, total_time, voq_input_map, voq_output_map, in_queue_info, out_queue_info, net_ctx),
 leaf_id(leaf_id),
@@ -583,7 +583,7 @@ servers_per_leaf(servers_per_leaf),
 spine_cnt(spine_cnt) {
 }
 
-void LeafXBarQM::add_constrs(NetContext& net_ctx, std::map<std::string, expr>& constr_map) {
+void LeafXBarQM::add_constrs(NetContext& net_ctx, map<string, expr>& constr_map) {
     SwitchXBarQM::add_constrs(net_ctx, constr_map);
 
     // cout << "done with normal constraints" << endl;
@@ -678,10 +678,10 @@ ReducedLeafXBarQM::ReducedLeafXBarQM(cid_t id,
                                      unsigned int servers_per_leaf,
                                      unsigned int spine_cnt,
                                      unsigned int total_time,
-                                     std::vector<unsigned int> voq_input_map,
-                                     std::vector<unsigned int> voq_output_map,
-                                     std::vector<QueueInfo> in_queue_info,
-                                     std::vector<QueueInfo> out_queue_info,
+                                     vector<unsigned int> voq_input_map,
+                                     vector<unsigned int> voq_output_map,
+                                     vector<QueueInfo> in_queue_info,
+                                     vector<QueueInfo> out_queue_info,
                                      NetContext& net_ctx):
 SwitchXBarQM(id, total_time, voq_input_map, voq_output_map, in_queue_info, out_queue_info, net_ctx),
 leaf_id(leaf_id),
@@ -691,7 +691,7 @@ spine_cnt(spine_cnt) {
 }
 
 
-void ReducedLeafXBarQM::add_constrs(NetContext& net_ctx, std::map<std::string, expr>& constr_map) {
+void ReducedLeafXBarQM::add_constrs(NetContext& net_ctx, map<string, expr>& constr_map) {
     SwitchXBarQM::add_constrs(net_ctx, constr_map);
 
     char constr_name[100];

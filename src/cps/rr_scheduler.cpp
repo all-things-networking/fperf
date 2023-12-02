@@ -75,7 +75,7 @@ void RRScheduler::add_metrics() {
     }
 }
 
-std::string RRScheduler::cp_model_str(model& m, NetContext& net_ctx, unsigned int t) {
+string RRScheduler::cp_model_str(model& m, NetContext& net_ctx, unsigned int t) {
     (void) net_ctx;
 
     stringstream ss;
@@ -89,14 +89,14 @@ std::string RRScheduler::cp_model_str(model& m, NetContext& net_ctx, unsigned in
             break;
         }
     }
-    ss << "last serviced queue: " << last_served_queue << std::endl;
-    ss << "qid: cenq, cdeq, deq_cnt" << std::endl;
+    ss << "last serviced queue: " << last_served_queue << endl;
+    ss << "qid: cenq, cdeq, deq_cnt" << endl;
     for (unsigned int q = 0; q < in_queues.size(); q++) {
         Queue* queue = in_queues[q];
-        ss << queue->get_id() << ": " << m.eval(cenq[q]->val(t)).get_numeral_int() << ", "
-           << m.eval(cdeq[q]->val(t)).get_numeral_int() << ", " <<
+        ss << queue->get_id() << ": " << m.eval(cenq[q]->val(t).second).get_numeral_int() << ", "
+           << m.eval(cdeq[q]->val(t).second).get_numeral_int() << ", " <<
             // m.eval(qsize[q]->val(t)).get_numeral_int() << ", " <<
-            m.eval(queue->deq_cnt(t)).get_numeral_int() << std::endl;
+            m.eval(queue->deq_cnt(t)).get_numeral_int() << endl;
     }
     return ss.str();
 }

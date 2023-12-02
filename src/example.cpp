@@ -21,7 +21,7 @@ ostream& operator<<(ostream& os, const Example& eg) {
         for (unsigned int t = 0; t < it->second.size(); t++) {
             os << it->second[t] << " ";
         }
-        os << std::endl;
+        os << endl;
     }
 
     os << "deqs:" << endl;
@@ -31,7 +31,7 @@ ostream& operator<<(ostream& os, const Example& eg) {
         for (unsigned int t = 0; t < it->second.size(); t++) {
             os << it->second[t] << " ";
         }
-        os << std::endl;
+        os << endl;
     }
 
     os << "pkts metadata: " << endl;
@@ -48,7 +48,7 @@ ostream& operator<<(ostream& os, const Example& eg) {
             }
             os << " | ";
         }
-        os << std::endl;
+        os << endl;
     }
     return os;
 }
@@ -63,7 +63,7 @@ void write_examples_to_file(deque<Example*>& examples, string fname) {
 
         out << eg->query_qid << " ";
         out << eg->total_time << " ";
-        out << eg->enqs.size() << std::endl;
+        out << eg->enqs.size() << endl;
 
         for (map<cid_t, vector<unsigned int>>::iterator it = eg->enqs.begin(); it != eg->enqs.end();
              it++) {
@@ -71,7 +71,7 @@ void write_examples_to_file(deque<Example*>& examples, string fname) {
             for (unsigned int t = 0; t < it->second.size(); t++) {
                 out << it->second[t] << " ";
             }
-            out << std::endl;
+            out << endl;
         }
 
         for (map<cid_t, vector<vector<int>>>::iterator it = eg->enqs_meta1.begin();
@@ -85,7 +85,7 @@ void write_examples_to_file(deque<Example*>& examples, string fname) {
                 }
                 out << "| ";
             }
-            out << std::endl;
+            out << endl;
         }
 
         for (map<cid_t, vector<vector<int>>>::iterator it = eg->enqs_meta2.begin();
@@ -99,7 +99,7 @@ void write_examples_to_file(deque<Example*>& examples, string fname) {
                 }
                 out << "| ";
             }
-            out << std::endl;
+            out << endl;
         }
 
         for (map<cid_t, vector<unsigned int>>::iterator it = eg->deqs.begin(); it != eg->deqs.end();
@@ -108,7 +108,7 @@ void write_examples_to_file(deque<Example*>& examples, string fname) {
             for (unsigned int t = 0; t < it->second.size(); t++) {
                 out << it->second[t] << " ";
             }
-            out << std::endl;
+            out << endl;
         }
     }
     out.close();
@@ -154,12 +154,12 @@ vector<int> s_split_line(string line) {
  num_queue lines for deqs:
  qid deq1 deq2 ...
  */
-void read_examples_from_file(std::deque<Example*>& examples, std::string fname) {
+void read_examples_from_file(deque<Example*>& examples, string fname) {
     ifstream in;
     in.open(fname);
 
     if (!in.is_open()) {
-        std::cout << "Cannot open file: " << fname << std::endl;
+        cout << "Cannot open file: " << fname << endl;
         return;
     }
     string line;
@@ -172,7 +172,7 @@ void read_examples_from_file(std::deque<Example*>& examples, std::string fname) 
 
         vector<unsigned int> u_parts = u_split_line(line);
         if (u_parts.size() != 2) {
-            std::cout << "Bad input file format" << std::endl;
+            cout << "Bad input file format" << endl;
             in.close();
             return;
         }
@@ -190,7 +190,7 @@ void read_examples_from_file(std::deque<Example*>& examples, std::string fname) 
             u_parts = u_split_line(line);
 
             if (u_parts.size() != eg->total_time) {
-                std::cout << "Bad input file format" << std::endl;
+                cout << "Bad input file format" << endl;
                 in.close();
                 return;
             }
@@ -209,7 +209,7 @@ void read_examples_from_file(std::deque<Example*>& examples, std::string fname) 
                 size_t next_part = line.find("|", 0);
 
                 if (next_part == string::npos) {
-                    std::cout << "Bad input file format" << std::endl;
+                    cout << "Bad input file format" << endl;
                     in.close();
                     return;
                 }
@@ -235,7 +235,7 @@ void read_examples_from_file(std::deque<Example*>& examples, std::string fname) 
                 size_t next_part = line.find("|", 0);
 
                 if (next_part == string::npos) {
-                    std::cout << "Bad input file format" << std::endl;
+                    cout << "Bad input file format" << endl;
                     in.close();
                     return;
                 }
@@ -260,7 +260,7 @@ void read_examples_from_file(std::deque<Example*>& examples, std::string fname) 
             u_parts = u_split_line(line);
 
             if (u_parts.size() != eg->total_time) {
-                std::cout << "Bad input file format" << std::endl;
+                cout << "Bad input file format" << endl;
                 in.close();
                 return;
             }
@@ -282,7 +282,7 @@ ostream& operator<<(ostream& os, const IndexedExample& eg) {
         for (unsigned int t = 0; t < eg.enqs[i].size(); t++) {
             os << eg.enqs[i][t] << " ";
         }
-        os << std::endl;
+        os << endl;
     }
 
     os << "deqs:" << endl;
@@ -291,7 +291,7 @@ ostream& operator<<(ostream& os, const IndexedExample& eg) {
         for (unsigned int t = 0; t < eg.deqs[i].size(); t++) {
             os << eg.deqs[i][t] << " ";
         }
-        os << std::endl;
+        os << endl;
     }
 
     os << "pkts metadata: " << endl;
@@ -305,7 +305,7 @@ ostream& operator<<(ostream& os, const IndexedExample& eg) {
             }
             os << " | ";
         }
-        os << std::endl;
+        os << endl;
     }
     return os;
 }
@@ -319,7 +319,7 @@ ostream& operator<<(ostream& os, const Trace& tr) {
         for (unsigned int t = 0; t < tr.enqs[i].size(); t++) {
             os << tr.enqs[i][t] << " ";
         }
-        os << std::endl;
+        os << endl;
     }
     return os;
 }

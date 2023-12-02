@@ -18,14 +18,13 @@
 
 class Queue;
 
-enum class metric_t { CENQ = 0, AIPG, META1, META2, QSIZE, CDEQ, CBLOCKED, DEQ };
+enum class metric_t { CENQ = 0, AIPG, DST, ECMP, QSIZE, CDEQ, CBLOCKED, DEQ };
 
 enum class metric_granularity_t { PACKET = 0, TIMESTEP };
 
 struct metric_properties {
-    metric_granularity_t granularity;
-    bool non_negative;
-    bool non_decreasing;
+    bool non_negative;   // Used in normalization to distinguish zero and non-zero comparisons
+    bool non_decreasing; // Used in normalization to extend time range to 0 or T
     bool aggregatable;
 };
 
@@ -34,16 +33,19 @@ struct metric_val {
     unsigned int value;
 };
 
+typedef pair<expr, expr> m_val_expr_t;
+
 class Metric {
 public:
     static const map<metric_t, metric_properties> properties;
 
     Metric(metric_t m, Queue* queue, unsigned int total_time, NetContext& net_ctx);
 
-    expr& val(unsigned int ind);
-    virtual unsigned int eval(const IndexedExample* eg, unsigned int time, unsigned int qind) = 0;
+    m_val_expr_t val(unsigned int ind);
+    virtual void
+    eval(const IndexedExample* eg, unsigned int time, unsigned int qind, metric_val& res) = 0;
 
-    virtual void add_constrs(NetContext& net_ctx, std::map<std::string, expr>& constr_map) = 0;
+    virtual void populate_val_exprs(NetContext& net_ctx) = 0;
 
     cid_t get_id();
     metric_t get_type();
@@ -54,14 +56,12 @@ protected:
 
     Queue* queue;
     unsigned int total_time;
-    std::vector<expr> val_;
+    vector<expr> value_;
+    vector<expr> valid_;
 
     void init(NetContext& net_ctx);
-
-private:
-    virtual void add_vars(NetContext& net_ctx) = 0;
 };
 
-std::ostream& operator<<(std::ostream& os, const metric_t& metric);
+ostream& operator<<(ostream& os, const metric_t& metric);
 
 #endif /* metric_hpp */

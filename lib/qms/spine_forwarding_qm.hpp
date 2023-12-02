@@ -12,6 +12,8 @@
 #include "queuing_module.hpp"
 #include <map>
 
+using namespace std;
+
 class SpineForwardingQM : public QueuingModule {
 public:
     SpineForwardingQM(cid_t id,
@@ -21,10 +23,10 @@ public:
                       unsigned int servers_per_leaf,
                       map<unsigned int, unsigned int> output_voq_map,
                       QueueInfo in_queue_info,
-                      std::vector<QueueInfo> out_queue_info,
+                      vector<QueueInfo> out_queue_info,
                       NetContext& net_ctx);
 
-    void add_constrs(NetContext& net_ctx, std::map<std::string, expr>& constr_map);
+    void add_constrs(NetContext& net_ctx, map<string, expr>& constr_map);
 
 
 private:

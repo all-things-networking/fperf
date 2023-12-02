@@ -12,7 +12,11 @@
 #include "aipg.hpp"
 #include "cenq.hpp"
 #include "contention_point.hpp"
+#include "dst.hpp"
+#include "ecmp.hpp"
 #include "qsize.hpp"
+
+using namespace std;
 
 class LeafSpine : public ContentionPoint {
 public:
@@ -31,9 +35,11 @@ private:
     unsigned int server_cnt;
     bool reduce_queues;
 
-    std::vector<CEnq*> cenq;
-    std::vector<AIPG*> aipg;
-    std::vector<QSize*> qsize;
+    vector<CEnq*> cenq;
+    vector<AIPG*> aipg;
+    vector<Dst*> dst;
+    vector<Ecmp*> ecmp;
+    vector<QSize*> qsize;
 
     vector<unsigned int> leaf_voq_input_map;
     vector<unsigned int> leaf_voq_output_map;
@@ -44,7 +50,7 @@ private:
     void add_edges();
     void add_metrics();
 
-    std::string cp_model_str(model& m, NetContext& net_ctx, unsigned int t);
+    string cp_model_str(model& m, NetContext& net_ctx, unsigned int t);
 };
 
 

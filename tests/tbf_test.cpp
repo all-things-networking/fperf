@@ -24,14 +24,14 @@ bool test_deq_avg() {
 
   Workload wl(100, 1, total_time);
 
-  wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, 0), comp_t::GE, TIME(4)),
+  wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, 0), op_t::GE, Time(4)),
                            time_range_t(0, last_t), total_time));
   tbf->set_base_workload(wl);
 
   cid_t queue_id = tbf->get_in_queue()->get_id();
 
   Query sat_query(query_quant_t::FORALL, time_range_t(last_t, last_t), queue_id,
-                  metric_t::CDEQ, comp_t::EQ, last_t * link_rate);
+                  metric_t::CDEQ, op_t::EQ, last_t * link_rate);
 
   tbf->set_query(sat_query);
 
@@ -39,7 +39,7 @@ bool test_deq_avg() {
     return false;
 
   Query unsat_query(query_quant_t::FORALL, time_range_t(last_t, last_t),
-                    queue_id, metric_t::CDEQ, comp_t::GT, last_t * link_rate);
+                    queue_id, metric_t::CDEQ, op_t::GT, last_t * link_rate);
 
   tbf->set_query(unsat_query);
 
@@ -68,7 +68,7 @@ bool test_max_burst() {
 
   Workload wl(100, 1, total_time);
 
-  wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, 0), comp_t::GT,
+  wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, 0), op_t::GT,
                                   (unsigned int)total_time * max_tokens),
                            time_range_t(last_t, last_t), total_time));
 
@@ -77,14 +77,14 @@ bool test_max_burst() {
   cid_t queue_id = tbf->get_in_queue()->get_id();
 
   Query sat_query(query_quant_t::EXISTS, time_range_t(0, last_t), queue_id,
-                  metric_t::DEQ, comp_t::EQ, max_tokens);
+                  metric_t::DEQ, op_t::EQ, max_tokens);
   tbf->set_query(sat_query);
 
   if (tbf->satisfy_query() != solver_res_t::SAT)
     return false;
 
   Query unsat_query(query_quant_t::EXISTS, time_range_t(0, last_t), queue_id,
-                    metric_t::DEQ, comp_t::GT, max_tokens);
+                    metric_t::DEQ, op_t::GT, max_tokens);
   tbf->set_query(unsat_query);
 
   return tbf->satisfy_query() == solver_res_t::UNSAT;

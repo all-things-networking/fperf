@@ -14,21 +14,23 @@
 #include "cenq.hpp"
 #include "contention_point.hpp"
 
+using namespace std;
+
 class Buggy2LRRScheduler : public ContentionPoint {
 public:
     Buggy2LRRScheduler(unsigned int queue_cnt, unsigned int total_time);
 
 private:
     unsigned int queue_cnt;
-    std::vector<CEnq*> cenq;
-    std::vector<CDeq*> cdeq;
-    std::vector<AIPG*> aipg;
+    vector<CEnq*> cenq;
+    vector<CDeq*> cdeq;
+    vector<AIPG*> aipg;
 
     void add_nodes();
     void add_edges();
     void add_metrics();
 
-    std::string cp_model_str(model& m, NetContext& net_ctx, unsigned int t);
+    string cp_model_str(model& m, NetContext& net_ctx, unsigned int t);
 };
 
 #endif /* buggy_2l_rr_scheduler_hpp */

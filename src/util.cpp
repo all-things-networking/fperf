@@ -14,13 +14,13 @@
 
 //************************************* QSET *************************************//
 bool is_superset(qset_t qset1, qset_t qset2) {
-    std::set<unsigned int> res;
-    std::set_difference(
-        qset2.begin(), qset2.end(), qset1.begin(), qset1.end(), std::inserter(res, res.begin()));
+    set<unsigned int> res;
+    set_difference(
+        qset2.begin(), qset2.end(), qset1.begin(), qset1.end(), inserter(res, res.begin()));
     return res.size() == 0;
 }
 
-std::ostream& operator<<(std::ostream& os, const qset_t& qset) {
+ostream& operator<<(ostream& os, const qset_t& qset) {
     os << "{";
     for (qset_t::iterator it = qset.begin(); it != qset.end(); it++) {
         os << *it << ", ";
@@ -42,39 +42,39 @@ cid_t get_unique_id(cid_t module_id, cid_t queue_id) {
 
 //************************************* COMP *************************************//
 
-std::ostream& operator<<(std::ostream& os, const comp_t& comp) {
+ostream& operator<<(ostream& os, const op_t& comp) {
     switch (comp) {
-        case (comp_t::GT): os << ">"; break;
-        case (comp_t::GE): os << ">="; break;
-        case (comp_t::LT): os << "<"; break;
-        case (comp_t::LE): os << "<="; break;
-        case (comp_t::EQ): os << "="; break;
+        case (op_t::GT): os << ">"; break;
+        case (op_t::GE): os << ">="; break;
+        case (op_t::LT): os << "<"; break;
+        case (op_t::LE): os << "<="; break;
+        case (op_t::EQ): os << "="; break;
     }
     return os;
 }
 
-bool eval_comp(unsigned int lhs_val, comp_t comp, unsigned int rhs_val) {
-    switch (comp) {
-        case (comp_t::GT): return lhs_val > rhs_val;
-        case (comp_t::GE): return lhs_val >= rhs_val;
-        case (comp_t::LT): return lhs_val < rhs_val;
-        case (comp_t::LE): return lhs_val <= rhs_val;
-        case (comp_t::EQ): return lhs_val == rhs_val;
+bool eval_op(unsigned int lhs_val, op_t op, unsigned int rhs_val) {
+    switch (op) {
+        case (op_t::GT): return lhs_val > rhs_val;
+        case (op_t::GE): return lhs_val >= rhs_val;
+        case (op_t::LT): return lhs_val < rhs_val;
+        case (op_t::LE): return lhs_val <= rhs_val;
+        case (op_t::EQ): return lhs_val == rhs_val;
     }
-    std::cout << "eval_comp: should not reach here" << std::endl;
+    cout << "eval_comp: should not reach here" << endl;
     return false;
 }
 
-comp_t neg_comp(comp_t comp) {
-    switch (comp) {
-        case (comp_t::GT): return comp_t::LT;
-        case (comp_t::GE): return comp_t::LE;
-        case (comp_t::LT): return comp_t::GT;
-        case (comp_t::LE): return comp_t::GE;
-        case (comp_t::EQ): return comp_t::EQ;
+op_t neg_op(op_t op) {
+    switch (op) {
+        case (op_t::GT): return op_t::LT;
+        case (op_t::GE): return op_t::LE;
+        case (op_t::LT): return op_t::GT;
+        case (op_t::LE): return op_t::GE;
+        case (op_t::EQ): return op_t::EQ;
     }
-    std::cout << "neg_comp: should not reach here" << std::endl;
-    return comp;
+    cout << "neg_comp: should not reach here" << endl;
+    return op;
 }
 
 //************************************* TIME RANGE *************************************//
@@ -87,42 +87,42 @@ bool includes(time_range_t time_range, unsigned int t) {
     return res;
 }
 
-std::ostream& operator<<(std::ostream& os, const time_range_t& time_range) {
+ostream& operator<<(ostream& os, const time_range_t& time_range) {
     os << "[" << (time_range.first + 1) << ", " << (time_range.second + 1) << "]";
     return os;
 }
 //************************************* TIME *************************************//
 
 time_typ noww() {
-    return std::chrono::high_resolution_clock::now();
+    return chrono::high_resolution_clock::now();
 }
 
 unsigned long long int get_diff_sec(time_typ start, time_typ end) {
-    auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start);
+    auto duration = chrono::duration_cast<chrono::seconds>(end - start);
     return duration.count();
 }
 
 unsigned long long int get_diff_millisec(time_typ start, time_typ end) {
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    auto duration = chrono::duration_cast<chrono::milliseconds>(end - start);
     return duration.count();
 }
 
 unsigned long long int get_diff_microsec(time_typ start, time_typ end) {
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    auto duration = chrono::duration_cast<chrono::microseconds>(end - start);
     return duration.count();
 }
 
 //************************************* OTHER *************************************//
-std::string banner(std::string b) {
-    std::stringstream ss;
+string banner(string b) {
+    stringstream ss;
     ss << "**********************************************";
-    ss << "**********************************************" << std::endl;
+    ss << "**********************************************" << endl;
     ss << "**********************************************";
-    ss << "**********************************************" << std::endl;
-    ss << b << std::endl;
+    ss << "**********************************************" << endl;
+    ss << b << endl;
     ss << "**********************************************";
-    ss << "**********************************************" << std::endl;
+    ss << "**********************************************" << endl;
     ss << "**********************************************";
-    ss << "**********************************************" << std::endl;
+    ss << "**********************************************" << endl;
     return ss.str();
 }

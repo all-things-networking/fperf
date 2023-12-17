@@ -288,24 +288,7 @@ std::string RoceScheduler::cp_model_str(model& m,
     if (val3.is_numeral()) ss << val3.get_numeral_int();
     ss << endl;
 
-    for (int i = 0; i <= t; i++) {
-        //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
-        auto name = "s0_0_sent_pause_[" + to_string(i) + "]";
-        expr ttt = m.eval(net_ctx.get_bool_const(name.data()));
-        ss << ttt.bool_value();
-        ss << " ";
-    }
-    ss << endl;
-
-    for (int i = 0; i <= t; i++) {
-        //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
-        auto name = "s1_0_pause_state_[" + to_string(i) + "]";
-        expr ttt = m.eval(net_ctx.get_bool_const(name.data()));
-        ss << ttt.bool_value();
-        ss << " ";
-    }
-    ss << endl;
-
+    ss << "s1_0  sent_pause: ";
     for (int i = 0; i <= t; i++) {
         //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
         auto name = "s1_0_sent_pause_[" + to_string(i) + "]";
@@ -315,9 +298,70 @@ std::string RoceScheduler::cp_model_str(model& m,
     }
     ss << endl;
 
+    ss << "s0_0 pause_state: ";
     for (int i = 0; i <= t; i++) {
         //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
         auto name = "s0_0_pause_state_[" + to_string(i) + "]";
+        expr ttt = m.eval(net_ctx.get_bool_const(name.data()));
+        ss << ttt.bool_value();
+        ss << " ";
+    }
+    ss << endl;
+
+    ss << "s2_1  sent_pause: ";
+    for (int i = 0; i <= t; i++) {
+        //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
+        auto name = "s2_1_sent_pause_[" + to_string(i) + "]";
+        expr ttt = m.eval(net_ctx.get_bool_const(name.data()));
+        ss << ttt.bool_value();
+        ss << " ";
+    }
+    ss << endl;
+
+    ss << "s1_1 pause_state: ";
+    for (int i = 0; i <= t; i++) {
+        //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
+        auto name = "s1_1_pause_state_[" + to_string(i) + "]";
+        expr ttt = m.eval(net_ctx.get_bool_const(name.data()));
+        ss << ttt.bool_value();
+        ss << " ";
+    }
+    ss << endl;
+
+    ss << "s3_0  sent_pause: ";
+    for (int i = 0; i <= t; i++) {
+        //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
+        auto name = "s3_0_sent_pause_[" + to_string(i) + "]";
+        expr ttt = m.eval(net_ctx.get_bool_const(name.data()));
+        ss << ttt.bool_value();
+        ss << " ";
+    }
+    ss << endl;
+
+    ss << "s2_1 pause_state: ";
+    for (int i = 0; i <= t; i++) {
+        //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
+        auto name = "s2_0_pause_state_[" + to_string(i) + "]";
+        expr ttt = m.eval(net_ctx.get_bool_const(name.data()));
+        ss << ttt.bool_value();
+        ss << " ";
+    }
+    ss << endl;
+
+    ss << "s0_1  sent_pause: ";
+    for (int i = 0; i <= t; i++) {
+        //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
+        auto name = "s0_1_sent_pause_[" + to_string(i) + "]";
+        expr ttt = m.eval(net_ctx.get_bool_const(name.data()));
+        ss << ttt.bool_value();
+        ss << " ";
+    }
+    ss << endl;
+
+    ss << "s3_1 pause_state: ";
+    for (int i = 0; i <= t; i++) {
+        //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
+        auto name = "s3_1_pause_state_[" + to_string(i) + "]";
         expr ttt = m.eval(net_ctx.get_bool_const(name.data()));
         ss << ttt.bool_value();
         ss << " ";

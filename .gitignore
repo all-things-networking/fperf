@@ -5,3 +5,9 @@ fperf.*
 libz3.dll
 build
 *.txt
+fperf1.vcxproj.user
+fperf1.vcxproj.filters
+fperf1.vcxproj
+fperf1.sln
+src/tests.cpp~RF954f7ce.TMP
+test.py

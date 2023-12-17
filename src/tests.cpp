@@ -37,7 +37,7 @@ void roce(std::string good_examples_file,
 
     unsigned int good_example_cnt = 50;
     unsigned int bad_example_cnt = 50;
-    unsigned int total_time = 30;
+    unsigned int total_time = 15;
 
     RoceScheduler* roce = new RoceScheduler(total_time);
 
@@ -105,7 +105,7 @@ void prio(std::string good_examples_file,
     
     unsigned int good_example_cnt = 50;
     unsigned int bad_example_cnt = 50;
-    unsigned int total_time = 7;
+    unsigned int total_time = 3;
     
     PrioScheduler* prio = new PrioScheduler(prio_levels, total_time);
     

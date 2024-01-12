@@ -16,9 +16,9 @@ RoceScheduler::RoceScheduler(unsigned int total_time) :
     ContentionPoint(total_time)
 {
     // for S1 (top left)
-    control_flows.push_back({ {1, 0}, {2, 0}, {3, 2} });
+    control_flows.push_back({ {1, 0}, {2, 0}, {3, 2}, {4, 0} });
     // for S2 (top right)
-    control_flows.push_back({ {1, 1}, {2, 2}, {3, 1} });
+    control_flows.push_back({ {1, 1}, {2, 2}, {3, 1}, {4, 0} });
     // for S3 (bot right)
     control_flows.push_back({ {1, 0}, {2, 0}, {3, 2} });
     // for S4 (bot left)
@@ -170,6 +170,14 @@ void RoceScheduler::add_metrics() {
         queue->add_metric(metric_t::CENQ, ce);
     }
 
+    for (unsigned int q = 0; q < out_queues.size(); q++) {
+        Queue* queue = out_queues[q];
+        CEnq* ce = new CEnq(queue, total_time, net_ctx);
+        cenq.push_back(ce);
+        metrics[metric_t::CENQ][queue->get_id()] = ce;
+        queue->add_metric(metric_t::CENQ, ce);
+    }
+
     // CDeq
     for (unsigned int q = 0; q < in_queues.size(); q++) {
         Queue* queue = in_queues[q];
@@ -178,6 +186,8 @@ void RoceScheduler::add_metrics() {
         metrics[metric_t::CDEQ][queue->get_id()] = cd;
         queue->add_metric(metric_t::CDEQ, cd);
     }
+
+    
 
     // OUTPUTS
     // AIPG
@@ -288,7 +298,27 @@ std::string RoceScheduler::cp_model_str(model& m,
     if (val3.is_numeral()) ss << val3.get_numeral_int();
     ss << endl;
 
-    ss << "s1_0  sent_pause: ";
+    ss << "roce0_0 sent_pause: ";
+    for (int i = 0; i <= t; i++) {
+        //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
+        auto name = "s0_0_sent_pause_[" + to_string(i) + "]";
+        expr ttt = m.eval(net_ctx.get_bool_const(name.data()));
+        ss << ttt.bool_value();
+        ss << " ";
+    }
+    ss << endl;
+
+    ss << "roce1_0 pause_state: ";
+    for (int i = 0; i <= t; i++) {
+        //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
+        auto name = "s1_0_pause_state_[" + to_string(i) + "]";
+        expr ttt = m.eval(net_ctx.get_bool_const(name.data()));
+        ss << ttt.bool_value();
+        ss << " ";
+    }
+    ss << endl;
+
+    ss << "roce1_0 sent_pause: ";
     for (int i = 0; i <= t; i++) {
         //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
         auto name = "s1_0_sent_pause_[" + to_string(i) + "]";
@@ -298,7 +328,7 @@ std::string RoceScheduler::cp_model_str(model& m,
     }
     ss << endl;
 
-    ss << "s0_0 pause_state: ";
+    ss << "roce0_0 pause_state: ";
     for (int i = 0; i <= t; i++) {
         //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
         auto name = "s0_0_pause_state_[" + to_string(i) + "]";
@@ -308,7 +338,7 @@ std::string RoceScheduler::cp_model_str(model& m,
     }
     ss << endl;
 
-    ss << "s2_1  sent_pause: ";
+    ss << "roce2_1 sent_pause: ";
     for (int i = 0; i <= t; i++) {
         //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
         auto name = "s2_1_sent_pause_[" + to_string(i) + "]";
@@ -318,7 +348,7 @@ std::string RoceScheduler::cp_model_str(model& m,
     }
     ss << endl;
 
-    ss << "s1_1 pause_state: ";
+    ss << "roce1_1 pause_state: ";
     for (int i = 0; i <= t; i++) {
         //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
         auto name = "s1_1_pause_state_[" + to_string(i) + "]";
@@ -328,7 +358,7 @@ std::string RoceScheduler::cp_model_str(model& m,
     }
     ss << endl;
 
-    ss << "s3_0  sent_pause: ";
+    ss << "roce3_0 sent_pause: ";
     for (int i = 0; i <= t; i++) {
         //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
         auto name = "s3_0_sent_pause_[" + to_string(i) + "]";
@@ -338,7 +368,7 @@ std::string RoceScheduler::cp_model_str(model& m,
     }
     ss << endl;
 
-    ss << "s2_1 pause_state: ";
+    ss << "roce2_1 pause_state: ";
     for (int i = 0; i <= t; i++) {
         //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
         auto name = "s2_0_pause_state_[" + to_string(i) + "]";
@@ -348,7 +378,7 @@ std::string RoceScheduler::cp_model_str(model& m,
     }
     ss << endl;
 
-    ss << "s0_1  sent_pause: ";
+    ss << "roce0_1 sent_pause: ";
     for (int i = 0; i <= t; i++) {
         //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
         auto name = "s0_1_sent_pause_[" + to_string(i) + "]";
@@ -367,10 +397,31 @@ std::string RoceScheduler::cp_model_str(model& m,
         ss << " ";
     }
     ss << endl;
+    ss << endl;
+
+    ss << "goa\n";
+    for (int i = 1; i <= t; i++) {
+        //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
+        auto name = "roce1_0_read_var_pkt_val_at_" + to_string(i);
+        expr ttt = m.eval(net_ctx.get_bool_const(name.data()));
+        ss << ttt.bool_value();
+        ss << " | ";
+    }
+    ss << endl;
 
     for (int i = 1; i <= t; i++) {
         //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
-        auto name = "roce_xBar0.0_curr_size_[" + to_string(i) + "]";
+        auto name = "roce1_0_voqs_sum_at_" + to_string(i);
+        expr ttt = m.eval(net_ctx.get_int_const(name.data()));
+        if (ttt.is_numeral()) ss << ttt.get_numeral_int();
+        ss << " | ";
+    }
+    ss << endl;
+
+
+    for (int i = 1; i <= t; i++) {
+        //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
+        auto name = "roce1_0.0_curr_size_[" + to_string(i) + "]";
         expr ttt = m.eval(net_ctx.get_int_const(name.data()));
         if (ttt.is_numeral()) ss << ttt.get_numeral_int();
         ss << " | ";
@@ -379,7 +430,7 @@ std::string RoceScheduler::cp_model_str(model& m,
 
     for (int i = 1; i <= t; i++) {
         //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
-        auto name = "roce_xBar0.1_curr_size_[" + to_string(i) + "]";
+        auto name = "roce_xBar1.0_curr_size_[" + to_string(i) + "]";
         expr ttt = m.eval(net_ctx.get_int_const(name.data()));
         if (ttt.is_numeral()) ss << ttt.get_numeral_int();
         ss << " | ";
@@ -388,7 +439,73 @@ std::string RoceScheduler::cp_model_str(model& m,
 
     for (int i = 1; i <= t; i++) {
         //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
-        auto name = "roce_xBar0.2_curr_size_[" + to_string(i) + "]";
+        auto name = "roce_xBar1.1_curr_size_[" + to_string(i) + "]";
+        expr ttt = m.eval(net_ctx.get_int_const(name.data()));
+        if (ttt.is_numeral()) ss << ttt.get_numeral_int();
+        ss << " | ";
+    }
+    ss << endl;
+
+    for (int i = 1; i <= t; i++) {
+        //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
+        auto name = "roce_xBar1.2_curr_size_[" + to_string(i) + "]";
+        expr ttt = m.eval(net_ctx.get_int_const(name.data()));
+        if (ttt.is_numeral()) ss << ttt.get_numeral_int();
+        ss << " | ";
+    }
+    ss << endl;
+    ss << endl;
+
+    ss << "goba\n";
+    for (int i = 1; i <= t; i++) {
+        //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
+        auto name = "roce0_1_read_var_pkt_val_at_" + to_string(i);
+        expr ttt = m.eval(net_ctx.get_bool_const(name.data()));
+        ss << ttt.bool_value();
+        ss << " | ";
+    }
+    ss << endl;
+
+    for (int i = 1; i <= t; i++) {
+        //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
+        auto name = "roce0_1_voqs_sum_at_" + to_string(i);
+        expr ttt = m.eval(net_ctx.get_int_const(name.data()));
+        if (ttt.is_numeral()) ss << ttt.get_numeral_int();
+        ss << " | ";
+    }
+    ss << endl;
+
+
+    for (int i = 1; i <= t; i++) {
+        //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
+        auto name = "roce0_1.0_curr_size_[" + to_string(i) + "]";
+        expr ttt = m.eval(net_ctx.get_int_const(name.data()));
+        if (ttt.is_numeral()) ss << ttt.get_numeral_int();
+        ss << " | ";
+    }
+    ss << endl;
+
+    for (int i = 1; i <= t; i++) {
+        //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
+        auto name = "roce_xBar0.3_curr_size_[" + to_string(i) + "]";
+        expr ttt = m.eval(net_ctx.get_int_const(name.data()));
+        if (ttt.is_numeral()) ss << ttt.get_numeral_int();
+        ss << " | ";
+    }
+    ss << endl;
+
+    for (int i = 1; i <= t; i++) {
+        //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
+        auto name = "roce_xBar0.4_curr_size_[" + to_string(i) + "]";
+        expr ttt = m.eval(net_ctx.get_int_const(name.data()));
+        if (ttt.is_numeral()) ss << ttt.get_numeral_int();
+        ss << " | ";
+    }
+    ss << endl;
+
+    for (int i = 1; i <= t; i++) {
+        //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
+        auto name = "roce_xBar0.5_curr_size_[" + to_string(i) + "]";
         expr ttt = m.eval(net_ctx.get_int_const(name.data()));
         if (ttt.is_numeral()) ss << ttt.get_numeral_int();
         ss << " | ";

@@ -33,64 +33,66 @@ void roce(std::string good_examples_file,
     time_typ start_time = noww();
 
     unsigned int prio_levels = 4;
-    unsigned int query_thresh = 5;
+    unsigned int query_thresh = 1;
 
-    unsigned int good_example_cnt = 50;
-    unsigned int bad_example_cnt = 50;
+    unsigned int good_example_cnt = 2;
+    unsigned int bad_example_cnt = 2;
     unsigned int total_time = 15;
 
     RoceScheduler* roce = new RoceScheduler(total_time);
 
 
     roce->solve();
+    // goba
+    return;
     
-    //cid_t query_qid = roce->get_in_queues()[2]->get_id();
-    //query query(query_quant_t::exists,
-    //    time_range_t(0, roce->get_total_time() - 1),
-    //    query_qid,
-    //    metric_t::cenq, comp_t::gt, query_thresh);
+    cid_t query_qid = roce->get_out_queue(1)->get_id();
+    Query query(query_quant_t::EXISTS,
+        time_range_t(12, roce->get_total_time() - 1),
+        query_qid,
+        metric_t::CENQ, comp_t::LT, 1u);
 
-    //roce->set_query(query);
+    roce->set_query(query);
 
-    //cout << "cp setup: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s" << endl;
+    cout << "cp setup: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s" << endl;
 
-    //// generate base example
-    //start_time = noww();
-    //indexedexample* base_eg = new indexedexample();
-    //qset_t target_queues;
+    // generate base example
+    start_time = noww();
+    IndexedExample* base_eg = new IndexedExample();
+    qset_t target_queues;
 
-    //bool res = roce->generate_base_example(base_eg, target_queues, prio_levels);
+    bool res = roce->generate_base_example(base_eg, target_queues, prio_levels);
 
-    //if (!res) {
-    //    cout << "error: couldn't generate base example" << endl;
-    //    return;
-    //}
+    if (!res) {
+        cout << "error: couldn't generate base example" << endl;
+        return;
+    }
 
-    //cout << "base example generation: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s" << endl;
+    cout << "base example generation: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s" << endl;
 
 
     //// set shared config
-    //distsparams dists_params;
-    //dists_params.in_queue_cnt = roce->in_queue_cnt();
-    //dists_params.total_time = total_time;
-    //dists_params.pkt_meta1_val_max = 1;
-    //dists_params.pkt_meta2_val_max = 3;
+    DistsParams dists_params;
+    dists_params.in_queue_cnt = roce->in_queue_cnt();
+    dists_params.total_time = total_time;
+    dists_params.pkt_meta1_val_max = 1;
+    dists_params.pkt_meta2_val_max = 4;
 
-    //dists* dists = new dists(dists_params);
-    //sharedconfig* config = new sharedconfig(total_time,
-    //    roce->in_queue_cnt(),
-    //    target_queues,
-    //    dists);
-    //bool config_set = roce->set_shared_config(config);
-    //if (!config_set) return;
+    Dists* dists = new Dists(dists_params);
+    SharedConfig* config = new SharedConfig(total_time,
+        roce->in_queue_cnt(),
+        target_queues,
+        dists);
+    bool config_set = roce->set_shared_config(config);
+    if (!config_set) return;
 
-    //run(roce,
-    //    base_eg,
-    //    good_example_cnt, good_examples_file,
-    //    bad_example_cnt, bad_examples_file,
-    //    query,
-    //    8,
-    //    config);
+    run(roce,
+        base_eg,
+        good_example_cnt, good_examples_file,
+        bad_example_cnt, bad_examples_file,
+        query,
+        8,
+        config);
 }
 
 

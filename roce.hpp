@@ -34,6 +34,8 @@ private:
 
     std::vector<std::vector<unsigned int>> voq_input_maps;
     std::vector<std::vector<unsigned int>> voq_output_maps;
+    std::vector<std::vector<unsigned int>> voq_prio_input_maps;
+    std::vector<std::vector<unsigned int>> voq_prio_output_maps;
 
     vector<unsigned int> voq_input_map;
     vector<unsigned int> voq_output_map;

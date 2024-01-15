@@ -242,7 +242,12 @@ void RoceSwitchXBarQM::add_constrs(NetContext& net_ctx,
 
                 std::sprintf(vname, "%s_%d_pause_state_[%d]", sid.c_str(), i_ind_of_j, t);
 
-                expr match_cond = mk_and(cond1) && mk_and(cond2) && cond3 && !net_ctx.get_bool_const(vname);
+                expr match_cond = net_ctx.bool_val(false);
+                if (i == 3 || i == 4) {
+                    match_cond = mk_and(cond1) && mk_and(cond2) && cond3;
+                }
+                else 
+                    match_cond = mk_and(cond1) && mk_and(cond2) && cond3 && !net_ctx.get_bool_const(vname);
 
                 sprintf(constr_name, "%s_%d_matches_%d_at_%d", id.c_str(), i, j, t);
                 expr constr_expr = implies(match_cond, in_to_out_[i][i_ind_of_j][t]);

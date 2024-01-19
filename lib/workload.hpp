@@ -127,97 +127,139 @@ ostream& operator<<(ostream& os, const rhs_t& rhs);
 bool operator==(const rhs_t& rhs1, const rhs_t& rhs2);
 bool operator<(const rhs_t& rhs1, const rhs_t& rhs2);
 
+//************************************* WlSpec *************************************//
+
+class WlSpec {
+public:
+    virtual ~WlSpec() = default;
+    virtual bool applies_to_queue(unsigned int queue) const = 0;
+    virtual bool equals(const WlSpec& other) const = 0;
+    virtual bool less_than(const WlSpec& other) const = 0;
+    virtual int type_id() const = 0;
+};
+
+//typedef variant<Comp, Same, Incr, Decr, Unique> wl_spec_t;
+
+bool wl_spec_applies_to_queue(const WlSpec& spec, unsigned int queue);
+
+bool wl_spec_is_empty(const WlSpec& spec);
+
+bool wl_spec_is_all(const WlSpec& spec);
+
+unsigned int wl_spec_ast_size(const WlSpec& spec);
+
+ostream& operator<<(ostream& os, const WlSpec& wl_spec);
+
+bool operator==(const WlSpec& wl_spec1, const WlSpec& wl_spec2);
+bool operator!=(const WlSpec& wl_spec1, const WlSpec& wl_spec2);
+bool operator>=(const WlSpec& wl_spec1, const WlSpec& wl_spec2);
+bool operator>(const WlSpec& wl_spec1, const WlSpec& wl_spec2);
+bool operator<=(const WlSpec& wl_spec1, const WlSpec& wl_spec2);
+bool operator<(const WlSpec& wl_spec1, const WlSpec& wl_spec2);
+
 //************************************* UNIQ *************************************//
-class Unique {
+class Unique : public WlSpec {
 
 public:
     Unique(metric_t metric, qset_t qset);
 
-    bool applies_to_queue(unsigned int queue) const;
+    bool applies_to_queue(unsigned int queue) const override;
 
     qset_t get_qset() const;
     metric_t get_metric() const;
+
+    bool equals(const WlSpec& other) const override;
+    bool less_than(const WlSpec& other) const override;
+    int type_id() const override;
 
 private:
     metric_t metric;
     qset_t qset;
 
     friend ostream& operator<<(ostream& os, const Unique& u);
-    friend bool operator==(const Unique& u1, const Unique& u2);
-    friend bool operator<(const Unique& u1, const Unique& u2);
 };
 
 //************************************* SAME *************************************//
-class Same {
+class Same : public WlSpec {
 
 public:
     Same(metric_t metric, unsigned int queue);
 
-    bool applies_to_queue(unsigned int queue) const;
+    bool applies_to_queue(unsigned int queue) const override;
 
     unsigned int get_queue() const;
     metric_t get_metric() const;
+
+    bool equals(const WlSpec& other) const override;
+    bool less_than(const WlSpec& other) const override;
+    int type_id() const override;
 
 private:
     metric_t metric;
     unsigned int queue;
 
     friend ostream& operator<<(ostream& os, const Same& s);
-    friend bool operator==(const Same& s1, const Same& s2);
-    friend bool operator<(const Same& s1, const Same& s2);
 };
 
 //************************************* INCR *************************************//
-class Incr {
+class Incr : public WlSpec {
 
 public:
     Incr(metric_t metric, unsigned int queue);
 
-    bool applies_to_queue(unsigned int queue) const;
+    bool applies_to_queue(unsigned int queue) const override;
 
     unsigned int get_queue() const;
     metric_t get_metric() const;
+
+    bool equals(const WlSpec& other) const override;
+    bool less_than(const WlSpec& other) const override;
+    int type_id() const override;
 
 private:
     metric_t metric;
     unsigned int queue;
 
     friend ostream& operator<<(ostream& os, const Incr& incr);
-    friend bool operator==(const Incr& incr1, const Incr& incr2);
-    friend bool operator<(const Incr& incr1, const Incr& incr2);
 };
 
 //************************************* DECR *************************************//
-class Decr {
+class Decr : public WlSpec {
 
 public:
     Decr(metric_t metric, unsigned int queue);
 
-    bool applies_to_queue(unsigned int queue) const;
+    bool applies_to_queue(unsigned int queue) const override;
 
     unsigned int get_queue() const;
     metric_t get_metric() const;
+
+    bool equals(const WlSpec& other) const override;
+    bool less_than(const WlSpec& other) const override;
+    int type_id() const override;
 
 private:
     metric_t metric;
     unsigned int queue;
 
     friend ostream& operator<<(ostream& os, const Decr& decr);
-    friend bool operator==(const Decr& decr1, const Decr& decr2);
-    friend bool operator<(const Decr& decr1, const Decr& decr2);
 };
 
 //************************************* COMP *************************************//
 
-class Comp {
+class Comp : public WlSpec {
 public:
     Comp(lhs_t lhs, op_t op, rhs_t rhs);
 
     bool spec_is_empty() const;
     bool spec_is_all() const;
     unsigned int ast_size() const;
-    bool applies_to_queue(unsigned int queue) const;
+    bool applies_to_queue(unsigned int queue) const override;
     pair<metric_t, qset_t> get_zero_queues() const;
+
+    bool equals(const WlSpec& other) const override;
+    bool less_than(const WlSpec& other) const override;
+    int type_id() const override;
 
     lhs_t get_lhs() const;
     op_t get_op() const;
@@ -235,34 +277,15 @@ private:
 
     friend ostream& operator<<(ostream& os, const Comp& spec);
     friend ostream& operator<<(ostream& os, const Comp* spec);
-    friend bool operator==(const Comp& spec1, const Comp& spec2);
-    friend bool operator!=(const Comp& spec1, const Comp& spec2);
-    friend bool operator<(const Comp& spec1, const Comp& spec2);
 };
-
-//************************************* WlSpec *************************************//
-typedef variant<Comp, Same, Incr, Decr, Unique> wl_spec_t;
-
-bool wl_spec_applies_to_queue(wl_spec_t spec, unsigned int queue);
-
-bool wl_spec_is_empty(wl_spec_t spec);
-
-bool wl_spec_is_all(wl_spec_t spec);
-
-unsigned int wl_spec_ast_size(const wl_spec_t wl_spec);
-
-ostream& operator<<(ostream& os, const wl_spec_t& wl_spec);
-
-bool operator==(const wl_spec_t& wl_spec1, const wl_spec_t& wl_spec2);
-bool operator<(const wl_spec_t& wl_spec1, const wl_spec_t& wl_spec2);
 
 //************************************* Timed WlSpec *************************************//
 
 class TimedSpec {
 
 public:
-    TimedSpec(wl_spec_t wl_spec, time_range_t time_range, unsigned int total_time);
-    TimedSpec(wl_spec_t wl_spec, unsigned int until_time, unsigned int total_time);
+    TimedSpec(WlSpec wl_spec, time_range_t time_range, unsigned int total_time);
+    TimedSpec(WlSpec wl_spec, unsigned int until_time, unsigned int total_time);
 
     bool spec_is_empty() const;
     bool spec_is_all() const;
@@ -273,7 +296,7 @@ public:
 
     void set_time_range_ub(unsigned int ub);
 
-private:
+protected:
     wl_spec_t wl_spec;
     time_range_t time_range;
     unsigned int total_time;
@@ -290,6 +313,18 @@ private:
     friend bool operator<(const TimedSpec& spec1, const TimedSpec& spec2);
 };
 
+class SearchTimedSpec : public TimedSpec { // TimedSpec for search; only allows Comp
+public:
+    SearchTimedSpec(std::shared_ptr<Comp> comp_spec,
+                    time_range_t time_range,
+                    unsigned int total_time);
+
+    SearchTimedSpec(std::shared_ptr<Comp> comp_spec,
+                    unsigned int until_time,
+                    unsigned int total_time);
+
+    std::shared_ptr<Comp> get_comp_spec() const;
+};
 
 //************************************* Workload *************************************//
 typedef map<time_range_t, set<wl_spec_t>> timeline_t;

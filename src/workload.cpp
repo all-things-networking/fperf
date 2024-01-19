@@ -285,17 +285,26 @@ metric_t Unique::get_metric() const {
     return metric;
 }
 
+bool Unique::equals(const WlSpec& other) const override {
+    const Unique* other_unique = dynamic_cast<const Unique*>(&other);
+    return (this->metric == other_unique->metric && this->qset == other_unique->qset);
+}
+
+bool Unique::less_than(const WlSpec& other) const override {
+    if (this->type_id() < other.type_id()) return true;
+    if (this->type_id() > other.type_id()) return false;
+    const Unique* other_unique = dynamic_cast<const Unique*>(&other);
+    return (this->metric < other_unique->metric ||
+            (this->metric == other_unique->metric && this->qset < other_unique->qset));
+}
+
+int Unique::type_id() const override {
+    return 5;
+}
+
 ostream& operator<<(ostream& os, const Unique& u) {
     os << "Uniqe[" << u.metric << "(" << u.qset << ", t)]";
     return os;
-}
-
-bool operator==(const Unique& u1, const Unique& u2) {
-    return (u1.metric == u2.metric && u1.qset == u2.qset);
-}
-
-bool operator<(const Unique& u1, const Unique& u2) {
-    return (u1.metric < u2.metric || (u1.metric == u2.metric && u1.qset < u2.qset));
 }
 
 //************************************* SAME *************************************//
@@ -316,17 +325,26 @@ metric_t Same::get_metric() const {
     return metric;
 }
 
+bool Same::equals(const WlSpec& other) const override {
+    const Same* other_same = dynamic_cast<const Same*>(&other);
+    return (this->metric == other_same->metric && this->queue == other_same->queue);
+}
+
+bool Same::less_than(const WlSpec& other) const override {
+    if (this->type_id() < other.type_id()) return true;
+    if (this->type_id() > other.type_id()) return false;
+    const Same* other_same = dynamic_cast<const Same*>(&other);
+    return (this->metric < other_same->metric ||
+            (this->metric == other_same->metric && this->queue < other_same->queue));
+}
+
+int Same::type_id() const override {
+    return 2;
+}
+
 ostream& operator<<(ostream& os, const Same& s) {
     os << "Same[" << s.metric << "(" << s.queue << ", t)]";
     return os;
-}
-
-bool operator==(const Same& s1, const Same& s2) {
-    return (s1.metric == s2.metric && s1.queue == s2.queue);
-}
-
-bool operator<(const Same& s1, const Same& s2) {
-    return (s1.metric < s2.metric || (s1.metric == s2.metric && s1.queue < s2.queue));
 }
 
 //************************************* INCR *************************************//
@@ -347,18 +365,26 @@ metric_t Incr::get_metric() const {
     return metric;
 }
 
+bool Incr::equals(const WlSpec& other) const override {
+    const Incr* other_incr = dynamic_cast<const Incr*>(&other);
+    return (this->metric == other_incr->metric && this->queue == other_incr->queue);
+}
+
+bool Incr::less_than(const WlSpec& other) const override {
+    if (this->type_id() < other.type_id()) return true;
+    if (this->type_id() > other.type_id()) return false;
+    const Incr* other_incr = dynamic_cast<const Incr*>(&other);
+    return (this->metric < other_incr->metric ||
+            (this->metric == other_incr->metric && this->queue < other_incr->queue));
+}
+
+int Incr::type_id() const override {
+    return 3;
+}
+
 ostream& operator<<(ostream& os, const Incr& incr) {
     os << "Incr[" << incr.metric << "(" << incr.queue << ", t)]";
     return os;
-}
-
-bool operator==(const Incr& incr1, const Incr& incr2) {
-    return (incr1.metric == incr2.metric && incr1.queue == incr2.queue);
-}
-
-bool operator<(const Incr& incr1, const Incr& incr2) {
-    return (incr1.metric < incr2.metric ||
-            (incr1.metric == incr2.metric && incr1.queue < incr2.queue));
 }
 
 //************************************* DECR *************************************//
@@ -379,18 +405,26 @@ metric_t Decr::get_metric() const {
     return metric;
 }
 
+bool Decr::equals(const WlSpec& other) const override {
+    const Decr* other_decr = dynamic_cast<const Decr*>(&other);
+    return (this->metric == other_decr->metric && this->queue == other_decr->queue);
+}
+
+bool Decr::less_than(const WlSpec& other) const override {
+    if (this->type_id() < other.type_id()) return true;
+    if (this->type_id() > other.type_id()) return false;
+    const Decr* other_decr = dynamic_cast<const Decr*>(&other);
+    return (this->metric < other_decr->metric ||
+            (this->metric == other_decr->metric && this->queue < other_decr->queue));
+}
+
+int Decr::type_id() const override {
+    return 4;
+}
+
 ostream& operator<<(ostream& os, const Decr& decr) {
     os << "Decr[" << decr.metric << "(" << decr.queue << ", t)]";
     return os;
-}
-
-bool operator==(const Decr& decr1, const Decr& decr2) {
-    return (decr1.metric == decr2.metric && decr1.queue == decr2.queue);
-}
-
-bool operator<(const Decr& decr1, const Decr& decr2) {
-    return (decr1.metric < decr2.metric ||
-            (decr1.metric == decr2.metric && decr1.queue < decr2.queue));
 }
 
 //************************************* Comp *************************************//
@@ -673,6 +707,24 @@ rhs_t Comp::get_rhs() const {
     return rhs;
 }
 
+bool Comp::equals(const WlSpec& other) const override {
+    const Comp* other_comp = dynamic_cast<const Comp*>(&other);
+    return (this->lhs == other_comp->lhs && this->op == other_comp->op && this->rhs == other_comp->rhs);
+}
+
+bool Comp::less_than(const WlSpec& other) const override {
+    if (this->type_id() < other.type_id()) return true;
+    if (this->type_id() > other.type_id()) return false;
+    const Comp* other_comp = dynamic_cast<const Comp*>(&other);
+    return (this->lhs < other_comp->lhs ||
+            (this->lhs == other_comp->lhs && this->op < other_comp->op) ||
+            (this->lhs == other_comp->lhs && this->op == other_comp->op && this->rhs < other_comp->rhs));
+}
+
+int Comp::type_id() const override {
+    return 1;
+}
+
 ostream& operator<<(ostream& os, const Comp& comp) {
     if (comp.is_all)
         os << "*";
@@ -688,65 +740,36 @@ ostream& operator<<(ostream& os, const Comp* comp) {
     return os;
 }
 
-bool operator==(const Comp& comp1, const Comp& comp2) {
-    lhs_t lhs1 = comp1.lhs;
-    op_t op1 = comp1.op;
-    rhs_t rhs1 = comp1.rhs;
-
-    lhs_t lhs2 = comp2.lhs;
-    op_t op2 = comp2.op;
-    rhs_t rhs2 = comp2.rhs;
-
-    bool res = (lhs1 == lhs2 && op1 == op2 && rhs1 == rhs2);
-    return res;
-}
-
-bool operator!=(const Comp& comp1, const Comp& comp2) {
-    return !(comp1 == comp2);
-}
-
-bool operator<(const Comp& comp1, const Comp& comp2) {
-    lhs_t lhs1 = comp1.lhs;
-    op_t op1 = comp1.op;
-    rhs_t rhs1 = comp1.rhs;
-
-    lhs_t lhs2 = comp2.lhs;
-    op_t op2 = comp2.op;
-    rhs_t rhs2 = comp2.rhs;
-
-    return (lhs1 < lhs2 || (lhs1 == lhs2 && op1 < op2) ||
-            (lhs1 == lhs2 && op1 == op2 && rhs1 < rhs2));
-}
-
 //************************************* WlSpec *************************************//
 // TODO: Only checks COMP
-bool wl_spec_is_all(wl_spec_t spec) {
-    if (holds_alternative<Comp>(spec)) return get<Comp>(spec).spec_is_all();
+bool wl_spec_is_all(const WlSpec& spec) {
+    const Comp* compSpec = dynamic_cast<const Comp*>(&spec);
+    if (compSpec) {
+        return compSpec->spec_is_all();
+    }
     return false;
 }
 
 // TODO: Only checks COMP
-bool wl_spec_is_empty(wl_spec_t spec) {
-    if (holds_alternative<Comp>(spec)) return get<Comp>(spec).spec_is_empty();
+bool wl_spec_is_empty(const WlSpec& spec) {
+    const Comp* compSpec = dynamic_cast<const Comp*>(&spec);
+    if (compSpec) {
+        return compSpec->spec_is_empty();
+    }
     return false;
 }
 
-unsigned int wl_spec_ast_size(const wl_spec_t wl_spec) {
-    if (holds_alternative<Comp>(wl_spec)) {
-        return get<Comp>(wl_spec).ast_size();
-    } else
-        return 1u;
+unsigned int wl_spec_ast_size(const WlSpec& wl_spec) {
+    const Comp* compSpec = dynamic_cast<const Comp*>(&wl_spec);
+    if (compSpec) {
+        return compSpec->ast_size();
+    }
+    return 1u; // Default value for non-Comp types
 }
 
-bool wl_spec_applies_to_queue(wl_spec_t spec, unsigned int queue) {
-    switch (spec.index()) {
-        case 0: return get<Comp>(spec).applies_to_queue(queue);
-        case 1: return get<Same>(spec).applies_to_queue(queue);
-        case 2: return get<Incr>(spec).applies_to_queue(queue);
-        case 3: return get<Decr>(spec).applies_to_queue(queue);
-        case 4: return get<Unique>(spec).applies_to_queue(queue);
-        default: return false;
-    }
+
+bool wl_spec_applies_to_queue(const WlSpec& spec, unsigned int queue) {
+    return spec.applies_to_queue(queue);
 }
 
 ostream& operator<<(ostream& os, const wl_spec_t& wl_spec) {
@@ -781,72 +804,28 @@ ostream& operator<<(ostream& os, const wl_spec_t& wl_spec) {
     return os;
 }
 
-bool operator==(const wl_spec_t& spec1, const wl_spec_t& spec2) {
-    if (holds_alternative<Comp>(spec1) && holds_alternative<Comp>(spec2)) {
-        return get<Comp>(spec1) == get<Comp>(spec2);
-    }
-    if (holds_alternative<Same>(spec1) && holds_alternative<Same>(spec2)) {
-        return get<Same>(spec1) == get<Same>(spec2);
-    }
-    if (holds_alternative<Incr>(spec1) && holds_alternative<Incr>(spec2)) {
-        return get<Incr>(spec1) == get<Incr>(spec2);
-    }
-    if (holds_alternative<Decr>(spec1) && holds_alternative<Decr>(spec2)) {
-        return get<Decr>(spec1) == get<Decr>(spec2);
-    }
-    return false;
+bool operator==(const WlSpec& spec1, const WlSpec& spec2) {
+    return spec1.equals(spec2);
 }
 
-bool operator<(const wl_spec_t& spec1, const wl_spec_t& spec2) {
-    // Comp < Same < Incr < Decr < Uniq
+bool operator!=(const WlSpec& spec1, const WlSpec& spec2) {
+    return !(spec1 == spec2);
+}
 
-    if (holds_alternative<Comp>(spec1)) {
-        if (holds_alternative<Comp>(spec2)) {
-            return get<Comp>(spec1) < get<Comp>(spec2);
-        } else {
-            return true;
-        }
-    }
+bool operator<(const WlSpec& spec1, const WlSpec& spec2) {
+    return spec1.less_than(spec2);
+}
 
-    else if (holds_alternative<Same>(spec1)) {
-        if (holds_alternative<Same>(spec2)) {
-            return get<Same>(spec1) < get<Same>(spec2);
-        } else if (holds_alternative<Comp>(spec2)) {
-            return false;
-        } else {
-            return true;
-        }
-    }
+bool operator>(const WlSpec& spec1, const WlSpec& spec2) {
+    return spec2 < spec1;
+}
 
-    else if (holds_alternative<Incr>(spec1)) {
-        if (holds_alternative<Incr>(spec2)) {
-            return get<Incr>(spec1) < get<Incr>(spec2);
-        } else if (holds_alternative<Comp>(spec2) || holds_alternative<Same>(spec2)) {
-            return false;
-        } else {
-            return true;
-        }
-    }
+bool operator<=(const WlSpec& spec1, const WlSpec& spec2) {
+    return !(spec1 > spec2);
+}
 
-    else if (holds_alternative<Decr>(spec1)) {
-        if (holds_alternative<Decr>(spec2)) {
-            return get<Decr>(spec1) < get<Decr>(spec2);
-        } else {
-            return false;
-        }
-    }
-
-    else if (holds_alternative<Unique>(spec1)) {
-        if (holds_alternative<Unique>(spec2)) {
-            return get<Unique>(spec1) < get<Unique>(spec2);
-        } else if (holds_alternative<Unique>(spec2)) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-    cout << "operator < for wl_spec_t: should not reach here" << endl;
-    return false;
+bool operator>=(const WlSpec& spec1, const WlSpec& spec2) {
+    return !(spec1 < spec2);
 }
 
 //************************************* TimedSpec *************************************//
@@ -956,6 +935,15 @@ bool operator!=(const TimedSpec& spec1, const TimedSpec& spec2) {
 bool operator<(const TimedSpec& spec1, const TimedSpec& spec2) {
     return (spec1.time_range < spec2.time_range ||
             ((spec1.time_range == spec2.time_range) && (spec1.wl_spec < spec2.wl_spec)));
+}
+
+SearchTimedSpec::SearchTimedSpec(std::shared_ptr<Comp> comp_spec,
+                                 time_range_t time_range,
+                                 unsigned int total_time):
+comp_spec(comp_spec),
+time_range(time_range),
+total_time(total_time) {
+    normalize();
 }
 
 //************************************* Workload *************************************//

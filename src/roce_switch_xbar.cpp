@@ -258,11 +258,11 @@ void RoceSwitchXBarQM::add_constrs(NetContext& net_ctx,
                     match_cond = mk_and(cond1) && mk_and(cond2) && cond3 && !net_ctx.get_bool_const(vname);
                 }
 
-                sprintf(constr_name, "%s_%d_matches_%d_at_%d", id.c_str(), i, j, t);
+                sprintf(constr_name, "%s_%d_matches_%d_at_%d", id.c_str(), voq_ind, j, t);
                 expr constr_expr = implies(match_cond, in_to_out_[i][i_ind_of_j][t]);
                 constr_map.insert(named_constr(constr_name, constr_expr));
 
-                sprintf(constr_name, "%s_%d_doesnt_match_%d_at_%d", id.c_str(), i, j, t);
+                sprintf(constr_name, "%s_%d_doesnt_match_%d_at_%d", id.c_str(), voq_ind, j, t);
                 constr_expr = implies(!match_cond, !in_to_out_[i][i_ind_of_j][t]);
                 constr_map.insert(named_constr(constr_name, constr_expr));
             }
@@ -435,10 +435,9 @@ void RoceSwitchXBarQM::add_constrs(NetContext& net_ctx,
                 unsigned int voq_ind = input_voq_map[i][i_ind_of_j];
                 unsigned int j = voq_output_map[voq_ind];
 
-
                 // The following is original code
                 // Enqueue the packet
-                sprintf(constr_name, "%s_in_%d_packet_to_out_%d_at_%d", id.c_str(), i, j, t);
+                sprintf(constr_name, "%s_in_%d_packet_to_out_%d_at_%d", id.c_str(), voq_ind, j, t);
                 expr constr_expr = implies(in_to_out_[i][i_ind_of_j][t],
                     out_queues[j]->enqs(0)[t] == in_queues[voq_ind]->elem(0)[t]);
                 constr_map.insert(named_constr(constr_name, constr_expr));

@@ -417,10 +417,10 @@ std::string RoceScheduler::cp_model_str(model& m,
 
     //for (int j = 0; j < 3; j++) {
     //    for (int k = 0; k < 5; k++) {
-    //        ss << "roce xBar0[" + to_string(j) + "][" + to_string(k) + "]: ";
+    //        ss << "roce xBar1[" + to_string(j) + "][" + to_string(k) + "]: ";
     //        for (int i = 0; i <= t; i++) {
-    //            //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
-    //            auto name = "roce_xBar0_in_to_out[" + to_string(j) + "][" + to_string(k) + "][" + to_string(i) + "]";
+    //            auto name = "s0_0_pause_state_[" + to_string(i) + "]";
+    //            auto name = "roce_xBar1_in_to_out[" + to_string(j) + "][" + to_string(k) + "][" + to_string(i) + "]";
     //            expr ttt = m.eval(net_ctx.get_bool_const(name.data()));
     //            ss << ttt.bool_value();
     //            ss << " | ";

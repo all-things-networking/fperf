@@ -25,33 +25,22 @@ RoceScheduler::RoceScheduler(unsigned int total_time) :
     control_flows.push_back({ {1, 2}, {2, 1}, {3, 2} });
     
     // For S1 to S4
-    ingress.push_back(5);
-    ingress.push_back(5);
-    ingress.push_back(5);
-    ingress.push_back(5);
-
-    // For S1 to S4
-    egress.push_back(5);
-    egress.push_back(5);
-    egress.push_back(5);
-    egress.push_back(5);
+    for (int i = 0; i < 4; i++) {
+        ingress.push_back(3);   
+        cengress.push_back(5);
+        egress.push_back(3);
+    }
+    
     
     for (int i = 0; i < 4; i++) {
-        voq_input_maps.push_back({ 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4 });
+        voq_input_maps.push_back({ 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2 });
+        //voq_input_maps.push_back({ 0, 0, 0, 1, 1, 1, 2, 2, 2 });
     }
 
     for (int i = 0; i < 4; i++) {
-        voq_output_maps.push_back({ 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 });
+        voq_output_maps.push_back({ 0, 1, 2, 0, 1, 0, 1, 2, 0, 1, 0, 1, 2, 0, 1});
+        //voq_output_maps.push_back({ 0, 1, 2, 0, 1, 2, 0, 1, 2 });
     }
-
-    for (int i = 0; i < 2; i++) {
-        voq_prio_input_maps.push_back({ 0, 0, 1, 1});
-    }
-
-    for (int i = 0; i < 2; i++) {
-        voq_prio_output_maps.push_back({ 0, 1, 0, 1 });
-    }
-
 
     init();
 }
@@ -89,7 +78,7 @@ void RoceScheduler::add_nodes() {
                 threshold,
                 j,
                 vector<QueueInfo>(1, info),
-                vector<QueueInfo>(egress[i], info),
+                vector<QueueInfo>(cengress[i], info),
                 control_flows[i],
                 net_ctx);
 
@@ -103,9 +92,9 @@ void RoceScheduler::add_nodes() {
         cid_t s_id = "s" + to_string(i);
         RoceSwitchXBarQM* xbar_qm = new RoceSwitchXBarQM(m_id, s_id, total_time,
             voq_input_maps[i], voq_output_maps[i],
-            vector<QueueInfo>(ingress[i] * egress[i], imm_info),
+            vector<QueueInfo>(cengress[i] * egress[i], imm_info),
             vector<QueueInfo>(egress[i], link_info),
-            net_ctx);
+            net_ctx); 
         nodes.push_back(m_id);
         id_to_qm[m_id] = xbar_qm;
     }
@@ -169,20 +158,20 @@ void RoceScheduler::add_edges()
         switch_in1 = "roce" + to_string((i + 1) % switch_cnt);
         switch_in2 = i == 0 ? "roce" + to_string(switch_cnt - 1) : "roce" + to_string(i - 1);
 
-        k = i % 2 == 0 ? 3 : 4;
-        switch_in1 += "_" + to_string(k);
-        q_edges.push_back(qpair(k, 0));
-        queue_edges[cid_pair(switch_out, switch_in1)] = q_edges;
+        //k = i % 2 == 0 ? 3 : 4;
+        //switch_in1 += "_" + to_string(k);
+        //q_edges.push_back(qpair(k, 0));
+        //queue_edges[cid_pair(switch_out, switch_in1)] = q_edges;
 
-        q_edges = {};
-        k = k == 3 ? 4 : 3;
-        q_edges.push_back(qpair(k, 0));
-        switch_in2 += "_" + to_string(k);
-        queue_edges[cid_pair(switch_out, switch_in2)] = q_edges;
+        //q_edges = {};
+        //k = k == 3 ? 4 : 3;
+        //q_edges.push_back(qpair(k, 0));
+        //switch_in2 += "_" + to_string(k);
+        //queue_edges[cid_pair(switch_out, switch_in2)] = q_edges;
 
-        //module edges
-        module_edges[switch_out].push_back(switch_in1);
-        module_edges[switch_out].push_back(switch_in2);
+        ////module edges
+        //module_edges[switch_out].push_back(switch_in1);
+        //module_edges[switch_out].push_back(switch_in2);
     }
 }
 
@@ -338,7 +327,7 @@ std::string RoceScheduler::cp_model_str(model& m,
     ss << "roce1_0 pause_state: ";
     for (int i = 0; i <= t; i++) {
         //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
-        auto name = "s1_3_pause_state_[" + to_string(i) + "]";
+        auto name = "s1_0_pause_state_[" + to_string(i) + "]";
         expr ttt = m.eval(net_ctx.get_bool_const(name.data()));
         ss << ttt.bool_value();
         ss << " ";
@@ -358,7 +347,7 @@ std::string RoceScheduler::cp_model_str(model& m,
     ss << "roce0_0 pause_state: ";
     for (int i = 0; i <= t; i++) {
         //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
-        auto name = "s0_3_pause_state_[" + to_string(i) + "]";
+        auto name = "s0_0_pause_state_[" + to_string(i) + "]";
         expr ttt = m.eval(net_ctx.get_bool_const(name.data()));
         ss << ttt.bool_value();
         ss << " ";
@@ -378,7 +367,7 @@ std::string RoceScheduler::cp_model_str(model& m,
     ss << "roce1_1 pause_state: ";
     for (int i = 0; i <= t; i++) {
         //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
-        auto name = "s1_4_pause_state_[" + to_string(i) + "]";
+        auto name = "s1_1_pause_state_[" + to_string(i) + "]";
         expr ttt = m.eval(net_ctx.get_bool_const(name.data()));
         ss << ttt.bool_value();
         ss << " ";
@@ -398,7 +387,7 @@ std::string RoceScheduler::cp_model_str(model& m,
     ss << "roce2_1 pause_state: ";
     for (int i = 0; i <= t; i++) {
         //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
-        auto name = "s2_3_pause_state_[" + to_string(i) + "]";
+        auto name = "s2_0_pause_state_[" + to_string(i) + "]";
         expr ttt = m.eval(net_ctx.get_bool_const(name.data()));
         ss << ttt.bool_value();
         ss << " ";
@@ -418,7 +407,7 @@ std::string RoceScheduler::cp_model_str(model& m,
     ss << "s3_1 pause_state: ";
     for (int i = 0; i <= t; i++) {
         //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
-        auto name = "s3_4_pause_state_[" + to_string(i) + "]";
+        auto name = "s3_1_pause_state_[" + to_string(i) + "]";
         expr ttt = m.eval(net_ctx.get_bool_const(name.data()));
         ss << ttt.bool_value();
         ss << " ";
@@ -426,7 +415,23 @@ std::string RoceScheduler::cp_model_str(model& m,
     ss << endl;
     ss << endl;
 
+    //for (int j = 0; j < 3; j++) {
+    //    for (int k = 0; k < 5; k++) {
+    //        ss << "roce xBar0[" + to_string(j) + "][" + to_string(k) + "]: ";
+    //        for (int i = 0; i <= t; i++) {
+    //            //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
+    //            auto name = "roce_xBar0_in_to_out[" + to_string(j) + "][" + to_string(k) + "][" + to_string(i) + "]";
+    //            expr ttt = m.eval(net_ctx.get_bool_const(name.data()));
+    //            ss << ttt.bool_value();
+    //            ss << " | ";
+    //        }
+    //        ss << endl;
+    //    }
+    //}
+
     ss << "goa\n";
+
+
     for (int i = 1; i <= t; i++) {
         //auto name = "s0_0_pause_state_[" + to_string(i) + "]";
         auto name = "roce1_0_read_var_pkt_val_at_" + to_string(i);

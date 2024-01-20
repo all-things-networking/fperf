@@ -37,7 +37,7 @@ void roce(std::string good_examples_file,
 
     unsigned int good_example_cnt = 2;
     unsigned int bad_example_cnt = 2;
-    unsigned int total_time = 10;
+    unsigned int total_time = 7;
 
     RoceScheduler* roce = new RoceScheduler(total_time);
 

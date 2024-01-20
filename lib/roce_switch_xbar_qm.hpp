@@ -36,6 +36,7 @@ protected:
     vector<unsigned int> voq_input_map;
     vector<unsigned int> voq_output_map;
     unsigned int port_cnt;
+    unsigned int in_port_cnt;
 
     vector<vector<expr>>* in_to_out_;
     vector<vector<expr>>* out_from_in_;

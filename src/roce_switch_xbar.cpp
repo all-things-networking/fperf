@@ -26,9 +26,13 @@ RoceSwitchXBarQM::RoceSwitchXBarQM(cid_t id,
     voq_output_map(voq_output_map)
 {
     port_cnt = (unsigned int)out_queues.size();
+    in_port_cnt = 3;
+
+    for (unsigned int i = 0; i < in_port_cnt; i++) {
+        input_voq_map[i] = vector<unsigned int>();
+    }
 
     for (unsigned int i = 0; i < port_cnt; i++) {
-        input_voq_map[i] = vector<unsigned int>();
         output_voq_map[i] = vector<unsigned int>();
     }
 
@@ -41,7 +45,8 @@ RoceSwitchXBarQM::RoceSwitchXBarQM(cid_t id,
         unsigned int output_port = voq_output_map[i];
         output_voq_map[output_port].push_back(i);
     }
-
+    unsigned int a;
+    a = 2;
     /*
     cout << id << endl;
     cout << "voq_input_map " << endl;
@@ -80,15 +85,16 @@ RoceSwitchXBarQM::RoceSwitchXBarQM(cid_t id,
 
 void RoceSwitchXBarQM::add_proc_vars(NetContext& net_ctx) {
     // 
-    in_to_out_ = new vector<vector<expr>>[port_cnt];
+    in_to_out_ = new vector<vector<expr>>[in_port_cnt];
     out_from_in_ = new vector<vector<expr>>[port_cnt];
-    in_prio_head_ = new vector<vector<expr>>[port_cnt];
+    in_prio_head_ = new vector<vector<expr>>[in_port_cnt];
     out_prio_head_ = new vector<vector<expr>>[port_cnt];
 
     //d
     // in_to_out_ maps each ingress port to egress port for each timestep
     char vname[100];
-    for (unsigned int q1 = 0; q1 < port_cnt; q1++) {
+    // port_cnt -> in_port_cnt
+    for (unsigned int q1 = 0; q1 < in_port_cnt; q1++) {
         for (unsigned int q2 = 0; q2 < input_voq_map[q1].size(); q2++) {
             in_to_out_[q1].push_back(vector<expr>());
             for (unsigned int t = 0; t < total_time; t++) {
@@ -108,7 +114,7 @@ void RoceSwitchXBarQM::add_proc_vars(NetContext& net_ctx) {
         }
     }
 
-    for (unsigned int q1 = 0; q1 < port_cnt; q1++) {
+    for (unsigned int q1 = 0; q1 < in_port_cnt; q1++) {
         for (unsigned int q2 = 0; q2 < input_voq_map[q1].size(); q2++) {
             in_prio_head_[q1].push_back(vector<expr>());
             for (unsigned int t = 0; t < total_time; t++) {
@@ -168,7 +174,8 @@ void RoceSwitchXBarQM::add_constrs(NetContext& net_ctx,
 
         //cout << 1 << endl;        
         // input and output match together
-        for (unsigned int i = 0; i < port_cnt; i++) {
+        // VOQ
+        for (unsigned int i = 0; i < in_port_cnt; i++) {
             for (unsigned int i_ind_of_j = 0; i_ind_of_j < input_voq_map[i].size(); i_ind_of_j++) {
                 unsigned int voq_ind = input_voq_map[i][i_ind_of_j];
                 unsigned int j = voq_output_map[voq_ind];
@@ -195,7 +202,7 @@ void RoceSwitchXBarQM::add_constrs(NetContext& net_ctx,
         //cout << 2 << endl; 
 
         // Matching priorities
-        for (unsigned int i = 0; i < port_cnt; i++) {
+        for (unsigned int i = 0; i < in_port_cnt; i++) {
             unsigned int i_voq_cnt = input_voq_map[i].size();
             for (unsigned int i_ind_of_j = 0; i_ind_of_j < i_voq_cnt; i_ind_of_j++) {
                 unsigned int voq_ind = input_voq_map[i][i_ind_of_j];
@@ -240,14 +247,16 @@ void RoceSwitchXBarQM::add_constrs(NetContext& net_ctx,
                 Queue* voq = in_queues[voq_ind];
                 expr cond3 = net_ctx.pkt2val(voq->elem(0)[t]);
 
-                std::sprintf(vname, "%s_%d_pause_state_[%d]", sid.c_str(), i_ind_of_j, t);
+                
 
                 expr match_cond = net_ctx.bool_val(false);
-                if (i == 3 || i == 4) {
+                if (i == 3 || i == 4 || i == 8 || i == 9 || i == 13 || i == 14) {
                     match_cond = mk_and(cond1) && mk_and(cond2) && cond3;
                 }
-                else 
+                else {
+                    std::sprintf(vname, "%s_%d_pause_state_[%d]", sid.c_str(), i_ind_of_j, t);
                     match_cond = mk_and(cond1) && mk_and(cond2) && cond3 && !net_ctx.get_bool_const(vname);
+                }
 
                 sprintf(constr_name, "%s_%d_matches_%d_at_%d", id.c_str(), i, j, t);
                 expr constr_expr = implies(match_cond, in_to_out_[i][i_ind_of_j][t]);
@@ -262,7 +271,7 @@ void RoceSwitchXBarQM::add_constrs(NetContext& net_ctx,
         //cout << 3 << endl;
 
         // No double matching in input
-        for (unsigned int i = 0; i < port_cnt; i++) {
+        for (unsigned int i = 0; i < in_port_cnt; i++) {
             for (unsigned int i_ind_of_j = 0; i_ind_of_j < input_voq_map[i].size(); i_ind_of_j++) {
                 expr_vector others_zero(net_ctx.z3_ctx());
                 for (unsigned int k = 0; k < in_to_out_[i].size(); k++) {
@@ -293,7 +302,7 @@ void RoceSwitchXBarQM::add_constrs(NetContext& net_ctx,
 
         //cout << 5 << endl;
         // One of prios is always one, and only one is one
-        for (unsigned int i = 0; i < port_cnt; i++) {
+        for (unsigned int i = 0; i < in_port_cnt; i++) {
             if (input_voq_map[i].size() == 0) continue;
 
             expr_vector all_prios(net_ctx.z3_ctx());
@@ -345,7 +354,7 @@ void RoceSwitchXBarQM::add_constrs(NetContext& net_ctx,
 
         // Update heads
         if (t == 0) {
-            for (unsigned int i = 0; i < port_cnt; i++) {
+            for (unsigned int i = 0; i < in_port_cnt; i++) {
                 // Inputs
 
                 if (input_voq_map[i].size() > 0) {
@@ -376,7 +385,7 @@ void RoceSwitchXBarQM::add_constrs(NetContext& net_ctx,
         }
         else {
             unsigned int prev_t = t - 1;
-            for (unsigned int i = 0; i < port_cnt; i++) {
+            for (unsigned int i = 0; i < in_port_cnt; i++) {
                 for (unsigned int i_ind_of_j = 0; i_ind_of_j < input_voq_map[i].size(); i_ind_of_j++) {
                     // TODO: maybe add something to also set the other ones to zero
                     sprintf(constr_name, "%s_update_in_prio_head[%d][%d][%d]_to_one", id.c_str(), i, i_ind_of_j, t);
@@ -421,7 +430,7 @@ void RoceSwitchXBarQM::add_constrs(NetContext& net_ctx,
 
         //cout << 8 << endl;         
         // Move packets
-        for (unsigned int i = 0; i < port_cnt; i++) {
+        for (unsigned int i = 0; i < in_port_cnt; i++) {
             for (unsigned int i_ind_of_j = 0; i_ind_of_j < input_voq_map[i].size(); i_ind_of_j++) {
                 unsigned int voq_ind = input_voq_map[i][i_ind_of_j];
                 unsigned int j = voq_output_map[voq_ind];

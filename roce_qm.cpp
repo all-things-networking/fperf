@@ -66,7 +66,7 @@ void RoCEQM::add_constrs(NetContext& net_ctx,
     std::sprintf(constr_name, "%s_%d_pause_state_init_[%d]", sid.c_str(), return_to_sender, 0);
 
     expr constr_expr = pause_state[0] == net_ctx.bool_val(false);
-    if (strcmp(id.c_str(), "roce0_3") == 0) {
+    if (strcmp(id.c_str(), "roce0_1") == 0) {
         constr_expr = pause_state[0] == net_ctx.bool_val(false);
     }
     
@@ -115,10 +115,10 @@ void RoCEQM::add_constrs(NetContext& net_ctx,
                 //constr_expr = implies(pkt_val, net_ctx.int_val(0) < pkt_dst && pkt_dst < net_ctx.int_val(4));
                 if (sid == "s0")
                     // goba, 1 => 4
-                    constr_expr = implies(pkt_val, net_ctx.int_val(1) == pkt_dst);
+                    constr_expr = implies(pkt_val, net_ctx.int_val(4) == pkt_dst);
                 else if (sid == "s1")
                     // goba 3 => 4
-                    constr_expr = implies(pkt_val, net_ctx.int_val(3) == pkt_dst);
+                    constr_expr = implies(pkt_val, net_ctx.int_val(4) == pkt_dst);
                 else if (sid == "s2")
                     constr_expr = implies(pkt_val, net_ctx.int_val(2) == pkt_dst);
                 else if (sid == "s3")
@@ -153,7 +153,7 @@ void RoCEQM::add_constrs(NetContext& net_ctx,
         }
 
         // HANDLE PAUSE/UNPAUSE HERE
-        if (return_to_sender == 3 || return_to_sender == 4) {
+        if (return_to_sender != 2) {
             for (unsigned int i = 0; i < in_queues.size(); i++) {
                 Queue* in_queue = in_queues[i];
 
@@ -263,50 +263,40 @@ void RoCEQM::add_constrs(NetContext& net_ctx,
                 }
                 continue;
             }
-            else if (return_to_sender == 0 || return_to_sender == 1) {
-                // Normal Forward
-                for (int i = 1; i <= control_flow.size(); i++) {
-                    dst_port = control_flow[i];
-                    sprintf(constr_name, "%s_forward!_dst_%d_to_port%d_at_%d", id.c_str(), i, dst_port, t);
+            // Normal Forward
+            for (int i = 1; i <= control_flow.size(); i++) {
+                dst_port = control_flow[i];
+                sprintf(constr_name, "%s_forward!_dst_%d_to_port%d_at_%d", id.c_str(), i, dst_port, t);
+                constr_expr = implies(pkt_val && !send_pause && !send_unpause && pkt_dst == net_ctx.int_val(i),
+                    out_queues[dst_port]->enqs(0)[t] == in_pkt);
+                //if ( !(t == 4 && (strcmp(id.c_str(), "roce1_0") == 0) || strcmp(id.c_str(), "roce0_0") == 0))
+                    constr_map.insert(named_constr(constr_name, constr_expr));
+
+                for (int j = 0; j < out_queues.size(); j++) {
+                    if (j == dst_port) continue;
+                    sprintf(constr_name, "%s_dont_forward_dst_%d_to_port%d_at_%d", id.c_str(), i, j, t);
                     constr_expr = implies(pkt_val && !send_pause && !send_unpause && pkt_dst == net_ctx.int_val(i),
-                        out_queues[dst_port]->enqs(0)[t] == in_pkt);
-                    //if ( !(t == 4 && (strcmp(id.c_str(), "roce1_0") == 0) || strcmp(id.c_str(), "roce0_0") == 0))
-                        constr_map.insert(named_constr(constr_name, constr_expr));
-
-                    for (int j = 0; j < out_queues.size(); j++) {
-                        if (j == dst_port) continue;
-                        sprintf(constr_name, "%s_dont_forward_dst_%d_to_port%d_at_%d", id.c_str(), i, j, t);
-                        constr_expr = implies(pkt_val && !send_pause && !send_unpause && pkt_dst == net_ctx.int_val(i),
-                            out_queues[j]->enqs(0)[t] == net_ctx.null_pkt());
-                        constr_map.insert(named_constr(constr_name, constr_expr));
-                    }
-                }
-
-                // Forward pause packets
-                sprintf(constr_name, "%s_forward_pause_%d_to_port%d_at_%d", id.c_str(), i, return_to_sender+3, t);
-                constr_expr = implies(pkt_val && send_pause,
-                    out_queues[return_to_sender+3]->enqs(0)[t] == net_ctx.pkt_val(true, 0, 10));
-                constr_map.insert(named_constr(constr_name, constr_expr));
-
-                // Forward unpause packets
-
-                sprintf(constr_name, "%s_forward_unpause_%d_to_port%d_at_%d", id.c_str(), i, return_to_sender+3, t);
-                constr_expr = implies(send_unpause,
-                    out_queues[return_to_sender+3]->enqs(0)[t] == net_ctx.pkt_val(true, 0, 11));
-                constr_map.insert(named_constr(constr_name, constr_expr));
-            }
-            else if (return_to_sender == 3 || return_to_sender == 4) {
-                for (int i = 0; i < out_queues.size(); i++) {
-                    sprintf(constr_name, "%s_dont_forward_%d_to_port%d_at_%d", id.c_str(), i, return_to_sender, t);
-                    constr_expr = implies(true,
-                        out_queues[i]->enqs(0)[t] == net_ctx.null_pkt());
+                        out_queues[j]->enqs(0)[t] == net_ctx.null_pkt());
                     constr_map.insert(named_constr(constr_name, constr_expr));
                 }
-                continue;
             }
+            // goba
+            int temp = 3;
+            // Forward pause packets
+            sprintf(constr_name, "%s_forward_pause_%d_to_port%d_at_%d", id.c_str(), i, return_to_sender+temp, t);
+            constr_expr = implies(pkt_val && send_pause,
+                out_queues[return_to_sender+temp]->enqs(0)[t] == net_ctx.pkt_val(true, 0, 10));
+            constr_map.insert(named_constr(constr_name, constr_expr));
+
+            // Forward unpause packets
+
+            sprintf(constr_name, "%s_forward_unpause_%d_to_port%d_at_%d", id.c_str(), i, return_to_sender+temp, t);
+            constr_expr = implies(send_unpause,
+                out_queues[return_to_sender+ temp]->enqs(0)[t] == net_ctx.pkt_val(true, 0, 11));
+            constr_map.insert(named_constr(constr_name, constr_expr));
 
             for (int i = 0; i < out_queues.size(); i++) {
-                if (i == return_to_sender+3 || (t == 4 && (i == 10))) continue;
+                if (i == return_to_sender+ temp) continue;
                 sprintf(constr_name, "%s_dont_forward_when_pause/unpause_%d_at_%d", id.c_str(), i, t);
                 constr_expr = implies((pkt_val && send_pause) || send_unpause,
                     out_queues[i]->enqs(0)[t] == net_ctx.null_pkt());

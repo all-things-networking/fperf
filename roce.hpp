@@ -30,12 +30,11 @@ private:
     std::vector<std::map<unsigned int, unsigned int>> control_flows;
 
     std::vector<unsigned int> ingress;
+    std::vector<unsigned int> cengress;
     std::vector<unsigned int> egress;
 
     std::vector<std::vector<unsigned int>> voq_input_maps;
     std::vector<std::vector<unsigned int>> voq_output_maps;
-    std::vector<std::vector<unsigned int>> voq_prio_input_maps;
-    std::vector<std::vector<unsigned int>> voq_prio_output_maps;
 
     vector<unsigned int> voq_input_map;
     vector<unsigned int> voq_output_map;

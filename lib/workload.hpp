@@ -283,20 +283,20 @@ private:
 class TimedSpec {
 
 public:
-    TimedSpec(WlSpec wl_spec, time_range_t time_range, unsigned int total_time);
-    TimedSpec(WlSpec wl_spec, unsigned int until_time, unsigned int total_time);
+    TimedSpec(WlSpec* wl_spec, time_range_t time_range, unsigned int total_time);
+    TimedSpec(WlSpec* wl_spec, unsigned int until_time, unsigned int total_time);
 
     bool spec_is_empty() const;
     bool spec_is_all() const;
     bool applies_to_queue(unsigned int queue) const;
 
     time_range_t get_time_range() const;
-    wl_spec_t get_wl_spec() const;
+    WlSpec* get_wl_spec() const;
 
     void set_time_range_ub(unsigned int ub);
 
 protected:
-    wl_spec_t wl_spec;
+    WlSpec* wl_spec;
     time_range_t time_range;
     unsigned int total_time;
 

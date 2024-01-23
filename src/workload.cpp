@@ -812,14 +812,14 @@ bool operator>=(const WlSpec& spec1, const WlSpec& spec2) {
 //            is always normalized independent of the operation
 //            running on it.
 
-TimedSpec::TimedSpec(wl_spec_t wl_spec, time_range_t time_range, unsigned int total_time):
+TimedSpec::TimedSpec(WlSpec* wl_spec, time_range_t time_range, unsigned int total_time):
 wl_spec(wl_spec),
 time_range(time_range),
 total_time(total_time) {
     normalize();
 }
 
-TimedSpec::TimedSpec(wl_spec_t wl_spec, unsigned int until_time, unsigned int total_time):
+TimedSpec::TimedSpec(WlSpec* wl_spec, unsigned int until_time, unsigned int total_time):
 wl_spec(wl_spec),
 time_range(time_range_t(0, until_time - 1)),
 total_time(total_time) {
@@ -829,7 +829,7 @@ total_time(total_time) {
 
 
 bool TimedSpec::applies_to_queue(unsigned int queue) const {
-    return wl_spec_applies_to_queue(wl_spec, queue);
+    return wl_spec->applies_to_queue(queue);
 }
 
 void TimedSpec::set_time_range_ub(unsigned int ub) {
@@ -837,6 +837,7 @@ void TimedSpec::set_time_range_ub(unsigned int ub) {
     normalize();
 }
 
+// TODO: Reconfigure with WlSpec
 void TimedSpec::normalize() {
     if (wl_spec_is_empty(wl_spec))
         is_empty = true;
@@ -882,26 +883,25 @@ time_range_t TimedSpec::get_time_range() const {
     return time_range;
 }
 
-wl_spec_t TimedSpec::get_wl_spec() const {
+WlSpec* TimedSpec::get_wl_spec() const {
     return wl_spec;
 }
 
 ostream& operator<<(ostream& os, const TimedSpec& spec) {
     os << spec.time_range << ": ";
-    os << spec.wl_spec;
-
+    spec.wl_spec->print(os);
     return os;
 }
 ostream& operator<<(ostream& os, const TimedSpec* spec) {
-    os << spec->time_range << ": ";
-    os << spec->wl_spec;
-
+    if (spec) {
+        os << *spec;
+    }
     return os;
 }
 
 bool operator==(const TimedSpec& spec1, const TimedSpec& spec2) {
-    wl_spec_t wl_spec1 = spec1.wl_spec;
-    wl_spec_t wl_spec2 = spec2.wl_spec;
+    WlSpec wl_spec1 = spec1.wl_spec;
+    WlSpec wl_spec2 = spec2.wl_spec;
 
     return (wl_spec1 == wl_spec2 && spec1.time_range == spec2.time_range);
 }
@@ -913,15 +913,6 @@ bool operator!=(const TimedSpec& spec1, const TimedSpec& spec2) {
 bool operator<(const TimedSpec& spec1, const TimedSpec& spec2) {
     return (spec1.time_range < spec2.time_range ||
             ((spec1.time_range == spec2.time_range) && (spec1.wl_spec < spec2.wl_spec)));
-}
-
-SearchTimedSpec::SearchTimedSpec(std::shared_ptr<Comp> comp_spec,
-                                 time_range_t time_range,
-                                 unsigned int total_time):
-comp_spec(comp_spec),
-time_range(time_range),
-total_time(total_time) {
-    normalize();
 }
 
 //************************************* Workload *************************************//

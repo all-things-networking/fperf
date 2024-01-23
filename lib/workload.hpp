@@ -15,6 +15,8 @@
 #include <tuple>
 #include <variant>
 #include <vector>
+#include <string>
+#include <memory>
 
 #include "cost.hpp"
 #include "example.hpp"
@@ -136,6 +138,8 @@ public:
     virtual bool equals(const WlSpec& other) const = 0;
     virtual bool less_than(const WlSpec& other) const = 0;
     virtual int type_id() const = 0;
+    virtual std::string to_string() const = 0;
+    virtual bool is_available_for_search() const { return false; }
 };
 
 //typedef variant<Comp, Same, Incr, Decr, Unique> wl_spec_t;
@@ -149,6 +153,7 @@ bool wl_spec_is_all(const WlSpec& spec);
 unsigned int wl_spec_ast_size(const WlSpec& spec);
 
 ostream& operator<<(ostream& os, const WlSpec& wl_spec);
+ostream& operator<<(ostream& os, const WlSpec* wl_spec);
 
 bool operator==(const WlSpec& wl_spec1, const WlSpec& wl_spec2);
 bool operator!=(const WlSpec& wl_spec1, const WlSpec& wl_spec2);
@@ -171,12 +176,11 @@ public:
     bool equals(const WlSpec& other) const override;
     bool less_than(const WlSpec& other) const override;
     int type_id() const override;
+    std::string to_string() const override;
 
 private:
     metric_t metric;
     qset_t qset;
-
-    friend ostream& operator<<(ostream& os, const Unique& u);
 };
 
 //************************************* SAME *************************************//
@@ -193,12 +197,11 @@ public:
     bool equals(const WlSpec& other) const override;
     bool less_than(const WlSpec& other) const override;
     int type_id() const override;
+    std::string to_string() const override;
 
 private:
     metric_t metric;
     unsigned int queue;
-
-    friend ostream& operator<<(ostream& os, const Same& s);
 };
 
 //************************************* INCR *************************************//
@@ -215,12 +218,11 @@ public:
     bool equals(const WlSpec& other) const override;
     bool less_than(const WlSpec& other) const override;
     int type_id() const override;
+    std::string to_string() const override;
 
 private:
     metric_t metric;
     unsigned int queue;
-
-    friend ostream& operator<<(ostream& os, const Incr& incr);
 };
 
 //************************************* DECR *************************************//
@@ -237,12 +239,11 @@ public:
     bool equals(const WlSpec& other) const override;
     bool less_than(const WlSpec& other) const override;
     int type_id() const override;
+    std::string to_string() const override;
 
 private:
     metric_t metric;
     unsigned int queue;
-
-    friend ostream& operator<<(ostream& os, const Decr& decr);
 };
 
 //************************************* COMP *************************************//
@@ -260,6 +261,7 @@ public:
     bool equals(const WlSpec& other) const override;
     bool less_than(const WlSpec& other) const override;
     int type_id() const override;
+    std::string to_string() const override;
 
     lhs_t get_lhs() const;
     op_t get_op() const;
@@ -274,9 +276,6 @@ private:
     bool is_all = false;
 
     void normalize();
-
-    friend ostream& operator<<(ostream& os, const Comp& spec);
-    friend ostream& operator<<(ostream& os, const Comp* spec);
 };
 
 //************************************* Timed WlSpec *************************************//
@@ -311,19 +310,6 @@ protected:
     friend bool operator==(const TimedSpec& spec1, const TimedSpec& spec2);
     friend bool operator!=(const TimedSpec& spec1, const TimedSpec& spec2);
     friend bool operator<(const TimedSpec& spec1, const TimedSpec& spec2);
-};
-
-class SearchTimedSpec : public TimedSpec { // TimedSpec for search; only allows Comp
-public:
-    SearchTimedSpec(std::shared_ptr<Comp> comp_spec,
-                    time_range_t time_range,
-                    unsigned int total_time);
-
-    SearchTimedSpec(std::shared_ptr<Comp> comp_spec,
-                    unsigned int until_time,
-                    unsigned int total_time);
-
-    std::shared_ptr<Comp> get_comp_spec() const;
 };
 
 //************************************* Workload *************************************//

@@ -285,12 +285,12 @@ metric_t Unique::get_metric() const {
     return metric;
 }
 
-bool Unique::equals(const WlSpec& other) const override {
+bool Unique::equals(const WlSpec& other) const {
     const Unique* other_unique = dynamic_cast<const Unique*>(&other);
     return (this->metric == other_unique->metric && this->qset == other_unique->qset);
 }
 
-bool Unique::less_than(const WlSpec& other) const override {
+bool Unique::less_than(const WlSpec& other) const {
     if (this->type_id() < other.type_id()) return true;
     if (this->type_id() > other.type_id()) return false;
     const Unique* other_unique = dynamic_cast<const Unique*>(&other);
@@ -298,13 +298,14 @@ bool Unique::less_than(const WlSpec& other) const override {
             (this->metric == other_unique->metric && this->qset < other_unique->qset));
 }
 
-int Unique::type_id() const override {
+int Unique::type_id() const {
     return 5;
 }
 
-ostream& operator<<(ostream& os, const Unique& u) {
-    os << "Uniqe[" << u.metric << "(" << u.qset << ", t)]";
-    return os;
+std::string Unique::to_string() const {
+    stringstream ss;
+    ss << "Unique[" << metric << "(" << qset << ", t)]";
+    return ss.str();
 }
 
 //************************************* SAME *************************************//
@@ -325,12 +326,12 @@ metric_t Same::get_metric() const {
     return metric;
 }
 
-bool Same::equals(const WlSpec& other) const override {
+bool Same::equals(const WlSpec& other) const {
     const Same* other_same = dynamic_cast<const Same*>(&other);
     return (this->metric == other_same->metric && this->queue == other_same->queue);
 }
 
-bool Same::less_than(const WlSpec& other) const override {
+bool Same::less_than(const WlSpec& other) const {
     if (this->type_id() < other.type_id()) return true;
     if (this->type_id() > other.type_id()) return false;
     const Same* other_same = dynamic_cast<const Same*>(&other);
@@ -338,13 +339,14 @@ bool Same::less_than(const WlSpec& other) const override {
             (this->metric == other_same->metric && this->queue < other_same->queue));
 }
 
-int Same::type_id() const override {
+int Same::type_id() const {
     return 2;
 }
 
-ostream& operator<<(ostream& os, const Same& s) {
-    os << "Same[" << s.metric << "(" << s.queue << ", t)]";
-    return os;
+std::string Same::to_string() const {
+    stringstream ss;
+    ss << "Same[" << metric << "(" << queue << ", t)]";
+    return ss.str();
 }
 
 //************************************* INCR *************************************//
@@ -365,12 +367,12 @@ metric_t Incr::get_metric() const {
     return metric;
 }
 
-bool Incr::equals(const WlSpec& other) const override {
+bool Incr::equals(const WlSpec& other) const {
     const Incr* other_incr = dynamic_cast<const Incr*>(&other);
     return (this->metric == other_incr->metric && this->queue == other_incr->queue);
 }
 
-bool Incr::less_than(const WlSpec& other) const override {
+bool Incr::less_than(const WlSpec& other) const {
     if (this->type_id() < other.type_id()) return true;
     if (this->type_id() > other.type_id()) return false;
     const Incr* other_incr = dynamic_cast<const Incr*>(&other);
@@ -378,13 +380,14 @@ bool Incr::less_than(const WlSpec& other) const override {
             (this->metric == other_incr->metric && this->queue < other_incr->queue));
 }
 
-int Incr::type_id() const override {
+int Incr::type_id() const {
     return 3;
 }
 
-ostream& operator<<(ostream& os, const Incr& incr) {
-    os << "Incr[" << incr.metric << "(" << incr.queue << ", t)]";
-    return os;
+std::string Incr::to_string() const {
+    stringstream ss;
+    ss << "Incr[" << metric << "(" << queue << ", t)]";
+    return ss.str();
 }
 
 //************************************* DECR *************************************//
@@ -405,12 +408,12 @@ metric_t Decr::get_metric() const {
     return metric;
 }
 
-bool Decr::equals(const WlSpec& other) const override {
+bool Decr::equals(const WlSpec& other) const {
     const Decr* other_decr = dynamic_cast<const Decr*>(&other);
     return (this->metric == other_decr->metric && this->queue == other_decr->queue);
 }
 
-bool Decr::less_than(const WlSpec& other) const override {
+bool Decr::less_than(const WlSpec& other) const {
     if (this->type_id() < other.type_id()) return true;
     if (this->type_id() > other.type_id()) return false;
     const Decr* other_decr = dynamic_cast<const Decr*>(&other);
@@ -418,13 +421,14 @@ bool Decr::less_than(const WlSpec& other) const override {
             (this->metric == other_decr->metric && this->queue < other_decr->queue));
 }
 
-int Decr::type_id() const override {
+int Decr::type_id() const {
     return 4;
 }
 
-ostream& operator<<(ostream& os, const Decr& decr) {
-    os << "Decr[" << decr.metric << "(" << decr.queue << ", t)]";
-    return os;
+std::string Decr::to_string() const {
+    stringstream ss;
+    ss << "Decr[" << metric << "(" << queue << ", t)]";
+    return ss.str();
 }
 
 //************************************* Comp *************************************//
@@ -707,12 +711,12 @@ rhs_t Comp::get_rhs() const {
     return rhs;
 }
 
-bool Comp::equals(const WlSpec& other) const override {
+bool Comp::equals(const WlSpec& other) const {
     const Comp* other_comp = dynamic_cast<const Comp*>(&other);
     return (this->lhs == other_comp->lhs && this->op == other_comp->op && this->rhs == other_comp->rhs);
 }
 
-bool Comp::less_than(const WlSpec& other) const override {
+bool Comp::less_than(const WlSpec& other) const {
     if (this->type_id() < other.type_id()) return true;
     if (this->type_id() > other.type_id()) return false;
     const Comp* other_comp = dynamic_cast<const Comp*>(&other);
@@ -721,23 +725,19 @@ bool Comp::less_than(const WlSpec& other) const override {
             (this->lhs == other_comp->lhs && this->op == other_comp->op && this->rhs < other_comp->rhs));
 }
 
-int Comp::type_id() const override {
+int Comp::type_id() const {
     return 1;
 }
 
-ostream& operator<<(ostream& os, const Comp& comp) {
-    if (comp.is_all)
+std::string Comp::to_string() const {
+    std::ostringstream os;
+    if (is_all)
         os << "*";
-    else if (comp.is_empty)
+    else if (is_empty)
         os << "FALSE";
     else
-        os << comp.lhs << " " << comp.op << " " << comp.rhs;
-    return os;
-}
-
-ostream& operator<<(ostream& os, const Comp* comp) {
-    os << comp->lhs << " " << comp->op << " " << comp->rhs;
-    return os;
+        os << lhs << " " << op << " " << rhs;
+    return os.str();
 }
 
 //************************************* WlSpec *************************************//
@@ -772,35 +772,13 @@ bool wl_spec_applies_to_queue(const WlSpec& spec, unsigned int queue) {
     return spec.applies_to_queue(queue);
 }
 
-ostream& operator<<(ostream& os, const wl_spec_t& wl_spec) {
-    switch (wl_spec.index()) {
-        // Comp
-        case 0: {
-            os << get<Comp>(wl_spec);
-            break;
-        }
-        // Same
-        case 1: {
-            os << get<Same>(wl_spec);
-            break;
-        }
-        // Incr
-        case 2: {
-            os << get<Incr>(wl_spec);
-            break;
-        }
-        // Decr
-        case 3: {
-            os << get<Decr>(wl_spec);
-            break;
-        }
-        // Uniq
-        case 4: {
-            os << get<Unique>(wl_spec);
-            break;
-        }
-        default: break;
-    }
+ostream& operator<<(ostream& os, const WlSpec& wl_spec) {
+    os << wl_spec.to_string();
+    return os;
+}
+
+ostream& operator<<(ostream& os, const WlSpec* wl_spec) {
+    os << wl_spec->to_string();
     return os;
 }
 

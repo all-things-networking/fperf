@@ -812,15 +812,15 @@ bool operator>=(const WlSpec& spec1, const WlSpec& spec2) {
 //            is always normalized independent of the operation
 //            running on it.
 
-TimedSpec::TimedSpec(WlSpec* wl_spec, time_range_t time_range, unsigned int total_time):
-wl_spec(wl_spec),
+TimedSpec::TimedSpec(std::shared_ptr<WlSpec> wl_spec, time_range_t time_range, unsigned int total_time):
+wl_spec(std::move(wl_spec)),
 time_range(time_range),
 total_time(total_time) {
     normalize();
 }
 
-TimedSpec::TimedSpec(WlSpec* wl_spec, unsigned int until_time, unsigned int total_time):
-wl_spec(wl_spec),
+TimedSpec::TimedSpec(std::shared_ptr<WlSpec> wl_spec, unsigned int until_time, unsigned int total_time):
+wl_spec(std::move(wl_spec)),
 time_range(time_range_t(0, until_time - 1)),
 total_time(total_time) {
     if (until_time == 0) time_range = time_range_t(1, 0);
@@ -843,7 +843,7 @@ void TimedSpec::normalize() {
     } else if (wl_spec_is_all(*wl_spec) || time_range.first > time_range.second) {
         is_all = true;
     } else {
-        Comp* compSpec = dynamic_cast<Comp*>(wl_spec);
+        auto compSpec = std::dynamic_pointer_cast<Comp>(wl_spec);
         if (compSpec) {
             lhs_t lhs = compSpec->get_lhs();
             op_t op = compSpec->get_op();
@@ -882,7 +882,7 @@ time_range_t TimedSpec::get_time_range() const {
     return time_range;
 }
 
-WlSpec* TimedSpec::get_wl_spec() const {
+std::shared_ptr<WlSpec> TimedSpec::get_wl_spec() const {
     return wl_spec;
 }
 

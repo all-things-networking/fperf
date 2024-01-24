@@ -837,36 +837,35 @@ void TimedSpec::set_time_range_ub(unsigned int ub) {
     normalize();
 }
 
-// TODO: Reconfigure with WlSpec
 void TimedSpec::normalize() {
-    if (wl_spec_is_empty(wl_spec))
+    if (wl_spec_is_empty(*wl_spec)) {
         is_empty = true;
-    else if (wl_spec_is_all(wl_spec) || time_range.first > time_range.second)
+    } else if (wl_spec_is_all(*wl_spec) || time_range.first > time_range.second) {
         is_all = true;
-    else {
-        if (!holds_alternative<Comp>(wl_spec)) return;
+    } else {
+        Comp* compSpec = dynamic_cast<Comp*>(wl_spec);
+        if (compSpec) {
+            lhs_t lhs = compSpec->get_lhs();
+            op_t op = compSpec->get_op();
+            rhs_t rhs = compSpec->get_rhs();
 
-        Comp comp = get<Comp>(wl_spec);
-
-        // When rhs is constant
-        lhs_t lhs = comp.get_lhs();
-        op_t op = comp.get_op();
-        rhs_t rhs = comp.get_rhs();
-
-        if (holds_alternative<unsigned int>(rhs)) {
-            metric_t metric;
-            if (holds_alternative<Indiv>(lhs)) {
-                metric = get<Indiv>(lhs).get_metric();
-            } else {
-                metric = get<QSum>(lhs).get_metric();
-            }
-            if (Metric::properties.at(metric).non_decreasing) {
-                if (op == op_t::GE || op == op_t::GT) {
-                    time_range.second = total_time - 1;
-                } else if (op == op_t::LE || op == op_t::LT) {
-                    time_range.first = 0;
+            if (holds_alternative<unsigned int>(rhs)) {
+                metric_t metric;
+                if (holds_alternative<Indiv>(lhs)) {
+                    metric = get<Indiv>(lhs).get_metric();
+                } else {
+                    metric = get<QSum>(lhs).get_metric();
+                }
+                if (Metric::properties.at(metric).non_decreasing) {
+                    if (op == op_t::GE || op == op_t::GT) {
+                        time_range.second = total_time - 1;
+                    } else if (op == op_t::LE || op == op_t::LT) {
+                        time_range.first = 0;
+                    }
                 }
             }
+        } else {
+            // TODO: handle other types of WlSpec
         }
     }
 }

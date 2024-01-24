@@ -751,9 +751,25 @@ bool wl_spec_is_all(const WlSpec& spec) {
 }
 
 // TODO: Only checks COMP
+bool wl_spec_is_all(const std::shared_ptr<WlSpec>& spec) {
+    if (auto compSpec = std::dynamic_pointer_cast<Comp>(spec)) {
+        return compSpec->spec_is_all();
+    }
+    return false;
+}
+
+// TODO: Only checks COMP
 bool wl_spec_is_empty(const WlSpec& spec) {
     const Comp* compSpec = dynamic_cast<const Comp*>(&spec);
     if (compSpec) {
+        return compSpec->spec_is_empty();
+    }
+    return false;
+}
+
+// TODO: Only checks COMP
+bool wl_spec_is_empty(const std::shared_ptr<WlSpec>& spec) {
+    if (auto compSpec = std::dynamic_pointer_cast<Comp>(spec)) {
         return compSpec->spec_is_empty();
     }
     return false;
@@ -767,9 +783,20 @@ unsigned int wl_spec_ast_size(const WlSpec& wl_spec) {
     return 1u; // Default value for non-Comp types
 }
 
+unsigned int wl_spec_ast_size(const std::shared_ptr<WlSpec>& wl_spec) {
+    if (auto compSpec = std::dynamic_pointer_cast<Comp>(wl_spec)) {
+        return compSpec->ast_size();
+    }
+    return 1u; // Default value for non-Comp types
+}
+
 
 bool wl_spec_applies_to_queue(const WlSpec& spec, unsigned int queue) {
     return spec.applies_to_queue(queue);
+}
+
+bool wl_spec_applies_to_queue(const std::shared_ptr<WlSpec>& spec, unsigned int queue) {
+    return spec->applies_to_queue(queue);
 }
 
 ostream& operator<<(ostream& os, const WlSpec& wl_spec) {

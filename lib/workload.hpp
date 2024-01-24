@@ -145,12 +145,16 @@ public:
 //typedef variant<Comp, Same, Incr, Decr, Unique> wl_spec_t;
 
 bool wl_spec_applies_to_queue(const WlSpec& spec, unsigned int queue);
+bool wl_spec_applies_to_queue(const std::shared_ptr<WlSpec>& spec, unsigned int queue);
 
 bool wl_spec_is_empty(const WlSpec& spec);
+bool wl_spec_is_empty(const std::shared_ptr<WlSpec>& spec);
 
 bool wl_spec_is_all(const WlSpec& spec);
+bool wl_spec_is_all(const std::shared_ptr<WlSpec>& spec);
 
 unsigned int wl_spec_ast_size(const WlSpec& spec);
+unsigned int wl_spec_ast_size(const std::shared_ptr<WlSpec>& wl_spec);
 
 ostream& operator<<(ostream& os, const WlSpec& wl_spec);
 ostream& operator<<(ostream& os, const WlSpec* wl_spec);
@@ -313,7 +317,7 @@ protected:
 };
 
 //************************************* Workload *************************************//
-typedef map<time_range_t, set<wl_spec_t>> timeline_t;
+typedef map<time_range_t, set<std::shared_ptr<WlSpec>>> timeline_t;
 
 class Workload {
 public:
@@ -344,7 +348,7 @@ private:
     unsigned int max_size;
     unsigned int queue_cnt;
     unsigned int total_time;
-    set<wl_spec_t> empty_set;
+    set<std::shared_ptr<WlSpec>> empty_set;
 
     set<TimedSpec> all_specs;
     timeline_t timeline;

@@ -267,6 +267,8 @@ public:
     int type_id() const override;
     std::string to_string() const override;
 
+    bool is_available_for_search() const override;
+
     lhs_t get_lhs() const;
     op_t get_op() const;
     rhs_t get_rhs() const;

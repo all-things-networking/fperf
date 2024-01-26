@@ -33,7 +33,7 @@ RandomSpecGenerationParameters SpecFactory::get_metric_params(metric_t metric_ty
 //************************************* TimedSpec *************************************//
 
 TimedSpec SpecFactory::random_timed_spec() {
-    wl_spec_t wl_spec = random_wl_spec();
+    std::shared_ptr<WlSpec> wl_spec = random_wl_spec();
 
     unsigned int time_range_lb = dists->timestep();
     unsigned int time_range_ub = dists->timestep();
@@ -47,11 +47,11 @@ TimedSpec SpecFactory::random_timed_spec() {
 
 
 void SpecFactory::pick_neighbors(TimedSpec& spec, vector<TimedSpec>& neighbors) {
-    wl_spec_t wl_spec = spec.get_wl_spec();
+    std::shared_ptr<WlSpec> wl_spec = spec.get_wl_spec();
     time_range_t time_range = spec.get_time_range();
 
     // Changing wl_spec
-    vector<wl_spec_t> wl_spec_neighbors;
+    vector<std::shared_ptr<WlSpec>> wl_spec_neighbors;
     pick_neighbors(wl_spec, wl_spec_neighbors);
     for (unsigned int i = 0; i < wl_spec_neighbors.size(); i++) {
         TimedSpec nei = TimedSpec(wl_spec_neighbors[i], time_range, total_time);
@@ -87,15 +87,18 @@ void SpecFactory::pick_neighbors(TimedSpec& spec, vector<TimedSpec>& neighbors) 
 
 //************************************* WlSpec *************************************//
 
-wl_spec_t SpecFactory::random_wl_spec() {
-    return random_comp();
+std::shared_ptr<WlSpec> SpecFactory::random_wl_spec() {
+    return std::make_shared<Comp>(random_comp());
 }
 
-void SpecFactory::pick_neighbors(wl_spec_t& spec, vector<wl_spec_t>& neighbors) {
-    if (holds_alternative<Comp>(spec)) {
-        vector<Comp> comp_neighbors;
-        pick_neighbors(get<Comp>(spec), comp_neighbors);
-        neighbors.insert(neighbors.end(), comp_neighbors.begin(), comp_neighbors.end());
+void SpecFactory::pick_neighbors(std::shared_ptr<WlSpec>& spec, std::vector<std::shared_ptr<WlSpec>>& neighbors) {
+    auto compSpec = std::dynamic_pointer_cast<Comp>(spec);
+    if (compSpec) {
+        std::vector<Comp> comp_neighbors;
+        pick_neighbors(*compSpec, comp_neighbors);
+        for (const auto& neighbor : comp_neighbors) {
+            neighbors.push_back(std::make_shared<Comp>(neighbor));
+        }
     }
 }
 

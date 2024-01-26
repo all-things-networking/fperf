@@ -41,8 +41,8 @@ public:
     void pick_neighbors(TimedSpec& spec, vector<TimedSpec>& neighbors);
 
     //**** WlSpec ****//
-    wl_spec_t random_wl_spec();
-    void pick_neighbors(wl_spec_t& spec, vector<wl_spec_t>& neighbors);
+    std::shared_ptr<WlSpec> random_wl_spec();
+    void pick_neighbors(std::shared_ptr<WlSpec>& spec, std::vector<std::shared_ptr<WlSpec>>& neighbors);
 
     //**** COMP ****//
     Comp random_comp();

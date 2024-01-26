@@ -915,7 +915,7 @@ std::shared_ptr<WlSpec> TimedSpec::get_wl_spec() const {
 
 ostream& operator<<(ostream& os, const TimedSpec& spec) {
     os << spec.time_range << ": ";
-    spec.wl_spec->print(os);
+    os << spec.wl_spec;
     return os;
 }
 ostream& operator<<(ostream& os, const TimedSpec* spec) {
@@ -926,10 +926,9 @@ ostream& operator<<(ostream& os, const TimedSpec* spec) {
 }
 
 bool operator==(const TimedSpec& spec1, const TimedSpec& spec2) {
-    WlSpec wl_spec1 = spec1.wl_spec;
-    WlSpec wl_spec2 = spec2.wl_spec;
-
-    return (wl_spec1 == wl_spec2 && spec1.time_range == spec2.time_range);
+    WlSpec* wl_spec1 = spec1.get_wl_spec().get();
+    WlSpec* wl_spec2 = spec2.get_wl_spec().get();
+    return (spec1.time_range == spec2.time_range && *wl_spec1 == *wl_spec2);
 }
 
 bool operator!=(const TimedSpec& spec1, const TimedSpec& spec2) {
@@ -976,7 +975,7 @@ void Workload::add_spec(TimedSpec spec) {
 void Workload::rm_spec(TimedSpec spec) {
     auto erase_res = all_specs.erase(spec);
     time_range_t spec_time_range = spec.get_time_range();
-    wl_spec_t wl_spec = spec.get_wl_spec();
+    std::shared_ptr<WlSpec> wl_spec = spec.get_wl_spec();
     if (erase_res > 0) {
         for (timeline_t::iterator it = timeline.begin(); it != timeline.end(); it++) {
             if (is_superset(spec_time_range, it->first)) {
@@ -1065,8 +1064,7 @@ void Workload::normalize() {
     // check that first?
     if (timeline.size() > 1) {
         vector<time_range_t> to_erase;
-
-        typedef pair<time_range_t, set<wl_spec_t>> timeline_entry;
+        typedef pair<time_range_t, set<std::shared_ptr<WlSpec>>> timeline_entry;
         vector<timeline_entry> to_add;
 
         bool valid_last_new_entry = false;
@@ -1078,14 +1076,12 @@ void Workload::normalize() {
 
             timeline_t::iterator next_it = next(it);
 
-            set<wl_spec_t> specs1 = it->second;
-            set<wl_spec_t> specs2 = next_it->second;
+            set<std::shared_ptr<WlSpec>> specs1 = it->second;
+            set<std::shared_ptr<WlSpec>> specs2 = next_it->second;
 
             if (specs1 == specs2) {
                 time_range_t time_range_1 = it->first;
-
-                time_range_t time_range_2 = next(it)->first;
-
+                time_range_t time_range_2 = next_it->first;
                 to_erase.push_back(time_range_1);
                 to_erase.push_back(time_range_2);
 
@@ -1129,12 +1125,12 @@ void Workload::normalize() {
 }
 
 void Workload::normalize(time_range_t time_range) {
-    set<wl_spec_t> specs = timeline[time_range];
+    set<std::shared_ptr<WlSpec>> specs = timeline[time_range];
 
     // if one is empty, the entire thing is empty
-    for (set<wl_spec_t>::iterator it = specs.begin(); it != specs.end(); it++) {
+    for (set<std::shared_ptr<WlSpec>>::iterator it = specs.begin(); it != specs.end(); it++) {
         if (wl_spec_is_empty(*it)) {
-            wl_spec_t spec = *it;
+            std::shared_ptr<WlSpec> spec = *it;
             timeline[time_range].clear();
             timeline[time_range].insert(spec);
             return;
@@ -1145,8 +1141,8 @@ void Workload::normalize(time_range_t time_range) {
     // - Remove the "alls".
     // TODO: implement with the std utilities like sort and remove_if
 
-    set<wl_spec_t> filtered_specs;
-    for (set<wl_spec_t>::iterator it = specs.begin(); it != specs.end(); it++) {
+    set<std::shared_ptr<WlSpec>> filtered_specs;
+    for (set<std::shared_ptr<WlSpec>>::iterator it = specs.begin(); it != specs.end(); it++) {
 
         if (wl_spec_is_all(*it)) continue;
 
@@ -1166,19 +1162,19 @@ void Workload::normalize(time_range_t time_range) {
 
     vector<Comp> zero_comps;
     vector<Comp> non_zero_comps;
-    vector<wl_spec_t> non_op_specs;
+    vector<std::shared_ptr<WlSpec>> non_op_specs;
 
-    for (set<wl_spec_t>::iterator it = specs.begin(); it != specs.end(); it++) {
-        wl_spec_t spec = *it;
+    for (set<std::shared_ptr<WlSpec>>::iterator it = specs.begin(); it != specs.end(); it++) {
+        std::shared_ptr<WlSpec> spec = *it;
 
-        if (!holds_alternative<Comp>(spec)) {
+        if (auto compSpec = std::dynamic_pointer_cast<Comp>(spec)) {
             non_op_specs.push_back(spec);
             continue;
         }
 
-        Comp comp = get<Comp>(spec);
+        Comp* comp = dynamic_cast<Comp*>(spec.get());
 
-        auto zero_queues = comp.get_zero_queues();
+        auto zero_queues = comp->get_zero_queues();
         qset_t zero_queue_set = zero_queues.second;
         bool has_zero = zero_queue_set.size() > 0;
 
@@ -1193,11 +1189,11 @@ void Workload::normalize(time_range_t time_range) {
                 zeros.push_back(p);
             }
 
-            zero_comps.push_back(get<Comp>(spec));
+            zero_comps.push_back(*comp);
         }
 
         else
-            non_zero_comps.push_back(get<Comp>(spec));
+            non_zero_comps.push_back(*comp);
     }
 
     bool changed = true;
@@ -1349,10 +1345,14 @@ void Workload::normalize(time_range_t time_range) {
     }
 
 
-    set<wl_spec_t> final_specs;
+    set<std::shared_ptr<WlSpec>> final_specs;
 
-    final_specs.insert(zero_comps.begin(), zero_comps.end());
-    final_specs.insert(non_zero_comps.begin(), non_zero_comps.end());
+    for (const auto& comp : zero_comps) {
+        final_specs.insert(std::make_shared<Comp>(comp));
+    }
+    for (const auto& comp : non_zero_comps) {
+        final_specs.insert(std::make_shared<Comp>(comp));
+    }
     final_specs.insert(non_op_specs.begin(), non_op_specs.end());
 
     timeline[time_range] = final_specs;
@@ -1368,9 +1368,10 @@ void Workload::regenerate_spec_set() {
 
     for (timeline_t::iterator it = timeline.begin(); it != timeline.end(); it++) {
         time_range_t time_range = it->first;
-        set<wl_spec_t> specs = it->second;
+        set<std::shared_ptr<WlSpec>> specs = it->second;
 
-        for (set<wl_spec_t>::iterator s_it = specs.begin(); s_it != specs.end(); s_it++) {
+        for (set<std::shared_ptr<WlSpec>>::iterator s_it = specs.begin(); s_it != specs.end();
+             s_it++) {
 
             bool already_exists = false;
             for (unsigned int i = 0; i < new_all_specs.size(); i++) {
@@ -1395,10 +1396,10 @@ void Workload::regenerate_spec_set() {
 unsigned int Workload::ast_size() const {
     unsigned int res = 0;
     for (timeline_t::const_iterator it = timeline.cbegin(); it != timeline.cend(); it++) {
-        set<wl_spec_t> specs = it->second;
+        set<std::shared_ptr<WlSpec>> specs = it->second;
 
         if (specs.size() == 0) res++;
-        for (set<wl_spec_t>::iterator s_it = specs.begin(); s_it != specs.end(); s_it++) {
+        for (set<std::shared_ptr<WlSpec>>::const_iterator s_it = specs.cbegin(); s_it != specs.cend(); s_it++) {
             res += wl_spec_ast_size(*s_it);
         }
     }
@@ -1420,7 +1421,7 @@ set<time_range_t> Workload::add_time_range(time_range_t time_range) {
     }
 
     time_range_t beginning_time_range = beginning->first;
-    set<wl_spec_t> beginning_set = beginning->second;
+    set<std::shared_ptr<WlSpec>> beginning_set = beginning->second;
 
     if (time_range.first > beginning_time_range.first) {
         timeline[time_range_t(beginning_time_range.first, time_range.first - 1)] = beginning_set;
@@ -1439,7 +1440,7 @@ set<time_range_t> Workload::add_time_range(time_range_t time_range) {
     }
 
     time_range_t end_time_range = end->first;
-    set<wl_spec_t> end_set = end->second;
+    set<std::shared_ptr<WlSpec>> end_set = end->second;
 
     if (time_range.second < end_time_range.second) {
         timeline[time_range_t(end_time_range.first, time_range.second)] = end_set;
@@ -1468,14 +1469,15 @@ string Workload::get_timeline_str() {
     } else {
         for (timeline_t::iterator it = timeline.begin(); it != timeline.end(); it++) {
             ss << it->first << ": ";
-            set<wl_spec_t> specs = it->second;
+            set<std::shared_ptr<WlSpec>> specs = it->second;
             if (specs.size() == 0) {
                 ss << "*" << endl;
                 continue;
             }
 
             bool is_first = true;
-            for (set<wl_spec_t>::iterator it2 = specs.begin(); it2 != specs.end(); it2++) {
+            for (set<std::shared_ptr<WlSpec>>::iterator it2 = specs.begin(); it2 != specs.end();
+                 it2++) {
                 if (!is_first) {
                     ss << "        ";
                 }

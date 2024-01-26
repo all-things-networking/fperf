@@ -1,4 +1,6 @@
 #include "tbf.hpp"
+#include <sstream>
+
 
 TBF::TBF(unsigned int total_time, TBFInfo info): ContentionPoint(total_time), info(info) {
     init();

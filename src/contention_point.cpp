@@ -1137,7 +1137,7 @@ void ContentionPoint::generate_good_examples_flow(deque<IndexedExample*>& exampl
     // POP
     z3_optimizer->pop();
 
-    DEBUG_MSG("base eg: " << (get_diff_millisec(start, noww()) / 1000.0) << endl);
+//    DEBUG_MSG("base eg: " << (get_diff_millisec(start, noww()) / 1000.0) << endl);
 
     // PUSH
     z3_optimizer->push();

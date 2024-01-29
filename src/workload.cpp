@@ -967,6 +967,56 @@ total_time(total_time) {
     timeline[time_range_t(0, total_time - 1)] = empty_set;
 }
 
+// Big 5
+Workload::Workload(const Workload& other):
+max_size(other.max_size),
+queue_cnt(other.queue_cnt),
+total_time(other.total_time) {
+    all_specs = other.all_specs;
+    timeline = other.timeline;
+    empty = other.empty;
+    all = other.all;
+}
+
+Workload& Workload::operator=(const Workload& other) {
+    if (this != &other) {
+        max_size = other.max_size;
+        queue_cnt = other.queue_cnt;
+        total_time = other.total_time;
+        all_specs = other.all_specs;
+        timeline = other.timeline;
+        empty = other.empty;
+        all = other.all;
+    }
+    return *this;
+}
+
+Workload::Workload(Workload&& other):
+max_size(other.max_size),
+queue_cnt(other.queue_cnt),
+total_time(other.total_time) {
+    all_specs = move(other.all_specs);
+    timeline = move(other.timeline);
+    empty = other.empty;
+    all = other.all;
+}
+
+Workload& Workload::operator=(Workload&& other) {
+    if (this != &other) {
+        max_size = other.max_size;
+        queue_cnt = other.queue_cnt;
+        total_time = other.total_time;
+        all_specs = move(other.all_specs);
+        timeline = move(other.timeline);
+        empty = other.empty;
+        all = other.all;
+    }
+    return *this;
+}
+
+Workload::~Workload() {
+}
+
 void Workload::clear() {
     all_specs.clear();
     timeline.clear();

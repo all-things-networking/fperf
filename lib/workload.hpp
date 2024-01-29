@@ -52,9 +52,11 @@ public:
     qset_t get_qset() const;
     metric_t get_metric() const;
 
-private:
     qset_t qset;
     metric_t metric;
+
+private:
+
 
     friend ostream& operator<<(ostream& os, const QSum& tsum);
     friend bool operator==(const QSum& s1, const QSum& s2);
@@ -74,9 +76,11 @@ public:
     unsigned int get_queue() const;
     metric_t get_metric() const;
 
-private:
     metric_t metric;
     unsigned int queue;
+
+private:
+
 
     friend ostream& operator<<(ostream& os, const Indiv& tone);
     friend bool operator==(const Indiv& s1, const Indiv& s2);
@@ -223,10 +227,11 @@ public:
     op_t get_op() const;
     rhs_t get_rhs() const;
 
-private:
     lhs_t lhs;
     op_t op;
     rhs_t rhs;
+
+private:
 
     bool is_empty = false;
     bool is_all = false;
@@ -297,6 +302,13 @@ typedef map<time_range_t, set<wl_spec_t>> timeline_t;
 class Workload {
 public:
     Workload(unsigned int max_size, unsigned int queue_cnt, unsigned int total_time);
+
+    // Big 5
+    Workload(const Workload& wl);
+    Workload& operator=(const Workload& wl);
+    Workload(Workload&& wl);
+    Workload& operator=(Workload&& wl);
+    ~Workload();
 
     void clear();
     void add_spec(TimedSpec spec);

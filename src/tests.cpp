@@ -18,6 +18,9 @@
 #include "search.hpp"
 #include "tbf.hpp"
 
+#include <random>
+#include <iterator>
+
 void run(ContentionPoint* cp,
          IndexedExample* base_eg,
          unsigned int good_example_cnt,
@@ -91,6 +94,204 @@ void prio(string good_examples_file, string bad_examples_file) {
         query,
         8,
         config);
+}
+
+void prio_test(string good_examples_file, string bad_examples_file) {
+
+    cout << "prio_test" << endl;
+    time_typ start_time = noww();
+
+    unsigned int prio_levels = 4;
+    unsigned int query_thresh = 5;
+
+    unsigned int good_example_cnt = 50;
+    unsigned int bad_example_cnt = 50;
+    unsigned int total_time = 7;
+
+    PrioScheduler* prio = new PrioScheduler(prio_levels, total_time);
+
+    cid_t query_qid = prio->get_in_queues()[2]->get_id();
+    Query query(query_quant_t::EXISTS,
+                time_range_t(0, prio->get_total_time() - 1),
+                query_qid,
+                metric_t::CBLOCKED,
+                op_t::GT,
+                query_thresh);
+
+    prio->set_query(query);
+
+    cout << "cp setup: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s" << endl;
+
+    // generate base example
+    start_time = noww();
+    IndexedExample* base_eg = new IndexedExample();
+    qset_t target_queues;
+
+    bool res = prio->generate_base_example(base_eg, target_queues, prio_levels);
+
+    if (!res) {
+        cout << "ERROR: couldn't generate base example" << endl;
+        return;
+    }
+
+    cout << "base example generation: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s"
+         << endl;
+
+    // Set shared config
+    DistsParams dists_params;
+    dists_params.in_queue_cnt = prio->in_queue_cnt();
+    dists_params.total_time = total_time;
+    dists_params.pkt_meta1_val_max = 2;
+    dists_params.pkt_meta2_val_max = 2;
+    dists_params.random_seed = 2000;
+
+    Dists* dists = new Dists(dists_params);
+    SharedConfig* config = new SharedConfig(total_time, prio->in_queue_cnt(), target_queues, dists);
+    bool config_set = prio->set_shared_config(config);
+    if (!config_set) return;
+
+    cout << "Base example: " << endl << *base_eg << endl;
+
+    // Create a workload that perfectly describes the base example
+    // That is, for each queue, for each timestep, the workload has a spec of the form:
+    // [t, t]: cenq(queue_id, t) = sum from 0 to t of enqs[queue_id][t]
+
+    vector<vector<unsigned int>> enqs = base_eg->enqs;
+    vector<vector<unsigned int>> sums(prio->in_queue_cnt(), vector<unsigned int>(total_time, 0));
+    for (unsigned int q = 0; q < enqs.size(); q++) {
+        for (unsigned int t = 0; t < enqs[q].size(); t++) {
+            sums[q][t] = (t == 0) ? enqs[q][t] : sums[q][t - 1] + enqs[q][t];
+        }
+    }
+
+    Workload wl(100, prio->in_queue_cnt(), total_time);
+    for (unsigned int q = 0; q < enqs.size(); q++) {
+        for (unsigned int t = 0; t < enqs[q].size(); t++) {
+//            cout << "cenq(q" << q << ", " << t << ") = " << sums[q][t] << endl;
+            wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::EQ, sums[q][t]),
+                                  time_range_t(t, t),
+                                  total_time));
+        }
+    }
+
+    cout << "Original Workload: " << endl << wl << endl;
+
+    Search search(prio, query, 8, config, good_examples_file, bad_examples_file);
+
+    // Keep randomly removing specs until we hit 'minimum' workload
+    // (i.e. the workload that is valid but removing any spec makes it invalid)
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    Workload lastValidWl = wl;  // Store the initial workload state.
+
+    std::set<TimedSpec> attemptedSpecs; // To track specs we've attempted to remove.
+    std::set<TimedSpec> essentialSpecs; // To track specs confirmed as essential.
+
+    while (true) {
+        auto specs = wl.get_all_specs();  // Get the current specs.
+
+        // Break the loop if all current specs are confirmed as essential.
+        if (essentialSpecs.size() == specs.size()) {
+            break;
+        }
+
+        std::uniform_int_distribution<> dis(0, specs.size() - 1);
+        auto it = std::next(specs.begin(), dis(gen));
+        TimedSpec specToRemove = *it;
+
+        // If we've already attempted to remove this spec, skip it.
+        if (attemptedSpecs.find(specToRemove) != attemptedSpecs.end()) {
+            continue;
+        }
+
+        // Attempt to remove the spec.
+        Workload tempWl = wl;
+        tempWl.rm_spec(specToRemove);
+
+        if (search.check(tempWl)) {
+            wl = tempWl; // Update the original workload if the temp one is valid.
+            lastValidWl = wl; // Update the last valid state.
+            attemptedSpecs.clear(); // Reset attempted specs since the workload has changed.
+        } else {
+            attemptedSpecs.insert(specToRemove); // Mark this spec as attempted.
+            essentialSpecs.insert(specToRemove); // Confirm this spec as essential.
+        }
+    }
+
+    Workload refinedWl = search.refine(lastValidWl);
+    cout << "Final Workload (Random Approach): " << endl << refinedWl << endl;
+
+
+    // Try another approach: start from the original workload and remove specs one by one
+    // by doing the following procedure:
+    // For each queue q:
+    // For t from 1 to total_time:
+    // Remove the spec that specifies cenq(q, t) = sum from 0 to t of enqs[q][t] until the workload becomes invalid (then put the last removed spec back and move on to the next queue)
+
+    Workload wl2 = wl;
+    for (unsigned int q = 0; q < enqs.size(); q++) {
+        for (unsigned int t = 0; t < enqs[q].size(); t++) {
+            TimedSpec specToRemove(Comp(Indiv(metric_t::CENQ, q), op_t::EQ, sums[q][t]),
+                                   time_range_t(t, t),
+                                   total_time);
+            wl2.rm_spec(specToRemove);
+//            cout << "Removing spec: " << specToRemove << endl;
+            if (!search.check(wl2)) {
+//                cout << "Workload is invalid" << endl;
+                wl2.add_spec(specToRemove);
+                break;
+            }
+        }
+    }
+
+    Workload refinedWl2 = search.refine(wl2);
+    cout << "Final Workload (Front-to-Back Iterative Approach): " << endl << refinedWl2 << endl;
+
+
+    // Back-to-Front approach: same as above, except we iterate on t from total_time to 1
+    // WARNING: time starts at 1, can never equal 0
+
+    Workload wl3 = wl;
+
+    for (unsigned int q = 0; q < enqs.size(); q++) {
+//        cout << "Number of timesteps for queue " << q << ": " << enqs[q].size() << endl;
+        if (!enqs[q].empty()) {
+            for (int t = static_cast<int>(enqs[q].size()) - 1; t >= 0; t--) {
+                TimedSpec specToRemove(Comp(Indiv(metric_t::CENQ, q), op_t::EQ, sums[q][t]),
+                time_range_t(static_cast<unsigned int>(t), static_cast<unsigned int>(t)),
+                        total_time);
+                // Check if spec is in the workload
+                if (wl3.get_all_specs().find(specToRemove) == wl3.get_all_specs().end()) {
+//                    cout << "Spec " << specToRemove << " not in workload" << endl;
+                    continue;
+                }
+//                cout << "Removing spec: " << specToRemove << endl;
+                wl3.rm_spec(specToRemove);
+                if (!search.check(wl3)) {
+//                    cout << "Workload is invalid" << endl;
+                    wl3.add_spec(specToRemove);
+                    break;
+                } else {
+//                    cout << "Workload is valid" << endl;
+                }
+            }
+        }
+    }
+
+
+    Workload refinedWl3 = search.refine(wl3);
+    cout << "Final Workload (Back-to-Front Iterative Approach): " << endl << refinedWl3 << endl;
+
+    //    run(prio,
+//        base_eg,
+//        good_example_cnt,
+//        good_examples_file,
+//        bad_example_cnt,
+//        bad_examples_file,
+//        query,
+//        8,
+//        config);
 }
 
 void rr(string good_examples_file, string bad_examples_file) {

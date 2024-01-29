@@ -26,7 +26,8 @@ map<string, e2e_test_func_t*> e2e_tests = {{"prio", prio},
                                            {"fq_codel", fq_codel},
                                            {"loom", loom},
                                            {"leaf_spine_bw", leaf_spine_bw},
-                                           {"tbf", tbf}};
+                                           {"tbf", tbf},
+                                           {"prio_test", prio_test}};
 
 const string help_message = "Usage: ./fperf TEST_NAME";
 

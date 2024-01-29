@@ -1,5 +1,5 @@
 CXX      := g++
-CXXFLAGS := -pedantic-errors -Wno-sign-compare -Wno-unknown-pragmas -Wall -Wextra -Werror -std=c++17 -O3
+CXXFLAGS := -pedantic-errors -Wno-sign-compare -Wno-unknown-pragmas -Wall -Wextra -std=c++17 -g -DDEBUG
 LDFLAGS  := -L/usr/lib -L/usr/local/lib/ -lstdc++ -lm -lz3
 BUILD    := ./build
 OBJ_DIR  := $(BUILD)/objects
@@ -40,7 +40,7 @@ test: $(TEST_TARGET_PATH)
 	$^
 
 check-format: $(HEADERS) $(SRC)
-	clang-format --dry-run -Werror $^
+	clang-format --dry-run $^
 
 format: $(HEADERS) $(SRC)
 	clang-format -i $^

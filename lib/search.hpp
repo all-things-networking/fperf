@@ -39,6 +39,8 @@ public:
            deque<IndexedExample*>& bad_ex);
 
     void run();
+    bool check(Workload wl);
+    Workload refine(Workload wl);
 
     unsigned int cost(Workload wl);
 
@@ -66,9 +68,7 @@ private:
     deque<IndexedExample*> good_examples;
 
     void init_wl(Workload& wl);
-    bool check(Workload wl);
     void search(Workload wl);
-    Workload refine(Workload wl);
 
     void pick_neighbors(Workload wl, vector<Workload>& neighbors);
     Workload random_neighbor(Workload wl, unsigned int hops = 1);

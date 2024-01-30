@@ -20,6 +20,8 @@
 
 #include <random>
 #include <iterator>
+#include <set>
+#include <vector>
 
 void run(ContentionPoint* cp,
          IndexedExample* base_eg,
@@ -94,6 +96,235 @@ void prio(string good_examples_file, string bad_examples_file) {
         query,
         8,
         config);
+}
+
+std::vector<std::set<unsigned int>> find_contiguous_sets(const std::set<unsigned int>& input_set) {
+    std::vector<std::set<unsigned int>> contiguous_sets;
+    std::set<unsigned int> current_set;
+
+    auto it = input_set.begin();
+    unsigned int previous = *it;
+    current_set.insert(previous);
+
+    for (it = std::next(it); it != input_set.end(); ++it) {
+        // If the current element is consecutive, add it to the current set
+        if (*it == previous + 1) {
+            current_set.insert(*it);
+        } else {
+            // If not consecutive, start a new set
+            contiguous_sets.push_back(current_set);
+            current_set.clear();
+            current_set.insert(*it);
+        }
+        previous = *it;
+    }
+
+    // Add the last set
+    if (!current_set.empty()) {
+        contiguous_sets.push_back(current_set);
+    }
+
+    // Remove sets of size 1
+    contiguous_sets.erase(std::remove_if(contiguous_sets.begin(), contiguous_sets.end(), [](const std::set<unsigned int>& s){return s.size() == 1;}), contiguous_sets.end());
+
+    return contiguous_sets;
+}
+
+Workload broaden(Workload wl, Search& search) { // Need to pass in search so we can check if the new spec is valid
+    //    // EXAMPLE: Need a systematic process which would turn a wl containing the following specs:
+////    [1, 1]: SUM_[q in {0, 1, }] cenq(q ,t) = 1
+////    [2, 2]: SUM_[q in {0, 1, }] cenq(q ,t) = 2
+////    [3, 3]: SUM_[q in {0, 1, }] cenq(q ,t) = 3
+////    [4, 4]: SUM_[q in {0, 1, }] cenq(q ,t) = 4
+////    [5, 5]: SUM_[q in {0, 1, }] cenq(q ,t) = 5
+////    [6, 6]: SUM_[q in {0, 1, }] cenq(q ,t) = 6
+//// Into the following:
+////    [1, 6]: SUM_[q in {0, 1, }] cenq(q ,t) = t
+//// Which expresses the exact same information, but is more concise.
+//
+//    // In general: If we find a set of specs of the form:
+//    // [t1, t1]: (SUM_[q in Q] OR INDIV(q)) cenq(q ,t) = c1
+//    // [t2, t2]: (SUM_[q in Q] OR INDIV(q)) cenq(q ,t) = c2
+//    // ...
+//    // [tn, tn]: (SUM_[q in Q] OR INDIV(q)) cenq(q ,t) = cn
+//    // Where t1 < t2 < ... < tn, and c1 < c2 < ... < cn and they are all either SUM over the same set of queues or INDIV over the same queue
+//    // [t1, tn]: (SUM_[q in Q] OR INDIV(q)) cenq(q ,t) = t
+//
+//    // Code:
+//    // Get all specs
+//    set<TimedSpec> specs = wl.get_all_specs();
+//    // For each spec, check if it's of the form [t, t]: cenq(q, t) = c where c = t
+//    // If so, we need to keep track of: q, c, t
+
+// Step 1: Find all specs of the form [t, t]: cenq(q, t) = c where c = t
+
+    set<TimedSpec> specs = wl.get_all_specs();
+
+    // Keep track of sets (of size 1 if INDIV, of size>1 if SUM) of q's to t's
+
+    std::map<std::set<unsigned int>, std::set<unsigned int>> qset_to_tset;
+
+    for (const TimedSpec& spec : specs) {
+        if (spec.get_time_range().first == spec.get_time_range().second) {
+            wl_spec_t wl_spec = spec.get_wl_spec();
+            if (holds_alternative<Comp>(wl_spec)) {
+                Comp comp = get<Comp>(wl_spec);
+                if(holds_alternative<unsigned int>(comp.rhs)){
+                    unsigned int c = get<unsigned int>(comp.rhs);
+                    unsigned int t = spec.get_time_range().first + 1; // +1 because time starts at 1
+                    if (holds_alternative<Indiv>(comp.lhs)) {
+                        Indiv indiv = get<Indiv>(comp.lhs);
+                        unsigned int q = indiv.queue;
+                        if (t == c && indiv.get_metric() == metric_t::CENQ) {
+                            // Add this spec to the set of specs for this q
+                            qset_to_tset[{q}].insert(t);
+                        }
+                    } else if (holds_alternative<QSum>(comp.lhs)) {
+                        QSum qsum = get<QSum>(comp.lhs);
+                        std::set<unsigned int> qset = qsum.qset;
+                        if (t == c && qsum.get_metric() == metric_t::CENQ) {
+                            // Add this spec to the set of specs for this qset
+                            qset_to_tset[qset].insert(t);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+//    cout << "qset_to_tset: " << endl;
+//    for(auto const& [qset, tset] : qset_to_tset){
+//        cout << "qset: " << qset << ", tset: " << tset << endl;
+//    }
+
+// Step 2: For each set of t's, merge the consecutive ones into a single spec
+    for(auto const& [qset, tset] : qset_to_tset) {
+        // For each qset, we need to check if there is a set of c's that are consecutive
+        // If so, we check if the corresponding set of t's are consecutive
+        // If so, we can replace the set of specs with a single spec
+        // We can do this by removing all the old specs and adding a new spec
+        // Implementation:
+        // Check if tset is consecutive
+        std::vector<std::set<unsigned int>> contiguous_tsets = find_contiguous_sets(tset);
+        for (auto const &contiguous_tset: contiguous_tsets) {
+            // Merge into one spec
+            // Step 1: Add a new spec (QSum or Indiv depending on whether qset has size 1 or not) of form [t1, tn]: (SUM_[q in Q] OR INDIV(q)) cenq(q ,t) = t
+            if (qset.size() == 1) {
+                TimedSpec spec_to_add = TimedSpec(Comp(Indiv(metric_t::CENQ, *qset.begin()), op_t::EQ, Time(1)), time_range_t(*contiguous_tset.begin() - 1, *contiguous_tset.rbegin() - 1), wl.get_total_time());
+                cout << "BROADEN: Adding spec: " << spec_to_add << endl;
+                wl.add_spec(spec_to_add);
+            } else {
+                TimedSpec spec_to_add = TimedSpec(Comp(QSum(qset, metric_t::CENQ), op_t::EQ, Time(1)), time_range_t(*contiguous_tset.begin() - 1, *contiguous_tset.rbegin() - 1), wl.get_total_time());
+//                cout << "BROADEN: Adding spec: " << spec_to_add << endl;
+                wl.add_spec(spec_to_add);
+            }
+
+            // Step 2: Remove all the old specs
+            for (auto const &t : contiguous_tset) {
+                if (qset.size() == 1) {
+                    // This spec is part of the contiguous set of t's
+                    // Remove it
+                    TimedSpec spec_to_remove = TimedSpec(Comp(Indiv(metric_t::CENQ, *qset.begin()), op_t::EQ, t), time_range_t(t - 1, t - 1), wl.get_total_time());
+//                    cout << "BROADEN: Removing spec: " << spec_to_remove << endl;
+                    wl.rm_spec(spec_to_remove);
+                } else {
+                    // This spec is part of the contiguous set of t's
+                    // Remove it
+                    TimedSpec spec_to_remove = TimedSpec(Comp(QSum(qset, metric_t::CENQ), op_t::EQ, t), time_range_t(t - 1, t - 1), wl.get_total_time());
+//                    cout << "BROADEN: Removing spec: " << spec_to_remove << endl;
+                    wl.rm_spec(spec_to_remove);
+                }
+            }
+        }
+    }
+
+
+    // For COMP specs, try to broaden operations (change = to <=, >=, change < to <=, change > to >=) and see if it's still valid
+    // If so, replace the spec with the new spec
+    // If not, keep the old spec
+    specs = wl.get_all_specs();
+    for (const TimedSpec& spec : specs) {
+        wl_spec_t wl_spec = spec.get_wl_spec();
+        if (holds_alternative<Comp>(wl_spec)) {
+            Comp comp = get<Comp>(wl_spec);
+            if (holds_alternative<Indiv>(comp.lhs)) {
+                Indiv indiv = get<Indiv>(comp.lhs);
+                unsigned int q = indiv.queue;
+                if (indiv.get_metric() == metric_t::CENQ) {
+                    // Try to broaden the op
+                    op_t op = comp.get_op();
+                    if (op == op_t::EQ) {
+                        // Try <=
+                        TimedSpec spec_to_try = TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::LE, comp.rhs),
+                                                          spec.get_time_range(), wl.get_total_time());
+                        // Create temp workload
+                        Workload temp_wl = wl;
+                        temp_wl.rm_spec(spec);
+                        temp_wl.add_spec(spec_to_try);
+                        if (search.check(temp_wl)) {
+                            // It's valid, replace the spec
+                            wl.rm_spec(spec);
+                            wl.add_spec(spec_to_try);
+                            continue;
+                        } else {
+                            // It's not valid, keep the old spec
+                        }
+
+                        // Try >=
+                        spec_to_try = TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::GE, comp.rhs),
+                                                          spec.get_time_range(), wl.get_total_time());
+                        // Create temp workload
+                        temp_wl = wl;
+                        temp_wl.rm_spec(spec);
+                        temp_wl.add_spec(spec_to_try);
+                        if (search.check(temp_wl)) {
+                            // It's valid, replace the spec
+                            wl.rm_spec(spec);
+                            wl.add_spec(spec_to_try);
+                            continue;
+                        } else {
+                            // It's not valid, keep the old spec
+                        }
+                    } else if (op == op_t::LT) {
+                        // Try <=
+                        TimedSpec spec_to_try = TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::LE, comp.rhs),
+                                                          spec.get_time_range(), wl.get_total_time());
+                        // Create temp workload
+                        Workload temp_wl = wl;
+                        temp_wl.rm_spec(spec);
+                        temp_wl.add_spec(spec_to_try);
+                        if (search.check(temp_wl)) {
+                            // It's valid, replace the spec
+                            wl.rm_spec(spec);
+                            wl.add_spec(spec_to_try);
+                            continue;
+                        } else {
+                            // It's not valid, keep the old spec
+                        }
+                    } else if (op == op_t::GT) {
+                        // Try >=
+                        TimedSpec spec_to_try = TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::GE, comp.rhs),
+                                                          spec.get_time_range(), wl.get_total_time());
+                        // Create temp workload
+                        Workload temp_wl = wl;
+                        temp_wl.rm_spec(spec);
+                        temp_wl.add_spec(spec_to_try);
+                        if (search.check(temp_wl)) {
+                            // It's valid, replace the spec
+                            wl.rm_spec(spec);
+                            wl.add_spec(spec_to_try);
+                            continue;
+                        } else {
+                            // It's not valid, keep the old spec
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    return wl;
 }
 
 void prio_test(string good_examples_file, string bad_examples_file) {
@@ -219,8 +450,9 @@ void prio_test(string good_examples_file, string bad_examples_file) {
         }
     }
 
-    Workload refinedWl = search.refine(lastValidWl);
-    cout << "Final Workload (Random Approach): " << endl << refinedWl << endl;
+    lastValidWl = search.refine(lastValidWl);
+    lastValidWl = broaden(lastValidWl, search);
+    cout << "Final Workload (Random Approach): " << endl << lastValidWl << endl;
 
 
     // Try another approach: start from the original workload and remove specs one by one
@@ -245,8 +477,9 @@ void prio_test(string good_examples_file, string bad_examples_file) {
         }
     }
 
-    Workload refinedWl2 = search.refine(wl2);
-    cout << "Final Workload (Front-to-Back Iterative Approach): " << endl << refinedWl2 << endl;
+    wl2 = search.refine(wl2);
+    wl2 = broaden(wl2, search);
+    cout << "Final Workload (Front-to-Back Iterative Approach): " << endl << wl2 << endl;
 
 
     // Back-to-Front approach: same as above, except we iterate on t from total_time to 1
@@ -280,8 +513,9 @@ void prio_test(string good_examples_file, string bad_examples_file) {
     }
 
 
-    Workload refinedWl3 = search.refine(wl3);
-    cout << "Final Workload (Back-to-Front Iterative Approach): " << endl << refinedWl3 << endl;
+    wl3 = search.refine(wl3);
+    wl3 = broaden(wl3, search);
+    cout << "Final Workload (Back-to-Front Iterative Approach): " << endl << wl3 << endl;
 
     //    run(prio,
 //        base_eg,

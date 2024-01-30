@@ -14,8 +14,8 @@ bool test_search() {
   SimpleCP *ss = new SimpleCP(total_time);
 
   Workload wl(100, 1, total_time);
-  wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, 0), op_t::LE, (uint)1),
-                           time_range_t(last_t, last_t), total_time));
+  auto comp_spec = std::make_shared<Comp>(Indiv(metric_t::CENQ, 0), op_t::LE, static_cast<uint>(1));
+  wl.add_spec(TimedSpec(comp_spec, time_range_t(last_t, last_t), total_time));
   ss->set_base_workload(wl);
 
   // Query

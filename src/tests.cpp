@@ -118,14 +118,16 @@ void rr(string good_examples_file, string bad_examples_file) {
 
     for (unsigned int i = 1; i <= recur; i++) {
         for (unsigned int q = 0; q < in_queue_cnt; q++) {
-            wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::GE, i * rate),
+            auto spec = std::make_shared<Comp>(Indiv(metric_t::CENQ, q), op_t::GE, i * rate);
+            wl.add_spec(TimedSpec(spec,
                                   time_range_t(i * period - 1, i * period - 1),
                                   total_time));
         }
     }
 
+    auto spec1 = std::make_shared<Comp>(Indiv(metric_t::CENQ, queue1), op_t::GT, Indiv(metric_t::CENQ, queue2));
     wl.add_spec(
-        TimedSpec(Comp(Indiv(metric_t::CENQ, queue1), op_t::GT, Indiv(metric_t::CENQ, queue2)),
+        TimedSpec(spec1,
                   time_range_t(total_time - 1, total_time - 1),
                   total_time));
 
@@ -207,8 +209,9 @@ void fq_codel(string good_examples_file, string bad_examples_file) {
     // Base Workload
     Workload wl(in_queue_cnt * 5, in_queue_cnt, total_time);
     for (unsigned int q = 0; q < last_queue; q++) {
+        auto comp_spec = std::make_shared<Comp>(Indiv(metric_t::CENQ, q), op_t::GE, Time(1));
         wl.add_spec(
-            TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::GE, Time(1)), total_time, total_time));
+            TimedSpec(comp_spec, total_time, total_time));
     }
 
     cp->set_base_workload(wl);
@@ -296,17 +299,17 @@ void loom(string good_examples_file, string bad_examples_file) {
     // Base Workload
 
     Workload wl(20, cp->in_queue_cnt(), total_time);
-    wl.add_spec(TimedSpec(Comp(QSum(tenant1_qset, metric_t::CENQ), op_t::GE, Time(1)),
+    wl.add_spec(TimedSpec(std::make_shared<Comp>(QSum(tenant1_qset, metric_t::CENQ), op_t::GE, Time(1)),
                           total_time,
                           total_time));
-    wl.add_spec(TimedSpec(Comp(QSum(tenant2_qset, metric_t::CENQ), op_t::GE, Time(1)),
+    wl.add_spec(TimedSpec(std::make_shared<Comp>(QSum(tenant2_qset, metric_t::CENQ), op_t::GE, Time(1)),
                           total_time,
                           total_time));
 
     for (unsigned int q = 0; q < cp->in_queue_cnt(); q++) {
         if (q % 3 == 2) {
             wl.add_spec(
-                TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::LE, 0u), total_time, total_time));
+                TimedSpec(std::make_shared<Comp>(Indiv(metric_t::CENQ, q), op_t::LE, 0u), total_time, total_time));
         }
     }
 
@@ -390,23 +393,23 @@ void leaf_spine_bw(string good_examples_file, string bad_examples_file) {
     // Base Workload
     Workload wl(in_queue_cnt + 5, in_queue_cnt, total_time);
 
-    wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, src_server), op_t::GE, Time(1)),
+    wl.add_spec(TimedSpec(std::make_shared<Comp>(Indiv(metric_t::CENQ, src_server), op_t::GE, Time(1)),
                           total_time - 1,
                           total_time));
 
-    wl.add_spec(TimedSpec(Comp(Indiv(metric_t::DST, src_server), op_t::EQ, dst_server),
+    wl.add_spec(TimedSpec(std::make_shared<Comp>(Indiv(metric_t::DST, src_server), op_t::EQ, dst_server),
                           total_time - 1,
                           total_time));
 
     for (unsigned int q = 0; q < in_queue_cnt; q++) {
-        Same s(metric_t::DST, q);
+        auto s = std::make_shared<Same>(metric_t::DST, q);
         wl.add_spec(TimedSpec(s, time_range_t(0, total_time - 1), total_time));
     }
 
     qset_t unique_qset;
     for (unsigned int q = 0; q < in_queue_cnt; q++)
         unique_qset.insert(q);
-    Unique uniq(metric_t::DST, unique_qset);
+    auto uniq = std::make_shared<Unique>(metric_t::DST, unique_qset);
     wl.add_spec(TimedSpec(uniq, time_range_t(0, total_time - 1), total_time));
 
     cp->set_base_workload(wl);
@@ -481,8 +484,9 @@ void tbf(std::string good_examples_file, std::string bad_examples_file) {
     Workload wl(100, 1, total_time);
 
     for (uint i = 0; i < interval; i++) {
+        auto comp_spec = std::make_shared<Comp>(Indiv(metric_t::CENQ, 0), op_t::GE, (unsigned int)(i + 1) * link_rate);
         wl.add_spec(
-            TimedSpec(Comp(Indiv(metric_t::CENQ, 0), op_t::GE, (unsigned int) (i + 1) * link_rate),
+            TimedSpec(comp_spec,
                       time_range_t(start + i, start + i),
                       total_time));
     }

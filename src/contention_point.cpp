@@ -2000,10 +2000,22 @@ expr ContentionPoint::get_expr(Workload wl) {
 
 expr ContentionPoint::get_expr(TimedSpec spec) {
     time_range_t time_range = spec.get_time_range();
-    wl_spec_t wl_spec = spec.get_wl_spec();
+    std::shared_ptr<WlSpec> wl_spec = spec.get_wl_spec();
 
-    return visit([time_range, this](auto const& sf) { return this->get_expr(sf, time_range); },
-                 wl_spec);
+    // Dynamic casting to determine the specific type of WlSpec
+    if (auto compSpec = std::dynamic_pointer_cast<Comp>(wl_spec)) {
+        return get_expr(*compSpec, time_range);
+    } else if (auto incrSpec = std::dynamic_pointer_cast<Incr>(wl_spec)) {
+        return get_expr(*incrSpec, time_range);
+    } else if (auto decrSpec = std::dynamic_pointer_cast<Decr>(wl_spec)) {
+        return get_expr(*decrSpec, time_range);
+    } else if (auto sameSpec = std::dynamic_pointer_cast<Same>(wl_spec)) {
+        return get_expr(*sameSpec, time_range);
+    } else if (auto uniqueSpec = std::dynamic_pointer_cast<Unique>(wl_spec)) {
+        return get_expr(*uniqueSpec, time_range);
+    } else{
+        throw std::runtime_error("ContentionPoint::get_expr: Invalid WlSpec");
+    }
 }
 
 expr ContentionPoint::get_expr(Unique uniq, time_range_t time_range) {
@@ -2179,9 +2191,19 @@ bool ContentionPoint::timedspec_satisfies_example(TimedSpec spec, IndexedExample
     time_range_t time_range = spec.get_time_range();
     if (eg->total_time - 1 < time_range.first) return false;
 
-    return visit([time_range, eg, this](
-                     auto const& sf) { return this->eval_spec(sf, eg, time_range); },
-                 spec.get_wl_spec());
+    if (auto compSpec = std::dynamic_pointer_cast<Comp>(spec.get_wl_spec())) {
+        return eval_spec(*compSpec, eg, time_range);
+    } else if (auto incrSpec = std::dynamic_pointer_cast<Incr>(spec.get_wl_spec())) {
+        return eval_spec(*incrSpec, eg, time_range);
+    } else if (auto decrSpec = std::dynamic_pointer_cast<Decr>(spec.get_wl_spec())) {
+        return eval_spec(*decrSpec, eg, time_range);
+    } else if (auto sameSpec = std::dynamic_pointer_cast<Same>(spec.get_wl_spec())) {
+        return eval_spec(*sameSpec, eg, time_range);
+    } else if (auto uniqSpec = std::dynamic_pointer_cast<Unique>(spec.get_wl_spec())) {
+        return eval_spec(*uniqSpec, eg, time_range);
+    } else{
+        throw std::runtime_error("ContentionPoint::timedspec_satisfies_example: Invalid WlSpec");
+    }
 }
 
 bool ContentionPoint::eval_spec(Unique uniq, IndexedExample* eg, time_range_t time_range) const {

@@ -26,7 +26,7 @@ RoceSwitchXBarQM::RoceSwitchXBarQM(cid_t id,
     voq_output_map(voq_output_map)
 {
     port_cnt = (unsigned int)out_queues.size();
-    in_port_cnt = 3;
+    in_port_cnt = (unsigned int)out_queues.size();
 
     for (unsigned int i = 0; i < in_port_cnt; i++) {
         input_voq_map[i] = vector<unsigned int>();
@@ -45,8 +45,6 @@ RoceSwitchXBarQM::RoceSwitchXBarQM(cid_t id,
         unsigned int output_port = voq_output_map[i];
         output_voq_map[output_port].push_back(i);
     }
-    unsigned int a;
-    a = 2;
     /*
     cout << id << endl;
     cout << "voq_input_map " << endl;
@@ -248,14 +246,21 @@ void RoceSwitchXBarQM::add_constrs(NetContext& net_ctx,
                 expr cond3 = net_ctx.pkt2val(voq->elem(0)[t]);
 
                 
-
+                // Don't pause priority QMs
                 expr match_cond = net_ctx.bool_val(false);
-                if (i == 3 || i == 4 || i == 8 || i == 9 || i == 13 || i == 14) {
+
+                
+                if (voq_ind == 3 || voq_ind == 4 || voq_ind == 8 || voq_ind == 9) {
                     match_cond = mk_and(cond1) && mk_and(cond2) && cond3;
                 }
                 else {
                     std::sprintf(vname, "%s_%d_pause_state_[%d]", sid.c_str(), i_ind_of_j, t);
                     match_cond = mk_and(cond1) && mk_and(cond2) && cond3 && !net_ctx.get_bool_const(vname);
+
+                    // Match prio first
+                    /*sprintf(constr_name, "%s_%d_doesnt_match_%d_at_%d", id.c_str(), voq_ind, j, t);
+                    expr constr_expr = implies(!in_to_out[i][i_ind_of_], !in_to_out_[i][i_ind_of_j][t]);
+                    constr_map.insert(named_constr(constr_name, constr_expr));*/
                 }
 
                 sprintf(constr_name, "%s_%d_matches_%d_at_%d", id.c_str(), voq_ind, j, t);
@@ -265,8 +270,27 @@ void RoceSwitchXBarQM::add_constrs(NetContext& net_ctx,
                 sprintf(constr_name, "%s_%d_doesnt_match_%d_at_%d", id.c_str(), voq_ind, j, t);
                 constr_expr = implies(!match_cond, !in_to_out_[i][i_ind_of_j][t]);
                 constr_map.insert(named_constr(constr_name, constr_expr));
+
+            }
+
+        }
+
+        // match prio first
+        unordered_map<int, vector<int>> prios;
+        prios[3] = { 0 };
+        prios[4] = { 1 };
+        prios[8] = { 0 };
+        prios[9] = { 1 };
+
+        for (auto p : prios) {
+            expr packet_prio = net_ctx.pkt2val(in_queues[p.first]->elem(0)[t]);
+            for (int voq : p.second) {
+                sprintf(constr_name, "%s_%d_prio_matches_%d_at_%d", id.c_str(), p.first / 5, voq, t);
+                expr constr_expr = implies(packet_prio, !in_to_out_[p.first / 5][voq][t]);
+                //constr_map.insert(named_constr(constr_name, constr_expr));
             }
         }
+        
 
         //cout << 3 << endl;
 

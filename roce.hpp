@@ -15,6 +15,7 @@
 #include "cdeq.hpp"
 #include "qsize.hpp"
 #include "aipg.hpp"
+#include "cblocked.hpp"
 
 class RoceScheduler : public ContentionPoint {
 public:

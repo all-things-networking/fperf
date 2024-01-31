@@ -41,7 +41,7 @@ void RoCEQM::add_proc_vars(NetContext& net_ctx) {
 
     // pause/unpause state
     
-    for (int t = 0; t < total_time; t++) {
+    for (int t = 0; t < total_time + 1; t++) {
         std::sprintf(vname, "%s_%d_pause_state_[%d]", sid.c_str(), return_to_sender, t);
         pause_state.push_back(net_ctx.bool_const(vname));
     }
@@ -94,15 +94,15 @@ void RoCEQM::add_constrs(NetContext& net_ctx,
         if (return_to_sender == 2) {
             // goba
             constr_expr = in_queues[0]->get_metric(metric_t::CENQ)->val(t) > net_ctx.int_val(t);
-            /*if (sid == "s3")
+            if (sid == "s3")
                 constr_expr = in_queues[0]->get_metric(metric_t::CENQ)->val(t) == net_ctx.int_val(0);
-            else if (t <= 10)
+            /*else if (t <= 10)
                 constr_expr = in_queues[0]->get_metric(metric_t::CENQ)->val(t) > net_ctx.int_val(t);
             else
                 constr_expr = in_queues[0]->get_metric(metric_t::CENQ)->val(t) <= net_ctx.int_val(11);*/
 
-            sprintf(constr_name, "%s_Min_Packet_Num_at_%d", id.c_str(), t);
-            //if (t < 1)
+            //sprintf(constr_name, "%s_Min_Packet_Num_at_%d", id.c_str(), t);
+            //if (t < 4)
                 constr_map.insert(named_constr(constr_name, constr_expr));
 
             for (unsigned int p = 0; p < in_queues[0]->size(); p++) {
@@ -115,14 +115,16 @@ void RoCEQM::add_constrs(NetContext& net_ctx,
                 //constr_expr = implies(pkt_val, net_ctx.int_val(0) < pkt_dst && pkt_dst < net_ctx.int_val(4));
                 if (sid == "s0")
                     // goba, 1 => 4
+                    //constr_expr = implies(pkt_val, net_ctx.int_val(4) == pkt_dst || net_ctx.int_val(1) == pkt_dst);
                     constr_expr = implies(pkt_val, net_ctx.int_val(4) == pkt_dst);
                 else if (sid == "s1")
                     // goba 3 => 4
+                    //constr_expr = implies(pkt_val, net_ctx.int_val(4) == pkt_dst || net_ctx.int_val(3) == pkt_dst);
                     constr_expr = implies(pkt_val, net_ctx.int_val(4) == pkt_dst);
                 else if (sid == "s2")
                     constr_expr = implies(pkt_val, net_ctx.int_val(2) == pkt_dst);
                 else if (sid == "s3")
-                    constr_expr = implies(pkt_val, net_ctx.int_val(3) == pkt_dst);
+                    constr_expr = implies(pkt_val, net_ctx.int_val(4) == pkt_dst);
                 sprintf(constr_name, "%s_Meta1_Constraint_for_%d_at_%d", id.c_str(), p, t);
                 constr_map.insert(named_constr(constr_name, constr_expr));
 
@@ -138,8 +140,7 @@ void RoCEQM::add_constrs(NetContext& net_ctx,
             // ports full
             expr voq_sum = net_ctx.int_val(0);
             // goba
-            for (int i = 0; i < 5; i++) {
-                sprintf(constr_name, "%s_full_port%d_at_%d", id.c_str(), i, t);
+            for (int i = 0; i < 2; i++) {
                 voq_sum = voq_sum + out_queues[i]->curr_size(t);
             }
             send_pause = voq_sum > thresh && !sent_pause[t - 1];
@@ -165,6 +166,7 @@ void RoCEQM::add_constrs(NetContext& net_ctx,
                 expr detected_pause_unpause = pkt_val && (pkt_tag == net_ctx.int_val(10) || pkt_tag == net_ctx.int_val(11));
 
                 // Consume pause packet
+                
                 sprintf(constr_name, "%s_detect_pause_packet_%d", id.c_str(), t);
                 constr_expr = implies(pkt_val && pkt_tag == net_ctx.int_val(10), pause_state[t]);
                 constr_map.insert(named_constr(constr_name, constr_expr));
@@ -173,7 +175,6 @@ void RoCEQM::add_constrs(NetContext& net_ctx,
                 sprintf(constr_name, "%s_detect_unpause_packet_%d", id.c_str(), t);
                 constr_expr = implies(pkt_val && pkt_tag == net_ctx.int_val(11), !pause_state[t]);
                 constr_map.insert(named_constr(constr_name, constr_expr));
-
             }
         }
 
@@ -187,9 +188,10 @@ void RoCEQM::add_constrs(NetContext& net_ctx,
 
             expr detected_pause_unpause = pkt_val && (pkt_tag == net_ctx.int_val(10) || pkt_tag == net_ctx.int_val(11));
 
-            for (int i = 0; i < out_queues.size(); i++) {
+            // goba
+            for (int i = 0; i < out_queues.size() - 2; i++) {
                 sprintf(constr_name, "%s_consume_pause/unpause_%d_at_%d", id.c_str(), i, t);
-                constr_expr = implies(detected_pause_unpause && !send_pause && !send_unpause,
+                constr_expr = implies(detected_pause_unpause,
                     out_queues[i]->enqs(0)[t] == net_ctx.null_pkt());
                 constr_map.insert(named_constr(constr_name, constr_expr));
             }
@@ -246,7 +248,7 @@ void RoCEQM::add_constrs(NetContext& net_ctx,
                         out_queues[dst_port]->enqs(0)[t] == in_pkt);
                     constr_map.insert(named_constr(constr_name, constr_expr));
 
-                    for (int j = 0; j < out_queues.size(); j++) {
+                    for (int j = 0; j < 5; j++) {
                         if (j == dst_port) continue;
                         sprintf(constr_name, "%s_dont_forward_dst_%d_to_port%d_at_%d", id.c_str(), i, j, t);
                         constr_expr = implies(pkt_val && pkt_dst == net_ctx.int_val(i),
@@ -267,15 +269,21 @@ void RoCEQM::add_constrs(NetContext& net_ctx,
             for (int i = 1; i <= control_flow.size(); i++) {
                 dst_port = control_flow[i];
                 sprintf(constr_name, "%s_forward!_dst_%d_to_port%d_at_%d", id.c_str(), i, dst_port, t);
-                constr_expr = implies(pkt_val && !send_pause && !send_unpause && pkt_dst == net_ctx.int_val(i),
+                constr_expr = implies(pkt_val && pkt_dst == net_ctx.int_val(i),
                     out_queues[dst_port]->enqs(0)[t] == in_pkt);
-                //if ( !(t == 4 && (strcmp(id.c_str(), "roce1_0") == 0) || strcmp(id.c_str(), "roce0_0") == 0))
+                if ( true || !(t == 5 && (strcmp(id.c_str(), "roce1_0") == 0 || strcmp(id.c_str(), "roce0_0") == 0)))
                     constr_map.insert(named_constr(constr_name, constr_expr));
+                else {
+                    constr_expr = implies(pkt_val && pkt_dst == net_ctx.int_val(i),
+                        out_queues[dst_port]->enqs(0)[t] == net_ctx.pkt_val(true, 12, 11));
+                    //constr_map.insert(named_constr(constr_name, constr_expr));
+                }
 
-                for (int j = 0; j < out_queues.size(); j++) {
+
+                for (int j = 0; j < out_queues.size() - 2; j++) {
                     if (j == dst_port) continue;
                     sprintf(constr_name, "%s_dont_forward_dst_%d_to_port%d_at_%d", id.c_str(), i, j, t);
-                    constr_expr = implies(pkt_val && !send_pause && !send_unpause && pkt_dst == net_ctx.int_val(i),
+                    constr_expr = implies(pkt_val && pkt_dst == net_ctx.int_val(i),
                         out_queues[j]->enqs(0)[t] == net_ctx.null_pkt());
                     constr_map.insert(named_constr(constr_name, constr_expr));
                 }
@@ -295,13 +303,18 @@ void RoCEQM::add_constrs(NetContext& net_ctx,
                 out_queues[return_to_sender+ temp]->enqs(0)[t] == net_ctx.pkt_val(true, 0, 11));
             constr_map.insert(named_constr(constr_name, constr_expr));
 
-            for (int i = 0; i < out_queues.size(); i++) {
+            for (int i = 3; i < 5; i++) {
+                sprintf(constr_name, "%s_dont_forward_when_no_pause/unpause_%d_at_%d", id.c_str(), i, t);
+                constr_expr = implies(!send_pause && !send_unpause,
+                    out_queues[i]->enqs(0)[t] == net_ctx.null_pkt());
+                constr_map.insert(named_constr(constr_name, constr_expr));
+
                 if (i == return_to_sender+ temp) continue;
                 sprintf(constr_name, "%s_dont_forward_when_pause/unpause_%d_at_%d", id.c_str(), i, t);
                 constr_expr = implies((pkt_val && send_pause) || send_unpause,
                     out_queues[i]->enqs(0)[t] == net_ctx.null_pkt());
-
                 constr_map.insert(named_constr(constr_name, constr_expr));
+                
             }
 
             sprintf(vname, "%s_read_var_pkt_val_at_%d", id.c_str(), t);

@@ -35,22 +35,43 @@ void roce(std::string good_examples_file,
     unsigned int prio_levels = 4;
     unsigned int query_thresh = 1;
 
-    unsigned int good_example_cnt = 2;
-    unsigned int bad_example_cnt = 2;
-    unsigned int total_time = 7;
+    unsigned int good_example_cnt = 30;
+    unsigned int bad_example_cnt = 30 ;
+    unsigned int total_time = 18;
 
     RoceScheduler* roce = new RoceScheduler(total_time);
 
+    unsigned int in_queue_cnt = 2;
+    unsigned int period = 4;
+    unsigned int recur = 2;
+    unsigned int rate = 1;
+    // Base workload 
+    Workload wl(100, in_queue_cnt, total_time);
 
+    for (unsigned int i = 1; i <= recur; i++) {
+        for (unsigned int q = 0; q < in_queue_cnt; q++) {
+            wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, q), comp_t::GE, i * rate),
+                time_range_t(i * period - 1, i * period - 1),
+                total_time));
+        }
+    }
+
+    //wl.add_wl_spec(TimedSpec(WlSpec(TONE(metric_t::CENQ, 1), comp_t::GT, TONE(metric_t::CENQ, 2)),
+    //  time_range_t(total_time - 1, total_time - 1),
+    //  total_time));
+
+    std::cout << "base workload: " << std::endl << wl << std::endl;
+
+    roce->set_base_workload(wl);
     roce->solve();
     // goba
-    return;
+    //return;
     
-    cid_t query_qid = roce->get_out_queue(1)->get_id();
+    cid_t query_qid = "roce_xBar0.0";
     Query query(query_quant_t::EXISTS,
-        time_range_t(12, roce->get_total_time() - 1),
+        time_range_t(16, roce->get_total_time() - 1),
         query_qid,
-        metric_t::CENQ, comp_t::LT, 1u);
+        metric_t::CBLOCKED, comp_t::GT, 3);
 
     roce->set_query(query);
 
@@ -75,8 +96,8 @@ void roce(std::string good_examples_file,
     DistsParams dists_params;
     dists_params.in_queue_cnt = roce->in_queue_cnt();
     dists_params.total_time = total_time;
-    dists_params.pkt_meta1_val_max = 1;
-    dists_params.pkt_meta2_val_max = 4;
+    dists_params.pkt_meta1_val_max = 4;
+    dists_params.pkt_meta2_val_max = 1;
 
     Dists* dists = new Dists(dists_params);
     SharedConfig* config = new SharedConfig(total_time,
@@ -86,12 +107,14 @@ void roce(std::string good_examples_file,
     bool config_set = roce->set_shared_config(config);
     if (!config_set) return;
 
+    good_examples_file = "roce_good.txt";
+    bad_examples_file = "roce_bad.txt";
     run(roce,
         base_eg,
         good_example_cnt, good_examples_file,
         bad_example_cnt, bad_examples_file,
         query,
-        8,
+        20,
         config);
 }
 

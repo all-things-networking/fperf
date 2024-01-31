@@ -6,3 +6,6 @@ build
 x64/
 fperf.*
 libz3.dll
+
+# For JetBrains IDEs
+.idea/*

@@ -6,3 +6,5 @@ build
 x64/
 fperf.*
 libz3.dll
+
+.idea/*

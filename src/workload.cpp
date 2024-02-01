@@ -1168,36 +1168,35 @@ void Workload::normalize(time_range_t time_range) {
     vector<Comp> non_zero_comps;
     vector<std::shared_ptr<WlSpec>> non_op_specs;
 
-    for (set<std::shared_ptr<WlSpec>>::iterator it = specs.begin(); it != specs.end(); it++) {
-        std::shared_ptr<WlSpec> spec = *it;
+    for (auto it = specs.begin(); it != specs.end(); it++) {
+        auto spec = *it;
 
-        if (auto compSpec = std::dynamic_pointer_cast<Comp>(spec)) {
-            non_op_specs.push_back(spec);
-            continue;
-        }
+        // Attempt to cast spec to Comp.
+        auto compSpec = std::dynamic_pointer_cast<Comp>(spec);
 
-        Comp* comp = dynamic_cast<Comp*>(spec.get());
+        if (compSpec) {
+            // If spec is of Comp type, process it.
+            auto zero_queues = compSpec->get_zero_queues();
+            qset_t zero_queue_set = zero_queues.second;
+            bool has_zero = zero_queue_set.size() > 0;
 
-        auto zero_queues = comp->get_zero_queues();
-        qset_t zero_queue_set = zero_queues.second;
-        bool has_zero = zero_queue_set.size() > 0;
+            if (has_zero) {
+                metric_t metric = zero_queues.first;
 
+                for (auto z_it = zero_queue_set.begin(); z_it != zero_queue_set.end(); z_it++) {
+                    unsigned int q = *z_it;
+                    zero_pair p(metric, q);
+                    zeros.push_back(p);
+                }
 
-        if (has_zero) {
-            metric_t metric = zero_queues.first;
-
-            for (qset_t::iterator z_it = zero_queue_set.begin(); z_it != zero_queue_set.end();
-                 z_it++) {
-                unsigned int q = *z_it;
-                zero_pair p(metric, q);
-                zeros.push_back(p);
+                zero_comps.push_back(*compSpec);
+            } else {
+                non_zero_comps.push_back(*compSpec);
             }
-
-            zero_comps.push_back(*comp);
+        } else {
+            // If spec is not of Comp type, handle accordingly.
+            non_op_specs.push_back(spec);
         }
-
-        else
-            non_zero_comps.push_back(*comp);
     }
 
     bool changed = true;

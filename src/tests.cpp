@@ -199,7 +199,10 @@ Workload combine(Workload wl, Search& search) { // Need to pass in search so we 
                 Indiv indiv = get<Indiv>(comp.lhs);
                 if (indiv.get_metric() == metric_t::CENQ){
                     if(holds_alternative<unsigned int>(comp.rhs) && get<unsigned int>(comp.rhs) == 0){
-                        indiv_specs.insert(spec);
+                        // Check if operation is = or <= 0
+                        if (comp.get_op() == op_t::EQ || comp.get_op() == op_t::LE) {
+                            indiv_specs.insert(spec);
+                        }
                     }
                 }
             }
@@ -211,37 +214,41 @@ Workload combine(Workload wl, Search& search) { // Need to pass in search so we 
 //        cout << spec << endl;
 //    }
 
-    // Keep track of sets of q's to t's
-    std::map<time_range_t, std::set<unsigned int>> tset_to_qset;
+    // Keep track of sets of q's to TimedSpecs
+    std::map<time_range_t, std::set<TimedSpec>> tset_to_qset;
 
     for (const TimedSpec& spec : indiv_specs) {
         time_range_t time_range = spec.get_time_range();
-
         wl_spec_t wl_spec = spec.get_wl_spec();
-        Comp comp = get<Comp>(wl_spec);
-        Indiv indiv = get<Indiv>(comp.lhs);
-        unsigned int q = indiv.queue;
-
-        tset_to_qset[time_range].insert(q);
+        tset_to_qset[time_range].insert(spec);
     }
 
-    // for each mapping in tset_to_qset, if the set of q's corresponding to a time_range has size greater than 1, we replace it with a single spec
-    for(auto const& [time_range, qset] : tset_to_qset) {
-        if (qset.size() > 1) {
+    // for each mapping in tset_to_qset, if the set of TimedSpecs corresponding to a time_range has size greater than 1, we replace it with a single spec
+    for(auto const& [time_range, TimedSpecs] : tset_to_qset) {
+        if (TimedSpecs.size() > 1) {
             // Merge into one spec
-            // Step 1: Add a new spec of form [t1, t2]: (SUM_[q in Q] cenq(q ,t) = 0
-            TimedSpec spec_to_add = TimedSpec(Comp(QSum(qset, metric_t::CENQ), op_t::EQ, Time(0)), time_range, wl.get_total_time());
+
+            // Step 1: Remove all the old specs
+            for (auto const &spec : TimedSpecs) {
+                // Remove it
+                wl.rm_spec(spec);
+            }
+
+            // Step 2: Add a new spec of form [t1, t2]: (SUM_[q in Q] cenq(q ,t) <= 0
+
+            // Collect all q's
+            std::set<unsigned int> qset;
+            for (const TimedSpec& spec : TimedSpecs) {
+                wl_spec_t wl_spec = spec.get_wl_spec();
+                Comp comp = get<Comp>(wl_spec);
+                Indiv indiv = get<Indiv>(comp.lhs);
+                unsigned int q = indiv.queue;
+                qset.insert(q);
+            }
+
+            TimedSpec spec_to_add = TimedSpec(Comp(QSum(qset, metric_t::CENQ), op_t::LE, Time(0)), time_range, wl.get_total_time());
             //            cout << "BROADEN: Adding spec: " << spec_to_add << endl;
             wl.add_spec(spec_to_add);
-
-            // Step 2: Remove all the old specs
-            for (auto const &q : qset) {
-                // This spec is part of the contiguous set of t's
-                // Remove it
-                TimedSpec spec_to_remove = TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::EQ, 0), time_range, wl.get_total_time());
-                //                cout << "BROADEN: Removing spec: " << spec_to_remove << endl;
-                wl.rm_spec(spec_to_remove);
-            }
         }
     }
 

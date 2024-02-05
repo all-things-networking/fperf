@@ -42,6 +42,12 @@ public:
     bool check(Workload wl);
     Workload refine(Workload wl);
 
+    // Research project
+    Workload setup_refinement(Workload wl);
+    Workload remove_specs(Workload wl);
+    Workload tighten_constant_bounds(Workload wl);
+    Workload aggregate_indivs_to_sums(Workload wl);
+
     unsigned int cost(Workload wl);
 
 private:

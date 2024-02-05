@@ -652,6 +652,238 @@ Workload Search::refine(Workload wl) {
     return wl;
 }
 
+Workload Search::setup_refinement(Workload wl){
+    // Add specs for "zero queues" back in
+    for (unsigned int q = 0; q < cp->in_queue_cnt(); q++) {
+        if (target_queues.find(q) == target_queues.end()) {
+            Indiv n_indiv = Indiv(metric_t::CENQ, q);
+            Comp n_wl_spec = Comp(n_indiv, op_t::LE, 0u);
+            wl.add_spec(TimedSpec(n_wl_spec, total_time, total_time));
+        }
+    }
+
+    return wl;
+}
+
+Workload Search::remove_specs(Workload wl) { // Randomly remove specs and check if it is still a solution
+     Workload candidate(max_spec, in_queue_cnt, total_time);
+
+     // Try removing each spec to see if
+     // we can make the workload more general
+     bool done = false;
+
+     time_typ start = noww();
+     while (!done) {
+
+         bool changed = false;
+
+         set<TimedSpec> specs = wl.get_all_specs();
+         for (set<TimedSpec>::iterator it = specs.begin(); it != specs.end(); it++) {
+             candidate = wl;
+             candidate.rm_spec(*it);
+
+             if (candidate.is_empty() || candidate.is_all()) continue;
+
+             bool is_ans = check(candidate);
+             if (is_ans) {
+                 wl = candidate;
+                 changed = true;
+                 break;
+             }
+         }
+
+         done = !changed;
+     }
+
+     return wl;
+}
+
+Workload Search::tighten_constant_bounds(Workload wl){ // Tighten constant bounds on rhs
+    Workload candidate(max_spec, in_queue_cnt, total_time);
+
+    // Find tighter bounds when the
+    // right hand side is time or constant
+    set<TimedSpec> specs = wl.get_all_specs();
+    specs = wl.get_all_specs();
+    for (set<TimedSpec>::iterator it = specs.begin(); it != specs.end(); it++) {
+        TimedSpec tspec = *it;
+        wl_spec_t wspec = tspec.get_wl_spec();
+        if (!holds_alternative<Comp>(wspec)) continue;
+        Comp comp = get<Comp>(wspec);
+        rhs_t rhs = comp.get_rhs();
+        op_t op = comp.get_op();
+        if (op == op_t::GT || op == op_t::GE) {
+            if (holds_alternative<Time>(rhs)) {
+                Time time = get<Time>(rhs);
+                unsigned int coeff = time.get_coeff();
+                Workload last_working_candidate = wl;
+                bool coeff_changed = false;
+
+                for (int new_coeff = coeff - 1; new_coeff >= 1; new_coeff--) {
+
+                    candidate = wl;
+                    unsigned int n_coeff = (unsigned int) new_coeff;
+                    Time n_time = Time(n_coeff);
+                    Comp n_comp = Comp(comp.get_lhs(), comp.get_op(), n_time);
+                    TimedSpec new_spec = TimedSpec(n_comp, tspec.get_time_range(), total_time);
+                    candidate.mod_spec(*it, new_spec);
+
+                    if (candidate.is_empty() || candidate.is_all()) continue;
+
+                    bool is_ans = check(candidate);
+                    if (is_ans) {
+                        coeff_changed = true;
+                        last_working_candidate = candidate;
+                    } else {
+                        break;
+                    }
+                }
+
+                if (coeff_changed) {
+                    wl = last_working_candidate;
+                }
+            }
+
+            else if (holds_alternative<unsigned int>(rhs)) {
+                unsigned int c = get<unsigned int>(rhs);
+                Workload last_working_candidate = wl;
+                bool c_changed = false;
+
+                for (int new_c = c - 1; new_c >= 0; new_c--) {
+
+                    candidate = wl;
+                    unsigned int n_c = (unsigned int) new_c;
+                    Comp n_comp = Comp(comp.get_lhs(), comp.get_op(), n_c);
+                    TimedSpec new_spec = TimedSpec(n_comp, tspec.get_time_range(), total_time);
+                    candidate.mod_spec(*it, new_spec);
+
+                    if (candidate.is_empty() || candidate.is_all()) continue;
+
+                    bool is_ans = check(candidate);
+                    if (is_ans) {
+                        c_changed = true;
+                        last_working_candidate = candidate;
+                    } else {
+                        break;
+                    }
+                }
+
+                if (c_changed) {
+                    wl = last_working_candidate;
+                }
+            }
+        }
+    }
+
+    return wl;
+}
+
+Workload Search::aggregate_indivs_to_sums(Workload wl){
+    Workload candidate(max_spec, in_queue_cnt, total_time);
+
+    qset_t in_wl;
+    set<TimedSpec> specs = wl.get_all_specs();
+    specs = wl.get_all_specs();
+    for (set<TimedSpec>::iterator it = specs.begin(); it != specs.end(); it++) {
+        wl_spec_t spec = it->get_wl_spec();
+        if (!holds_alternative<Comp>(spec)) continue;
+        Comp comp = get<Comp>(spec);
+        lhs_t lhs = comp.get_lhs();
+
+        if (holds_alternative<Indiv>(lhs)) {
+            in_wl.insert(get<Indiv>(lhs).get_queue());
+        } else {
+            qset_t tsum_qset = get<QSum>(lhs).get_qset();
+            for (qset_t::iterator it2 = tsum_qset.begin(); it2 != tsum_qset.end(); it2++) {
+                in_wl.insert(*it2);
+            }
+        }
+    }
+
+    qset_t zero_in_base;
+    set<TimedSpec> base_specs = cp->get_base_workload().get_all_specs();
+    for (set<TimedSpec>::iterator it = base_specs.begin(); it != base_specs.end(); it++) {
+        wl_spec_t spec = it->get_wl_spec();
+        if (!holds_alternative<Comp>(spec)) continue;
+        Comp comp = get<Comp>(spec);
+        lhs_t lhs = comp.get_lhs();
+        rhs_t rhs = comp.get_rhs();
+
+        if (it->get_time_range() == time_range_t(0, cp->get_total_time() - 1) &&
+            holds_alternative<unsigned int>(rhs) && get<unsigned int>(rhs) == 0 &&
+            comp.get_op() == op_t::LE) {
+            if (holds_alternative<Indiv>(lhs)) {
+                zero_in_base.insert(get<Indiv>(lhs).get_queue());
+            }
+            if (holds_alternative<QSum>(lhs)) {
+                qset_t tsum_qset = get<QSum>(lhs).get_qset();
+                for (qset_t::iterator it2 = tsum_qset.begin(); it2 != tsum_qset.end(); it2++) {
+                    zero_in_base.insert(*it2);
+                }
+            }
+        }
+    }
+
+    DEBUG_MSG("zero_in_base: " << zero_in_base << endl);
+    DEBUG_MSG("in_wl: " << in_wl << endl);
+    for (unsigned int q = 0; q < cp->in_queue_cnt(); q++) {
+        if (in_wl.find(q) != in_wl.end()) continue;
+        if (zero_in_base.find(q) != zero_in_base.end()) continue;
+
+        set<TimedSpec> specs = wl.get_all_specs();
+        for (set<TimedSpec>::iterator it = specs.begin(); it != specs.end(); it++) {
+            candidate = wl;
+
+            wl_spec_t wl_spec = it->get_wl_spec();
+            if (!holds_alternative<Comp>(wl_spec)) continue;
+            Comp comp = get<Comp>(wl_spec);
+            rhs_t rhs = comp.get_rhs();
+
+            if (holds_alternative<unsigned int>(rhs) && get<unsigned int>(rhs) == 0 &&
+                comp.get_op() == op_t::LE)
+                continue;
+
+            lhs_t lhs = comp.get_lhs();
+            lhs_t new_lhs = lhs;
+
+            if (holds_alternative<Indiv>(lhs)) {
+                Indiv tone = get<Indiv>(lhs);
+
+                // TODO: aggregatable
+                if (tone.get_metric() != metric_t::CENQ) continue;
+
+                qset_t new_qset;
+                new_qset.insert(q);
+                new_qset.insert(tone.get_queue());
+                new_lhs = QSum(new_qset, tone.get_metric());
+            } else if (holds_alternative<QSum>(lhs)) {
+                QSum tsum = get<QSum>(lhs);
+
+                // TODO: aggregatable
+                if (tsum.get_metric() != metric_t::CENQ) continue;
+                qset_t new_qset = tsum.get_qset();
+                new_qset.insert(q);
+                new_lhs = QSum(new_qset, tsum.get_metric());
+            }
+
+            Comp n_comp = Comp(new_lhs, comp.get_op(), comp.get_rhs());
+            TimedSpec new_spec = TimedSpec(n_comp, it->get_time_range(), total_time);
+
+            candidate.mod_spec(*it, new_spec);
+
+            if (candidate == wl || candidate.is_empty() || candidate.is_all()) continue;
+
+            DEBUG_MSG(candidate << endl);
+            bool is_ans = check(candidate);
+            if (is_ans) {
+                wl = candidate;
+            }
+        }
+    }
+
+    return wl;
+}
+
 void Search::run() {
     DEBUG_MSG("target queues: " << target_queues << endl);
     time_typ start = noww();

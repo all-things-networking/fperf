@@ -133,7 +133,6 @@ bool operator<(const rhs_t& rhs1, const rhs_t& rhs2);
 
 class WlSpec {
 public:
-    virtual ~WlSpec() = default;
     virtual bool applies_to_queue(unsigned int queue) const = 0;
     virtual bool equals(const WlSpec& other) const = 0;
     virtual bool less_than(const WlSpec& other) const = 0;

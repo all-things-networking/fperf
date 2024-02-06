@@ -817,24 +817,8 @@ bool operator==(const WlSpec& spec1, const WlSpec& spec2) {
     return spec1.equals(spec2);
 }
 
-bool operator!=(const WlSpec& spec1, const WlSpec& spec2) {
-    return !(spec1 == spec2);
-}
-
 bool operator<(const WlSpec& spec1, const WlSpec& spec2) {
     return spec1.less_than(spec2);
-}
-
-bool operator>(const WlSpec& spec1, const WlSpec& spec2) {
-    return spec2 < spec1;
-}
-
-bool operator<=(const WlSpec& spec1, const WlSpec& spec2) {
-    return !(spec1 > spec2);
-}
-
-bool operator>=(const WlSpec& spec1, const WlSpec& spec2) {
-    return !(spec1 < spec2);
 }
 
 //************************************* TimedSpec *************************************//

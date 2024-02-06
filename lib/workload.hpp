@@ -159,10 +159,6 @@ ostream& operator<<(ostream& os, const WlSpec& wl_spec);
 ostream& operator<<(ostream& os, const WlSpec* wl_spec);
 
 bool operator==(const WlSpec& wl_spec1, const WlSpec& wl_spec2);
-bool operator!=(const WlSpec& wl_spec1, const WlSpec& wl_spec2);
-bool operator>=(const WlSpec& wl_spec1, const WlSpec& wl_spec2);
-bool operator>(const WlSpec& wl_spec1, const WlSpec& wl_spec2);
-bool operator<=(const WlSpec& wl_spec1, const WlSpec& wl_spec2);
 bool operator<(const WlSpec& wl_spec1, const WlSpec& wl_spec2);
 
 //************************************* UNIQ *************************************//

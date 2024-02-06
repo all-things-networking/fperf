@@ -155,7 +155,6 @@ bool wl_spec_is_all(const std::shared_ptr<WlSpec>& spec);
 unsigned int wl_spec_ast_size(const WlSpec& spec);
 unsigned int wl_spec_ast_size(const std::shared_ptr<WlSpec>& wl_spec);
 
-ostream& operator<<(ostream& os, const WlSpec& wl_spec);
 ostream& operator<<(ostream& os, const WlSpec* wl_spec);
 
 bool operator==(const WlSpec& wl_spec1, const WlSpec& wl_spec2);

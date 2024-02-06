@@ -803,11 +803,6 @@ bool wl_spec_applies_to_queue(const std::shared_ptr<WlSpec>& spec, unsigned int 
     return spec->applies_to_queue(queue);
 }
 
-ostream& operator<<(ostream& os, const WlSpec& wl_spec) {
-    os << wl_spec.to_string();
-    return os;
-}
-
 ostream& operator<<(ostream& os, const WlSpec* wl_spec) {
     os << wl_spec->to_string();
     return os;

@@ -141,8 +141,6 @@ public:
     virtual bool is_available_for_search() const { return false; }
 };
 
-//typedef variant<Comp, Same, Incr, Decr, Unique> wl_spec_t;
-
 bool wl_spec_applies_to_queue(const WlSpec& spec, unsigned int queue);
 bool wl_spec_applies_to_queue(const std::shared_ptr<WlSpec>& spec, unsigned int queue);
 

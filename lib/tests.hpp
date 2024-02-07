@@ -17,8 +17,6 @@ typedef void e2e_test_func_t(string, string);
 
 void prio(string good_examples_file = "", string bad_examples_file = "");
 
-void prio_test(string good_examples_file = "", string bad_examples_file = "");
-
 void rr(string good_examples_file = "", string bad_examples_file = "");
 
 void fq_codel(string good_examples_file = "", string bad_examples_file = "");

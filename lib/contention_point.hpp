@@ -81,8 +81,9 @@ public:
 
     friend ostream& operator<<(ostream& os, const ContentionPoint& p);
 
-protected:
     NetContext net_ctx;
+protected:
+
     solver* z3_solver;
     optimize* z3_optimizer;
     map<string, expr> constr_map;

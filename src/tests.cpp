@@ -23,6 +23,8 @@
 #include <set>
 #include <vector>
 
+bool RANDOM_SEARCH = false;
+
 void run(ContentionPoint* cp,
          IndexedExample* base_eg,
          unsigned int good_example_cnt,
@@ -430,7 +432,7 @@ Workload broaden_operations(Workload wl, Search& search) {
 // - changing indiv to sums
 // - Combining (expand based on new patterns we recognize). Ask Z3 to give us the most concise with synthesis? Use get_expr to create Z3 variables for search. Ask to find an equivalent workload spec... if we want a general rhs, have mutually-exclusive booleans to represent which type of rhs we are using
 
-Workload research_project(IndexedExample* base_eg, ContentionPoint* prio, unsigned int total_time, Query query, unsigned int max_spec, string good_examples_file, string bad_examples_file, SharedConfig* config){
+void research_project(IndexedExample* base_eg, ContentionPoint* prio, unsigned int total_time, Query query, unsigned int max_spec, string good_examples_file, string bad_examples_file, SharedConfig* config){
     // Create a workload that perfectly describes the base example
     // That is, for each queue, for each timestep, the workload has a spec of the form:
     // [t, t]: cenq(queue_id, t) = sum from 0 to t of enqs[queue_id][t]
@@ -498,20 +500,23 @@ Workload research_project(IndexedExample* base_eg, ContentionPoint* prio, unsign
         }
     }
 
-    //  TODO: Think about order of refinement / broadening
-
     cout << "Last valid workload: " << endl << lastValidWl << endl;
-    lastValidWl = search.setup_refinement(lastValidWl);
-    lastValidWl = search.remove_specs(lastValidWl);
-    cout << "Workload after removing specs: " << endl << lastValidWl << endl;
-    lastValidWl = combine(lastValidWl, search);
-    cout << "Workload after combining: " << endl << lastValidWl << endl;
-    lastValidWl = search.aggregate_indivs_to_sums(lastValidWl);
-    cout << "Workload after aggregating indivs to sums: " << endl << lastValidWl << endl;
-    lastValidWl = search.tighten_constant_bounds(lastValidWl);
-    cout << "Workload after tightening constant bounds: " << endl << lastValidWl << endl;
-    lastValidWl = broaden_operations(lastValidWl, search);
-    cout << "Final Workload after broadening operations: " << endl << lastValidWl << endl;
+
+    if(!search.check(lastValidWl)){
+        cout << "ERROR: Last valid workload is invalid" << endl;
+    }else{
+        lastValidWl = search.setup_refinement(lastValidWl);
+        lastValidWl = search.remove_specs(lastValidWl);
+        cout << "Workload after removing specs: " << endl << lastValidWl << endl;
+        lastValidWl = combine(lastValidWl, search);
+        cout << "Workload after combining: " << endl << lastValidWl << endl;
+        lastValidWl = search.aggregate_indivs_to_sums(lastValidWl);
+        cout << "Workload after aggregating indivs to sums: " << endl << lastValidWl << endl;
+        lastValidWl = search.tighten_constant_bounds(lastValidWl);
+        cout << "Workload after tightening constant bounds: " << endl << lastValidWl << endl;
+        lastValidWl = broaden_operations(lastValidWl, search);
+        cout << "Final Workload after broadening operations (Random approach): " << endl << lastValidWl << endl;
+    }
     
     // Try another approach: start from the original workload and remove specs one by one
     // by doing the following procedure:
@@ -519,62 +524,79 @@ Workload research_project(IndexedExample* base_eg, ContentionPoint* prio, unsign
     // For t from 1 to total_time:
     // Remove the spec that specifies cenq(q, t) = sum from 0 to t of enqs[q][t] until the workload becomes invalid (then put the last removed spec back and move on to the next queue)
 
-    //    Workload wl2 = wl;
-    //    for (unsigned int q = 0; q < enqs.size(); q++) {
-    //        for (unsigned int t = 0; t < enqs[q].size(); t++) {
-    //            TimedSpec specToRemove(Comp(Indiv(metric_t::CENQ, q), op_t::EQ, sums[q][t]),
-    //                                   time_range_t(t, t),
-    //                                   total_time);
-    //            wl2.rm_spec(specToRemove);
-    ////            cout << "Removing spec: " << specToRemove << endl;
-    //            if (!search.check(wl2)) {
-    ////                cout << "Workload is invalid" << endl;
-    //                wl2.add_spec(specToRemove);
-    //                break;
-    //            }
-    //        }
-    //    }
-    //
-    //    // TODO: Try with larger total time, compare front-to-back to back-to-front
-    //    wl2 = search.refine(wl2);
-    //    wl2 = broaden(wl2, search);
-    //    cout << "Final Workload (Front-to-Back Iterative Approach): " << endl << wl2 << endl;
+//        Workload wl2 = wl;
+//        for (unsigned int q = 0; q < enqs.size(); q++) {
+//            for (unsigned int t = 0; t < enqs[q].size(); t++) {
+//                TimedSpec specToRemove(Comp(Indiv(metric_t::CENQ, q), op_t::EQ, sums[q][t]),
+//                                       time_range_t(t, t),
+//                                       total_time);
+//                wl2.rm_spec(specToRemove);
+//    //            cout << "Removing spec: " << specToRemove << endl;
+//                if (!search.check(wl2)) {
+//    //                cout << "Workload is invalid" << endl;
+//                    wl2.add_spec(specToRemove);
+//                    break;
+//                }
+//            }
+//        }
+//
+//        cout << "Last valid workload: " << endl << wl2 << endl;
+//        wl2 = search.setup_refinement(wl2);
+//        wl2 = search.remove_specs(wl2);
+//        cout << "Workload after removing specs: " << endl << wl2 << endl;
+//        wl2 = combine(wl2, search);
+//        cout << "Workload after combining: " << endl << wl2 << endl;
+//        wl2 = search.aggregate_indivs_to_sums(wl2);
+//        cout << "Workload after aggregating indivs to sums: " << endl << wl2 << endl;
+//        wl2 = search.tighten_constant_bounds(wl2);
+//        cout << "Workload after tightening constant bounds: " << endl << wl2 << endl;
+//        wl2 = broaden_operations(wl2, search);
+//        cout << "Final Workload after broadening operations (Front-to-Back Iterative Approach): " << endl << wl2 << endl;
 
 
     // Back-to-Front approach: same as above, except we iterate on t from total_time to 1
     // WARNING: time starts at 1, can never equal 0
 
-    //    Workload wl3 = wl;
-    //
-    //    for (unsigned int q = 0; q < enqs.size(); q++) {
-    ////        cout << "Number of timesteps for queue " << q << ": " << enqs[q].size() << endl;
-    //        if (!enqs[q].empty()) {
-    //            for (int t = static_cast<int>(enqs[q].size()) - 1; t >= 0; t--) {
-    //                TimedSpec specToRemove(Comp(Indiv(metric_t::CENQ, q), op_t::EQ, sums[q][t]),
-    //                time_range_t(static_cast<unsigned int>(t), static_cast<unsigned int>(t)),
-    //                        total_time);
-    //                // Check if spec is in the workload
-    //                if (wl3.get_all_specs().find(specToRemove) == wl3.get_all_specs().end()) {
-    ////                    cout << "Spec " << specToRemove << " not in workload" << endl;
-    //                    continue;
-    //                }
-    ////                cout << "Removing spec: " << specToRemove << endl;
-    //                wl3.rm_spec(specToRemove);
-    //                if (!search.check(wl3)) {
-    ////                    cout << "Workload is invalid" << endl;
-    //                    wl3.add_spec(specToRemove);
-    //                    break;
-    //                } else {
-    ////                    cout << "Workload is valid" << endl;
-    //                }
-    //            }
-    //        }
-    //    }
-    //
-    //
-    //    wl3 = search.refine(wl3);
-    //    wl3 = broaden(wl3, search);
-    //    cout << "Final Workload (Back-to-Front Iterative Approach): " << endl << wl3 << endl;
+//        Workload wl3 = wl;
+//
+//        for (unsigned int q = 0; q < enqs.size(); q++) {
+//    //        cout << "Number of timesteps for queue " << q << ": " << enqs[q].size() << endl;
+//            if (!enqs[q].empty()) {
+//                for (int t = static_cast<int>(enqs[q].size()) - 1; t >= 0; t--) {
+//                    TimedSpec specToRemove(Comp(Indiv(metric_t::CENQ, q), op_t::EQ, sums[q][t]),
+//                    time_range_t(static_cast<unsigned int>(t), static_cast<unsigned int>(t)),
+//                            total_time);
+//                    // Check if spec is in the workload
+//                    if (wl3.get_all_specs().find(specToRemove) == wl3.get_all_specs().end()) {
+//    //                    cout << "Spec " << specToRemove << " not in workload" << endl;
+//                        continue;
+//                    }
+//    //                cout << "Removing spec: " << specToRemove << endl;
+//                    wl3.rm_spec(specToRemove);
+//                    if (!search.check(wl3)) {
+//    //                    cout << "Workload is invalid" << endl;
+//                        wl3.add_spec(specToRemove);
+//                        break;
+//                    } else {
+//    //                    cout << "Workload is valid" << endl;
+//                    }
+//                }
+//            }
+//        }
+//
+//
+//        cout << "Last valid workload: " << endl << wl3 << endl;
+//        wl3 = search.setup_refinement(wl3);
+//        wl3 = search.remove_specs(wl3);
+//        cout << "Workload after removing specs: " << endl << wl3 << endl;
+//        wl3 = combine(wl3, search);
+//        cout << "Workload after combining: " << endl << wl3 << endl;
+//        wl3 = search.aggregate_indivs_to_sums(wl3);
+//        cout << "Workload after aggregating indivs to sums: " << endl << wl3 << endl;
+//        wl3 = search.tighten_constant_bounds(wl3);
+//        cout << "Workload after tightening constant bounds: " << endl << wl3 << endl;
+//        wl3 = broaden_operations(wl3, search);
+//        cout << "Final Workload after broadening operations (Back-to-Front Iterative Approach): " << endl << wl3 << endl;
 
     //    run(prio,
     //        base_eg,
@@ -848,18 +870,20 @@ void prio(string good_examples_file, string bad_examples_file) {
     SharedConfig* config = new SharedConfig(total_time, prio->in_queue_cnt(), target_queues, dists);
     bool config_set = prio->set_shared_config(config);
     if (!config_set) return;
-//
-//    run(prio,
-//        base_eg,
-//        good_example_cnt,
-//        good_examples_file,
-//        bad_example_cnt,
-//        bad_examples_file,
-//        query,
-//        8,
-//        config);
 
-    research_project(base_eg, prio, total_time, query, 8, good_examples_file, bad_examples_file, config);
+    if(RANDOM_SEARCH){
+        run(prio,
+            base_eg,
+            good_example_cnt,
+            good_examples_file,
+            bad_example_cnt,
+            bad_examples_file,
+            query,
+            8,
+            config);
+    }else{
+        research_project(base_eg, prio, total_time, query, 8, good_examples_file, bad_examples_file, config);
+    };
 }
 
 void rr(string good_examples_file, string bad_examples_file) {
@@ -946,17 +970,20 @@ void rr(string good_examples_file, string bad_examples_file) {
     bool config_set = rr->set_shared_config(config);
     if (!config_set) return;
 
-//    run(rr,
-//        base_eg,
-//        good_example_cnt,
-//        good_examples_file,
-//        bad_example_cnt,
-//        bad_examples_file,
-//        query,
-//        10,
-//        config);
 
-    research_project(base_eg, rr, total_time, query, 10, good_examples_file, bad_examples_file, config);
+    if(RANDOM_SEARCH){
+        run(rr,
+            base_eg,
+            good_example_cnt,
+            good_examples_file,
+            bad_example_cnt,
+            bad_examples_file,
+            query,
+            10,
+            config);
+    }else{
+        research_project(base_eg, rr, total_time, query, 10, good_examples_file, bad_examples_file, config);
+    }
 }
 
 void fq_codel(string good_examples_file, string bad_examples_file) {
@@ -1026,15 +1053,19 @@ void fq_codel(string good_examples_file, string bad_examples_file) {
     bool config_set = cp->set_shared_config(config);
     if (!config_set) return;
 
-    run(cp,
-        base_eg,
-        good_example_cnt,
-        good_examples_file,
-        bad_example_cnt,
-        bad_examples_file,
-        query,
-        10,
-        config);
+    if(RANDOM_SEARCH){
+        run(cp,
+            base_eg,
+            good_example_cnt,
+            good_examples_file,
+            bad_example_cnt,
+            bad_examples_file,
+            query,
+            10,
+            config);
+    }else{
+        research_project(base_eg, cp, total_time, query, 10, good_examples_file, bad_examples_file, config);
+    }
 }
 
 void loom(string good_examples_file, string bad_examples_file) {
@@ -1124,15 +1155,19 @@ void loom(string good_examples_file, string bad_examples_file) {
     bool config_set = cp->set_shared_config(config);
     if (!config_set) return;
 
-    run(cp,
-        base_eg,
-        good_example_cnt,
-        good_examples_file,
-        bad_example_cnt,
-        bad_examples_file,
-        query,
-        24,
-        config);
+    if(RANDOM_SEARCH){
+        run(cp,
+            base_eg,
+            good_example_cnt,
+            good_examples_file,
+            bad_example_cnt,
+            bad_examples_file,
+            query,
+            24,
+            config);
+    }else{
+        research_project(base_eg, cp, total_time, query, 24, good_examples_file, bad_examples_file, config);
+    }
 }
 
 void leaf_spine_bw(string good_examples_file, string bad_examples_file) {
@@ -1224,15 +1259,19 @@ void leaf_spine_bw(string good_examples_file, string bad_examples_file) {
     bool config_set = cp->set_shared_config(config);
     if (!config_set) return;
 
-    run(cp,
-        base_eg,
-        good_example_cnt,
-        good_examples_file,
-        bad_example_cnt,
-        bad_examples_file,
-        query,
-        24,
-        config);
+    if(RANDOM_SEARCH){
+        run(cp,
+            base_eg,
+            good_example_cnt,
+            good_examples_file,
+            bad_example_cnt,
+            bad_examples_file,
+            query,
+            24,
+            config);
+    }else{
+        research_project(base_eg, cp, total_time, query, 24, good_examples_file, bad_examples_file, config);
+    }
 }
 
 void tbf(std::string good_examples_file, std::string bad_examples_file) {
@@ -1293,7 +1332,19 @@ void tbf(std::string good_examples_file, std::string bad_examples_file) {
     bool config_set = tbf->set_shared_config(config);
     if (!config_set) return;
 
-    run(tbf, base_eg, 50, good_examples_file, 50, bad_examples_file, query, 8, config);
+    if(RANDOM_SEARCH){
+        run(tbf,
+            base_eg,
+            50,
+            good_examples_file,
+            50,
+            bad_examples_file,
+            query,
+            8,
+            config);
+    }else{
+        research_project(base_eg, tbf, total_time, query, 8, good_examples_file, bad_examples_file, config);
+    }
 }
 
 void run(ContentionPoint* cp,

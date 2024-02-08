@@ -285,14 +285,14 @@ metric_t Unique::get_metric() const {
     return metric;
 }
 
-bool Unique::equals(const WlSpec& other) const {
+bool Unique::operator==(const WlSpec& other) const {
+    if (dynamic_cast<const Unique*>(&other) == NULL) return false;
     const Unique* other_unique = dynamic_cast<const Unique*>(&other);
     return (this->metric == other_unique->metric && this->qset == other_unique->qset);
 }
 
-bool Unique::less_than(const WlSpec& other) const {
-    if (this->type_id() < other.type_id()) return true;
-    if (this->type_id() > other.type_id()) return false;
+bool Unique::operator<(const WlSpec& other) const {
+    if (dynamic_cast<const Unique*>(&other) == NULL) return false;
     const Unique* other_unique = dynamic_cast<const Unique*>(&other);
     return (this->metric < other_unique->metric ||
             (this->metric == other_unique->metric && this->qset < other_unique->qset));
@@ -326,14 +326,17 @@ metric_t Same::get_metric() const {
     return metric;
 }
 
-bool Same::equals(const WlSpec& other) const {
+bool Same::operator==(const WlSpec& other) const {
+    if (dynamic_cast<const Same*>(&other) == NULL) return false;
     const Same* other_same = dynamic_cast<const Same*>(&other);
     return (this->metric == other_same->metric && this->queue == other_same->queue);
 }
 
-bool Same::less_than(const WlSpec& other) const {
-    if (this->type_id() < other.type_id()) return true;
-    if (this->type_id() > other.type_id()) return false;
+bool Same::operator<(const WlSpec& other) const {
+    if (dynamic_cast<const Unique*>(&other) != NULL) return true;
+    if (dynamic_cast<const Decr*>(&other) != NULL) return true;
+    if (dynamic_cast<const Incr*>(&other) != NULL) return true;
+    if (dynamic_cast<const Same*>(&other) == NULL) return false;
     const Same* other_same = dynamic_cast<const Same*>(&other);
     return (this->metric < other_same->metric ||
             (this->metric == other_same->metric && this->queue < other_same->queue));
@@ -367,14 +370,16 @@ metric_t Incr::get_metric() const {
     return metric;
 }
 
-bool Incr::equals(const WlSpec& other) const {
+bool Incr::operator==(const WlSpec& other) const {
+    if (dynamic_cast<const Incr*>(&other) == NULL) return false;
     const Incr* other_incr = dynamic_cast<const Incr*>(&other);
     return (this->metric == other_incr->metric && this->queue == other_incr->queue);
 }
 
-bool Incr::less_than(const WlSpec& other) const {
-    if (this->type_id() < other.type_id()) return true;
-    if (this->type_id() > other.type_id()) return false;
+bool Incr::operator<(const WlSpec& other) const {
+    if (dynamic_cast<const Unique*>(&other) != NULL) return true;
+    if (dynamic_cast<const Decr*>(&other) != NULL) return true;
+    if (dynamic_cast<const Incr*>(&other) == NULL) return false;
     const Incr* other_incr = dynamic_cast<const Incr*>(&other);
     return (this->metric < other_incr->metric ||
             (this->metric == other_incr->metric && this->queue < other_incr->queue));
@@ -408,17 +413,19 @@ metric_t Decr::get_metric() const {
     return metric;
 }
 
-bool Decr::equals(const WlSpec& other) const {
+bool Decr::operator==(const WlSpec& other) const {
+    if (dynamic_cast<const Decr*>(&other) == NULL) return false;
     const Decr* other_decr = dynamic_cast<const Decr*>(&other);
     return (this->metric == other_decr->metric && this->queue == other_decr->queue);
 }
 
-bool Decr::less_than(const WlSpec& other) const {
-    if (this->type_id() < other.type_id()) return true;
-    if (this->type_id() > other.type_id()) return false;
+bool Decr::operator<(const WlSpec& other) const {
+    if (dynamic_cast<const Unique*>(&other) != NULL) return true;
+    if (dynamic_cast<const Decr*>(&other) == NULL) return false;
     const Decr* other_decr = dynamic_cast<const Decr*>(&other);
     return (this->metric < other_decr->metric ||
             (this->metric == other_decr->metric && this->queue < other_decr->queue));
+
 }
 
 int Decr::type_id() const {
@@ -715,14 +722,18 @@ rhs_t Comp::get_rhs() const {
     return rhs;
 }
 
-bool Comp::equals(const WlSpec& other) const {
+bool Comp::operator==(const WlSpec& other) const {
+    if (dynamic_cast<const Comp*>(&other) == NULL) return false;
     const Comp* other_comp = dynamic_cast<const Comp*>(&other);
     return (this->lhs == other_comp->lhs && this->op == other_comp->op && this->rhs == other_comp->rhs);
 }
 
-bool Comp::less_than(const WlSpec& other) const {
-    if (this->type_id() < other.type_id()) return true;
-    if (this->type_id() > other.type_id()) return false;
+bool Comp::operator<(const WlSpec& other) const {
+    if (dynamic_cast<const Unique*>(&other) != NULL) return true;
+    if (dynamic_cast<const Decr*>(&other) != NULL) return true;
+    if (dynamic_cast<const Incr*>(&other) != NULL) return true;
+    if (dynamic_cast<const Same*>(&other) != NULL) return true;
+    if (dynamic_cast<const Comp*>(&other) == NULL) return false; // Should never reach here
     const Comp* other_comp = dynamic_cast<const Comp*>(&other);
     return (this->lhs < other_comp->lhs ||
             (this->lhs == other_comp->lhs && this->op < other_comp->op) ||
@@ -745,75 +756,9 @@ std::string Comp::to_string() const {
 }
 
 //************************************* WlSpec *************************************//
-// TODO: Only checks COMP
-bool wl_spec_is_all(const WlSpec& spec) {
-    const Comp* compSpec = dynamic_cast<const Comp*>(&spec);
-    if (compSpec) {
-        return compSpec->spec_is_all();
-    }
-    return false;
-}
-
-// TODO: Only checks COMP
-bool wl_spec_is_all(const std::shared_ptr<WlSpec>& spec) {
-    if (auto compSpec = std::dynamic_pointer_cast<Comp>(spec)) {
-        return compSpec->spec_is_all();
-    }
-    return false;
-}
-
-// TODO: Only checks COMP
-bool wl_spec_is_empty(const WlSpec& spec) {
-    const Comp* compSpec = dynamic_cast<const Comp*>(&spec);
-    if (compSpec) {
-        return compSpec->spec_is_empty();
-    }
-    return false;
-}
-
-// TODO: Only checks COMP
-bool wl_spec_is_empty(const std::shared_ptr<WlSpec>& spec) {
-    if (auto compSpec = std::dynamic_pointer_cast<Comp>(spec)) {
-        return compSpec->spec_is_empty();
-    }
-    return false;
-}
-
-unsigned int wl_spec_ast_size(const WlSpec& wl_spec) {
-    const Comp* compSpec = dynamic_cast<const Comp*>(&wl_spec);
-    if (compSpec) {
-        return compSpec->ast_size();
-    }
-    return 1u; // Default value for non-Comp types
-}
-
-unsigned int wl_spec_ast_size(const std::shared_ptr<WlSpec>& wl_spec) {
-    if (auto compSpec = std::dynamic_pointer_cast<Comp>(wl_spec)) {
-        return compSpec->ast_size();
-    }
-    return 1u; // Default value for non-Comp types
-}
-
-
-bool wl_spec_applies_to_queue(const WlSpec& spec, unsigned int queue) {
-    return spec.applies_to_queue(queue);
-}
-
-bool wl_spec_applies_to_queue(const std::shared_ptr<WlSpec>& spec, unsigned int queue) {
-    return spec->applies_to_queue(queue);
-}
-
 ostream& operator<<(ostream& os, const WlSpec* wl_spec) {
     os << wl_spec->to_string();
     return os;
-}
-
-bool operator==(const WlSpec& spec1, const WlSpec& spec2) {
-    return spec1.equals(spec2);
-}
-
-bool operator<(const WlSpec& spec1, const WlSpec& spec2) {
-    return spec1.less_than(spec2);
 }
 
 //************************************* TimedSpec *************************************//
@@ -848,9 +793,9 @@ void TimedSpec::set_time_range_ub(unsigned int ub) {
 }
 
 void TimedSpec::normalize() {
-    if (wl_spec_is_empty(*wl_spec)) {
+    if (wl_spec->spec_is_empty()) {
         is_empty = true;
-    } else if (wl_spec_is_all(*wl_spec) || time_range.first > time_range.second) {
+    } else if (wl_spec->spec_is_all() || time_range.first > time_range.second) {
         is_all = true;
     } else {
         auto compSpec = std::dynamic_pointer_cast<Comp>(wl_spec);
@@ -1005,7 +950,8 @@ set<TimedSpec> Workload::get_all_specs() const {
 wl_cost_t Workload::cost() const {
     unsigned int ast_val = 0;
     for (set<TimedSpec>::iterator it = all_specs.begin(); it != all_specs.end(); it++) {
-        ast_val += wl_spec_ast_size(it->get_wl_spec());
+        shared_ptr<WlSpec> spec = it->get_wl_spec();
+        ast_val += spec->ast_size();
     }
 
     unsigned int timeline_val = (unsigned int) timeline.size();
@@ -1112,7 +1058,7 @@ void Workload::normalize(time_range_t time_range) {
 
     // if one is empty, the entire thing is empty
     for (set<std::shared_ptr<WlSpec>>::iterator it = specs.begin(); it != specs.end(); it++) {
-        if (wl_spec_is_empty(*it)) {
+        if (std::dynamic_pointer_cast<WlSpec>(*it)->spec_is_empty()) {
             std::shared_ptr<WlSpec> spec = *it;
             timeline[time_range].clear();
             timeline[time_range].insert(spec);
@@ -1127,7 +1073,7 @@ void Workload::normalize(time_range_t time_range) {
     set<std::shared_ptr<WlSpec>> filtered_specs;
     for (set<std::shared_ptr<WlSpec>>::iterator it = specs.begin(); it != specs.end(); it++) {
 
-        if (wl_spec_is_all(*it)) continue;
+        if (std::dynamic_pointer_cast<WlSpec>(*it)->spec_is_all()) continue;
 
         filtered_specs.insert(*it);
     }
@@ -1382,7 +1328,7 @@ unsigned int Workload::ast_size() const {
 
         if (specs.size() == 0) res++;
         for (set<std::shared_ptr<WlSpec>>::const_iterator s_it = specs.cbegin(); s_it != specs.cend(); s_it++) {
-            res += wl_spec_ast_size(*s_it);
+            res += (*s_it)->ast_size();
         }
     }
     return res;

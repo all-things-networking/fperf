@@ -33,7 +33,7 @@ RandomSpecGenerationParameters SpecFactory::get_metric_params(metric_t metric_ty
 //************************************* TimedSpec *************************************//
 
 TimedSpec SpecFactory::random_timed_spec() {
-    std::shared_ptr<WlSpec> wl_spec = random_wl_spec();
+    WlSpec* wl_spec = random_wl_spec();
 
     unsigned int time_range_lb = dists->timestep();
     unsigned int time_range_ub = dists->timestep();
@@ -47,11 +47,11 @@ TimedSpec SpecFactory::random_timed_spec() {
 
 
 void SpecFactory::pick_neighbors(TimedSpec& spec, vector<TimedSpec>& neighbors) {
-    std::shared_ptr<WlSpec> wl_spec = spec.get_wl_spec();
+    WlSpec* wl_spec = spec.get_wl_spec();
     time_range_t time_range = spec.get_time_range();
 
     // Changing wl_spec
-    vector<std::shared_ptr<WlSpec>> wl_spec_neighbors;
+    vector<WlSpec*> wl_spec_neighbors;
     pick_neighbors(wl_spec, wl_spec_neighbors);
     for (unsigned int i = 0; i < wl_spec_neighbors.size(); i++) {
         TimedSpec nei = TimedSpec(wl_spec_neighbors[i], time_range, total_time);
@@ -87,17 +87,17 @@ void SpecFactory::pick_neighbors(TimedSpec& spec, vector<TimedSpec>& neighbors) 
 
 //************************************* WlSpec *************************************//
 
-std::shared_ptr<WlSpec> SpecFactory::random_wl_spec() {
-    return std::make_shared<Comp>(random_comp());
+WlSpec* SpecFactory::random_wl_spec() {
+    return new Comp(random_comp());
 }
 
-void SpecFactory::pick_neighbors(std::shared_ptr<WlSpec>& spec, std::vector<std::shared_ptr<WlSpec>>& neighbors) {
-    auto compSpec = std::dynamic_pointer_cast<Comp>(spec);
+void SpecFactory::pick_neighbors(WlSpec*& spec, std::vector<WlSpec*>& neighbors) {
+    auto compSpec = dynamic_cast<Comp*>(spec);
     if (compSpec) {
         std::vector<Comp> comp_neighbors;
         pick_neighbors(*compSpec, comp_neighbors);
         for (const auto& neighbor : comp_neighbors) {
-            neighbors.push_back(std::make_shared<Comp>(neighbor));
+            neighbors.push_back(new Comp(neighbor));
         }
     }
 }

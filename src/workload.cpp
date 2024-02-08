@@ -767,14 +767,14 @@ ostream& operator<<(ostream& os, const WlSpec* wl_spec) {
 //            is always normalized independent of the operation
 //            running on it.
 
-TimedSpec::TimedSpec(std::shared_ptr<WlSpec> wl_spec, time_range_t time_range, unsigned int total_time):
+TimedSpec::TimedSpec(WlSpec* wl_spec, time_range_t time_range, unsigned int total_time):
 wl_spec(std::move(wl_spec)),
 time_range(time_range),
 total_time(total_time) {
     normalize();
 }
 
-TimedSpec::TimedSpec(std::shared_ptr<WlSpec> wl_spec, unsigned int until_time, unsigned int total_time):
+TimedSpec::TimedSpec(WlSpec* wl_spec, unsigned int until_time, unsigned int total_time):
 wl_spec(std::move(wl_spec)),
 time_range(time_range_t(0, until_time - 1)),
 total_time(total_time) {
@@ -798,7 +798,7 @@ void TimedSpec::normalize() {
     } else if (wl_spec->spec_is_all() || time_range.first > time_range.second) {
         is_all = true;
     } else {
-        auto compSpec = std::dynamic_pointer_cast<Comp>(wl_spec);
+        auto compSpec = dynamic_cast<Comp*>(wl_spec);
         if (compSpec) {
             lhs_t lhs = compSpec->get_lhs();
             op_t op = compSpec->get_op();
@@ -837,7 +837,7 @@ time_range_t TimedSpec::get_time_range() const {
     return time_range;
 }
 
-std::shared_ptr<WlSpec> TimedSpec::get_wl_spec() const {
+WlSpec* TimedSpec::get_wl_spec() const {
     return wl_spec;
 }
 
@@ -854,9 +854,9 @@ ostream& operator<<(ostream& os, const TimedSpec* spec) {
 }
 
 bool operator==(const TimedSpec& spec1, const TimedSpec& spec2) {
-    WlSpec* wl_spec1 = spec1.get_wl_spec().get();
-    WlSpec* wl_spec2 = spec2.get_wl_spec().get();
-    return (spec1.time_range == spec2.time_range && *wl_spec1 == *wl_spec2);
+    WlSpec* wl_spec1 = spec1.get_wl_spec();
+    WlSpec* wl_spec2 = spec2.get_wl_spec();
+    return (wl_spec1 == wl_spec2 && spec1.time_range == spec2.time_range);
 }
 
 bool operator!=(const TimedSpec& spec1, const TimedSpec& spec2) {
@@ -903,7 +903,7 @@ void Workload::add_spec(TimedSpec spec) {
 void Workload::rm_spec(TimedSpec spec) {
     auto erase_res = all_specs.erase(spec);
     time_range_t spec_time_range = spec.get_time_range();
-    std::shared_ptr<WlSpec> wl_spec = spec.get_wl_spec();
+    WlSpec* wl_spec = spec.get_wl_spec();
     if (erase_res > 0) {
         for (timeline_t::iterator it = timeline.begin(); it != timeline.end(); it++) {
             if (is_superset(spec_time_range, it->first)) {
@@ -950,7 +950,7 @@ set<TimedSpec> Workload::get_all_specs() const {
 wl_cost_t Workload::cost() const {
     unsigned int ast_val = 0;
     for (set<TimedSpec>::iterator it = all_specs.begin(); it != all_specs.end(); it++) {
-        shared_ptr<WlSpec> spec = it->get_wl_spec();
+        WlSpec* spec = it->get_wl_spec();
         ast_val += spec->ast_size();
     }
 
@@ -993,7 +993,7 @@ void Workload::normalize() {
     // check that first?
     if (timeline.size() > 1) {
         vector<time_range_t> to_erase;
-        typedef pair<time_range_t, set<std::shared_ptr<WlSpec>>> timeline_entry;
+        typedef pair<time_range_t, set<WlSpec*>> timeline_entry;
         vector<timeline_entry> to_add;
 
         bool valid_last_new_entry = false;
@@ -1005,8 +1005,8 @@ void Workload::normalize() {
 
             timeline_t::iterator next_it = next(it);
 
-            set<std::shared_ptr<WlSpec>> specs1 = it->second;
-            set<std::shared_ptr<WlSpec>> specs2 = next_it->second;
+            set<WlSpec*> specs1 = it->second;
+            set<WlSpec*> specs2 = next_it->second;
 
             if (specs1 == specs2) {
                 time_range_t time_range_1 = it->first;
@@ -1054,12 +1054,13 @@ void Workload::normalize() {
 }
 
 void Workload::normalize(time_range_t time_range) {
-    set<std::shared_ptr<WlSpec>> specs = timeline[time_range];
+    set<WlSpec*> specs = timeline[time_range];
 
     // if one is empty, the entire thing is empty
-    for (set<std::shared_ptr<WlSpec>>::iterator it = specs.begin(); it != specs.end(); it++) {
-        if (std::dynamic_pointer_cast<WlSpec>(*it)->spec_is_empty()) {
-            std::shared_ptr<WlSpec> spec = *it;
+    for (set<WlSpec*>::iterator it = specs.begin(); it != specs.end(); it++) {
+        WlSpec* spec = *it;
+        if (spec->spec_is_empty()) {
+            WlSpec* spec = *it;
             timeline[time_range].clear();
             timeline[time_range].insert(spec);
             return;
@@ -1070,10 +1071,11 @@ void Workload::normalize(time_range_t time_range) {
     // - Remove the "alls".
     // TODO: implement with the std utilities like sort and remove_if
 
-    set<std::shared_ptr<WlSpec>> filtered_specs;
-    for (set<std::shared_ptr<WlSpec>>::iterator it = specs.begin(); it != specs.end(); it++) {
+    set<WlSpec*> filtered_specs;
+    for (set<WlSpec*>::iterator it = specs.begin(); it != specs.end(); it++) {
 
-        if (std::dynamic_pointer_cast<WlSpec>(*it)->spec_is_all()) continue;
+        // Check if all
+        if ((*it)->spec_is_all()) { continue; }
 
         filtered_specs.insert(*it);
     }
@@ -1091,13 +1093,13 @@ void Workload::normalize(time_range_t time_range) {
 
     vector<Comp> zero_comps;
     vector<Comp> non_zero_comps;
-    vector<std::shared_ptr<WlSpec>> non_op_specs;
+    vector<WlSpec*> non_op_specs;
 
     for (auto it = specs.begin(); it != specs.end(); it++) {
         auto spec = *it;
 
         // Attempt to cast spec to Comp.
-        auto compSpec = std::dynamic_pointer_cast<Comp>(spec);
+        auto compSpec = dynamic_cast<Comp*>(spec);
 
         if (compSpec) {
             // If spec is of Comp type, process it.
@@ -1273,13 +1275,13 @@ void Workload::normalize(time_range_t time_range) {
     }
 
 
-    set<std::shared_ptr<WlSpec>> final_specs;
+    set<WlSpec*> final_specs;
 
     for (const auto& comp : zero_comps) {
-        final_specs.insert(std::make_shared<Comp>(comp));
+        final_specs.insert(new Comp(comp));
     }
     for (const auto& comp : non_zero_comps) {
-        final_specs.insert(std::make_shared<Comp>(comp));
+        final_specs.insert(new Comp(comp));
     }
     final_specs.insert(non_op_specs.begin(), non_op_specs.end());
 
@@ -1296,9 +1298,9 @@ void Workload::regenerate_spec_set() {
 
     for (timeline_t::iterator it = timeline.begin(); it != timeline.end(); it++) {
         time_range_t time_range = it->first;
-        set<std::shared_ptr<WlSpec>> specs = it->second;
+        set<WlSpec*> specs = it->second;
 
-        for (set<std::shared_ptr<WlSpec>>::iterator s_it = specs.begin(); s_it != specs.end();
+        for (set<WlSpec*>::iterator s_it = specs.begin(); s_it != specs.end();
              s_it++) {
 
             bool already_exists = false;
@@ -1324,10 +1326,10 @@ void Workload::regenerate_spec_set() {
 unsigned int Workload::ast_size() const {
     unsigned int res = 0;
     for (timeline_t::const_iterator it = timeline.cbegin(); it != timeline.cend(); it++) {
-        set<std::shared_ptr<WlSpec>> specs = it->second;
+        set<WlSpec*> specs = it->second;
 
         if (specs.size() == 0) res++;
-        for (set<std::shared_ptr<WlSpec>>::const_iterator s_it = specs.cbegin(); s_it != specs.cend(); s_it++) {
+        for (set<WlSpec*>::const_iterator s_it = specs.cbegin(); s_it != specs.cend(); s_it++) {
             res += (*s_it)->ast_size();
         }
     }
@@ -1349,7 +1351,7 @@ set<time_range_t> Workload::add_time_range(time_range_t time_range) {
     }
 
     time_range_t beginning_time_range = beginning->first;
-    set<std::shared_ptr<WlSpec>> beginning_set = beginning->second;
+    set<WlSpec*> beginning_set = beginning->second;
 
     if (time_range.first > beginning_time_range.first) {
         timeline[time_range_t(beginning_time_range.first, time_range.first - 1)] = beginning_set;
@@ -1368,7 +1370,7 @@ set<time_range_t> Workload::add_time_range(time_range_t time_range) {
     }
 
     time_range_t end_time_range = end->first;
-    set<std::shared_ptr<WlSpec>> end_set = end->second;
+    set<WlSpec*> end_set = end->second;
 
     if (time_range.second < end_time_range.second) {
         timeline[time_range_t(end_time_range.first, time_range.second)] = end_set;
@@ -1397,14 +1399,14 @@ string Workload::get_timeline_str() {
     } else {
         for (timeline_t::iterator it = timeline.begin(); it != timeline.end(); it++) {
             ss << it->first << ": ";
-            set<std::shared_ptr<WlSpec>> specs = it->second;
+            set<WlSpec*> specs = it->second;
             if (specs.size() == 0) {
                 ss << "*" << endl;
                 continue;
             }
 
             bool is_first = true;
-            for (set<std::shared_ptr<WlSpec>>::iterator it2 = specs.begin(); it2 != specs.end();
+            for (set<WlSpec*>::iterator it2 = specs.begin(); it2 != specs.end();
                  it2++) {
                 if (!is_first) {
                     ss << "        ";

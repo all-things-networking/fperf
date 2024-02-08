@@ -284,20 +284,20 @@ private:
 class TimedSpec {
 
 public:
-    TimedSpec(std::shared_ptr<WlSpec> wl_spec, time_range_t time_range, unsigned int total_time);
-    TimedSpec(std::shared_ptr<WlSpec> wl_spec, unsigned int until_time, unsigned int total_time);
+    TimedSpec(WlSpec* wl_spec, time_range_t time_range, unsigned int total_time);
+    TimedSpec(WlSpec* wl_spec, unsigned int until_time, unsigned int total_time);
 
     bool spec_is_empty() const;
     bool spec_is_all() const;
     bool applies_to_queue(unsigned int queue) const;
 
     time_range_t get_time_range() const;
-    std::shared_ptr<WlSpec> get_wl_spec() const;
+    WlSpec* get_wl_spec() const;
 
     void set_time_range_ub(unsigned int ub);
 
 protected:
-    std::shared_ptr<WlSpec> wl_spec;
+    WlSpec* wl_spec;
     time_range_t time_range;
     unsigned int total_time;
 
@@ -314,7 +314,7 @@ protected:
 };
 
 //************************************* Workload *************************************//
-typedef map<time_range_t, set<std::shared_ptr<WlSpec>>> timeline_t;
+typedef map<time_range_t, set<WlSpec*>> timeline_t;
 
 class Workload {
 public:
@@ -345,7 +345,7 @@ private:
     unsigned int max_size;
     unsigned int queue_cnt;
     unsigned int total_time;
-    set<std::shared_ptr<WlSpec>> empty_set;
+    set<WlSpec*> empty_set;
 
     set<TimedSpec> all_specs;
     timeline_t timeline;

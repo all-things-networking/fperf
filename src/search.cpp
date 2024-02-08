@@ -262,7 +262,7 @@ void Search::search(Workload wl) {
             if (target_queues.find(q) == target_queues.end()) {
                 Indiv n_indiv = Indiv(metric_t::CENQ, q);
                 Comp n_wl_spec = Comp(n_indiv, op_t::LE, 0u);
-                std::shared_ptr<WlSpec> n_wl_spec_ptr = std::make_shared<Comp>(n_wl_spec);
+                WlSpec* n_wl_spec_ptr = new Comp(n_wl_spec);
                 TimedSpec n_spec = TimedSpec(n_wl_spec_ptr, total_time, total_time);
                 to_check.add_spec(n_spec);
             }
@@ -399,7 +399,7 @@ Workload Search::refine(Workload wl) {
         if (target_queues.find(q) == target_queues.end()) {
             Indiv n_indiv = Indiv(metric_t::CENQ, q);
             Comp n_wl_spec = Comp(n_indiv, op_t::LE, 0u);
-            std::shared_ptr<WlSpec> n_wl_spec_ptr = std::make_shared<Comp>(n_wl_spec);
+            WlSpec* n_wl_spec_ptr = new Comp(n_wl_spec);
             wl.add_spec(TimedSpec(n_wl_spec_ptr, total_time, total_time));
         }
     }
@@ -442,9 +442,9 @@ Workload Search::refine(Workload wl) {
     set<TimedSpec> specs = wl.get_all_specs();
     for (set<TimedSpec>::iterator it = specs.begin(); it != specs.end(); it++) {
         TimedSpec tspec = *it;
-        std::shared_ptr<WlSpec> wspec = tspec.get_wl_spec();
+        WlSpec* wspec = tspec.get_wl_spec();
         // TODO: Generalize to other constructs?
-        auto compSpec = std::dynamic_pointer_cast<Comp>(wspec);
+        auto compSpec = dynamic_cast<Comp*>(wspec);
         if (!compSpec) continue;
         Comp comp = *compSpec;
         lhs_t lhs = comp.get_lhs();
@@ -460,7 +460,7 @@ Workload Search::refine(Workload wl) {
                 candidate = wl;
                 Indiv n_indiv = Indiv(metric_t::CENQ, q);
                 Comp n_comp = Comp(n_indiv, op_t::GE, Time(c));
-                std::shared_ptr<WlSpec> n_comp_ptr = std::make_shared<Comp>(n_comp);
+                WlSpec* n_comp_ptr = new Comp(n_comp);
                 TimedSpec new_spec = TimedSpec(n_comp_ptr, tspec.get_time_range(), total_time);
                 candidate.mod_spec(*it, new_spec);
 
@@ -483,8 +483,8 @@ Workload Search::refine(Workload wl) {
     specs = wl.get_all_specs();
     for (set<TimedSpec>::iterator it = specs.begin(); it != specs.end(); it++) {
         TimedSpec tspec = *it;
-        std::shared_ptr<WlSpec> wspec = tspec.get_wl_spec();
-        auto compSpec = std::dynamic_pointer_cast<Comp>(wspec);
+        WlSpec* wspec = tspec.get_wl_spec();
+        auto compSpec = dynamic_cast<Comp*>(wspec);
         if (!compSpec) continue;
         Comp comp = *compSpec;
         rhs_t rhs = comp.get_rhs();
@@ -502,7 +502,7 @@ Workload Search::refine(Workload wl) {
                     unsigned int n_coeff = (unsigned int) new_coeff;
                     Time n_time = Time(n_coeff);
                     Comp n_comp = Comp(comp.get_lhs(), comp.get_op(), n_time);
-                    std::shared_ptr<WlSpec> n_comp_ptr = std::make_shared<Comp>(n_comp);
+                    WlSpec* n_comp_ptr = new Comp(n_comp);
                     TimedSpec new_spec = TimedSpec(n_comp_ptr, tspec.get_time_range(), total_time);
                     candidate.mod_spec(*it, new_spec);
 
@@ -532,7 +532,7 @@ Workload Search::refine(Workload wl) {
                     candidate = wl;
                     unsigned int n_c = (unsigned int) new_c;
                     Comp n_comp = Comp(comp.get_lhs(), comp.get_op(), n_c);
-                    std::shared_ptr<WlSpec> n_comp_ptr = std::make_shared<Comp>(n_comp);
+                    WlSpec* n_comp_ptr = new Comp(n_comp);
                     TimedSpec new_spec = TimedSpec(n_comp_ptr, tspec.get_time_range(), total_time);
                     candidate.mod_spec(*it, new_spec);
 
@@ -560,8 +560,8 @@ Workload Search::refine(Workload wl) {
     qset_t in_wl;
     specs = wl.get_all_specs();
     for (set<TimedSpec>::iterator it = specs.begin(); it != specs.end(); it++) {
-        std::shared_ptr<WlSpec> spec = it->get_wl_spec();
-        auto compSpec = std::dynamic_pointer_cast<Comp>(spec);
+        WlSpec* spec = it->get_wl_spec();
+        auto compSpec = dynamic_cast<Comp*>(spec);
         if (!compSpec) continue;
         Comp comp = *compSpec;
         lhs_t lhs = comp.get_lhs();
@@ -579,8 +579,8 @@ Workload Search::refine(Workload wl) {
     qset_t zero_in_base;
     set<TimedSpec> base_specs = cp->get_base_workload().get_all_specs();
     for (set<TimedSpec>::iterator it = base_specs.begin(); it != base_specs.end(); it++) {
-        std::shared_ptr<WlSpec> spec = it->get_wl_spec();
-        auto compSpec = std::dynamic_pointer_cast<Comp>(spec);
+        WlSpec* spec = it->get_wl_spec();
+        auto compSpec = dynamic_cast<Comp*>(spec);
         if (!compSpec) continue;
         Comp comp = *compSpec;
         lhs_t lhs = comp.get_lhs();
@@ -611,8 +611,8 @@ Workload Search::refine(Workload wl) {
         for (set<TimedSpec>::iterator it = specs.begin(); it != specs.end(); it++) {
             candidate = wl;
 
-            std::shared_ptr<WlSpec> wl_spec = it->get_wl_spec();
-            auto compSpec = std::dynamic_pointer_cast<Comp>(wl_spec);
+            WlSpec* wl_spec = it->get_wl_spec();
+            auto compSpec = dynamic_cast<Comp*>(wl_spec);
             if (!compSpec) continue;
             Comp comp = *compSpec;
             rhs_t rhs = comp.get_rhs();
@@ -645,7 +645,7 @@ Workload Search::refine(Workload wl) {
             }
 
             Comp n_comp = Comp(new_lhs, comp.get_op(), comp.get_rhs());
-            std::shared_ptr<WlSpec> n_comp_ptr = std::make_shared<Comp>(n_comp);
+            WlSpec* n_comp_ptr = new Comp(n_comp);
             TimedSpec new_spec = TimedSpec(n_comp_ptr, it->get_time_range(), total_time);
 
             candidate.mod_spec(*it, new_spec);

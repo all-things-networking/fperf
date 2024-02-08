@@ -24,7 +24,7 @@ bool test_deq_avg() {
 
   Workload wl(100, 1, total_time);
 
-  auto comp_spec = std::make_shared<Comp>(Indiv(metric_t::CENQ, 0), op_t::GE, Time(4));
+  auto comp_spec = new Comp(Indiv(metric_t::CENQ, 0), op_t::GE, Time(4));
   wl.add_spec(TimedSpec(comp_spec, time_range_t(0, last_t), total_time));
 
   tbf->set_base_workload(wl);
@@ -69,7 +69,7 @@ bool test_max_burst() {
 
   Workload wl(100, 1, total_time);
 
-  auto comp_spec = std::make_shared<Comp>(Indiv(metric_t::CENQ, 0), op_t::GT, (unsigned int)total_time * max_tokens);
+  auto comp_spec = new Comp(Indiv(metric_t::CENQ, 0), op_t::GT, (unsigned int)total_time * max_tokens);
   wl.add_spec(TimedSpec(comp_spec, time_range_t(last_t, last_t), total_time));
 
   tbf->set_base_workload(wl);

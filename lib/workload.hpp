@@ -146,7 +146,7 @@ public:
     virtual bool operator<(const WlSpec& other) const = 0;
 
 protected:
-    virtual std::string to_string() const = 0;
+    virtual string to_string() const = 0;
 };
 
 //************************************* UNIQ *************************************//
@@ -171,7 +171,7 @@ private:
     metric_t metric;
     qset_t qset;
 
-    std::string to_string() const override;
+    string to_string() const override;
 };
 
 //************************************* SAME *************************************//
@@ -194,7 +194,7 @@ private:
     metric_t metric;
     unsigned int queue;
 
-    std::string to_string() const override;
+    string to_string() const override;
 };
 
 //************************************* INCR *************************************//
@@ -217,7 +217,7 @@ private:
     metric_t metric;
     unsigned int queue;
 
-    std::string to_string() const override;
+    string to_string() const override;
 };
 
 //************************************* DECR *************************************//
@@ -240,7 +240,7 @@ private:
     metric_t metric;
     unsigned int queue;
 
-    std::string to_string() const override;
+    string to_string() const override;
 };
 
 //************************************* COMP *************************************//
@@ -274,7 +274,7 @@ private:
     bool is_empty = false;
     bool is_all = false;
 
-    std::string to_string() const override;
+    string to_string() const override;
 
     void normalize();
 };

@@ -2003,15 +2003,15 @@ expr ContentionPoint::get_expr(TimedSpec spec) {
     WlSpec* wl_spec = spec.get_wl_spec();
 
     // Dynamic casting to determine the specific type of WlSpec
-    if (auto compSpec = dynamic_cast<Comp*>(wl_spec)) {
+    if (Comp* compSpec = dynamic_cast<Comp*>(wl_spec)) {
         return get_expr(*compSpec, time_range);
-    } else if (auto sameSpec = dynamic_cast<Same*>(wl_spec)) {
+    } else if (Same* sameSpec = dynamic_cast<Same*>(wl_spec)) {
         return get_expr(*sameSpec, time_range);
-    } else if (auto incrSpec = dynamic_cast<Incr*>(wl_spec)) {
+    } else if (Incr* incrSpec = dynamic_cast<Incr*>(wl_spec)) {
         return get_expr(*incrSpec, time_range);
-    } else if (auto decrSpec = dynamic_cast<Decr*>(wl_spec)) {
+    } else if (Decr* decrSpec = dynamic_cast<Decr*>(wl_spec)) {
         return get_expr(*decrSpec, time_range);
-    } else if (auto uniqSpec = dynamic_cast<Unique*>(wl_spec)) {
+    } else if (Unique* uniqSpec = dynamic_cast<Unique*>(wl_spec)) {
         return get_expr(*uniqSpec, time_range);
     } else {
         cout << "ContentionPoint::get_expr(TimedSpec): Invalid WlSpec" << endl;
@@ -2194,15 +2194,15 @@ bool ContentionPoint::timedspec_satisfies_example(TimedSpec spec, IndexedExample
 
     WlSpec* wlspec = spec.get_wl_spec();
 
-    if(auto compSpec = dynamic_cast<Comp*>(wlspec)) {
+    if(Comp* compSpec = dynamic_cast<Comp*>(wlspec)) {
         return eval_spec(*compSpec, eg, time_range);
-    } else if(auto incrSpec = dynamic_cast<Incr*>(wlspec)) {
+    } else if(Incr* incrSpec = dynamic_cast<Incr*>(wlspec)) {
         return eval_spec(*incrSpec, eg, time_range);
-    } else if(auto decrSpec = dynamic_cast<Decr*>(wlspec)) {
+    } else if(Decr* decrSpec = dynamic_cast<Decr*>(wlspec)) {
         return eval_spec(*decrSpec, eg, time_range);
-    } else if(auto sameSpec = dynamic_cast<Same*>(wlspec)) {
+    } else if(Same* sameSpec = dynamic_cast<Same*>(wlspec)) {
         return eval_spec(*sameSpec, eg, time_range);
-    } else if(auto uniqueSpec = dynamic_cast<Unique*>(wlspec)) {
+    } else if(Unique* uniqueSpec = dynamic_cast<Unique*>(wlspec)) {
         return eval_spec(*uniqueSpec, eg, time_range);
     } else {
         throw std::runtime_error("ContentionPoint::timedspec_satisfies_example: Invalid WlSpec");

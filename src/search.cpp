@@ -444,7 +444,7 @@ Workload Search::refine(Workload wl) {
         TimedSpec tspec = *it;
         WlSpec* wspec = tspec.get_wl_spec();
         // TODO: Generalize to other constructs?
-        auto compSpec = dynamic_cast<Comp*>(wspec);
+        Comp* compSpec = dynamic_cast<Comp*>(wspec);
         if (!compSpec) continue;
         Comp comp = *compSpec;
         lhs_t lhs = comp.get_lhs();
@@ -484,7 +484,7 @@ Workload Search::refine(Workload wl) {
     for (set<TimedSpec>::iterator it = specs.begin(); it != specs.end(); it++) {
         TimedSpec tspec = *it;
         WlSpec* wspec = tspec.get_wl_spec();
-        auto compSpec = dynamic_cast<Comp*>(wspec);
+        Comp* compSpec = dynamic_cast<Comp*>(wspec);
         if (!compSpec) continue;
         Comp comp = *compSpec;
         rhs_t rhs = comp.get_rhs();
@@ -561,7 +561,7 @@ Workload Search::refine(Workload wl) {
     specs = wl.get_all_specs();
     for (set<TimedSpec>::iterator it = specs.begin(); it != specs.end(); it++) {
         WlSpec* spec = it->get_wl_spec();
-        auto compSpec = dynamic_cast<Comp*>(spec);
+        Comp* compSpec = dynamic_cast<Comp*>(spec);
         if (!compSpec) continue;
         Comp comp = *compSpec;
         lhs_t lhs = comp.get_lhs();
@@ -580,7 +580,7 @@ Workload Search::refine(Workload wl) {
     set<TimedSpec> base_specs = cp->get_base_workload().get_all_specs();
     for (set<TimedSpec>::iterator it = base_specs.begin(); it != base_specs.end(); it++) {
         WlSpec* spec = it->get_wl_spec();
-        auto compSpec = dynamic_cast<Comp*>(spec);
+        Comp* compSpec = dynamic_cast<Comp*>(spec);
         if (!compSpec) continue;
         Comp comp = *compSpec;
         lhs_t lhs = comp.get_lhs();
@@ -612,7 +612,7 @@ Workload Search::refine(Workload wl) {
             candidate = wl;
 
             WlSpec* wl_spec = it->get_wl_spec();
-            auto compSpec = dynamic_cast<Comp*>(wl_spec);
+            Comp* compSpec = dynamic_cast<Comp*>(wl_spec);
             if (!compSpec) continue;
             Comp comp = *compSpec;
             rhs_t rhs = comp.get_rhs();

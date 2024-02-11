@@ -9,6 +9,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include "envelope.hpp"
 
 #include "tests.hpp"
 #include "util.hpp"
@@ -31,6 +32,9 @@ map<string, e2e_test_func_t*> e2e_tests = {{"prio", prio},
 const string help_message = "Usage: ./fperf TEST_NAME";
 
 int main(int argc, const char* argv[]) {
+    rr_new_ex();
+    return 0;
+
     vector<string> arguments(argv + 1, argv + argc);
 
     if (arguments.size() != 1) throw invalid_argument("Invalid number of arguments");

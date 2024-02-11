@@ -75,6 +75,16 @@ void RRScheduler::add_metrics() {
         queue->add_metric(metric_t::CDEQ, cd);
     }
 
+    //// Outputs
+    // CEnq
+    for (unsigned int q = 0; q < out_queues.size(); q++) {
+        Queue* queue = out_queues[q];
+        ICEnq* ice = new ICEnq(queue, 1, total_time, net_ctx);
+        icenq1.push_back(ice);
+        metrics[metric_t::ICENQ1][queue->get_id()] = ice;
+        queue->add_metric(metric_t::ICENQ1, ice);
+    }
+
     /*
     // QSize
     for (unsigned int q = 0; q < in_queues.size(); q++){

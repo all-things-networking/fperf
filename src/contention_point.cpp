@@ -577,6 +577,11 @@ bool ContentionPoint::generate_base_example(IndexedExample* base_eg,
         DEBUG_MSG("target_queues: " << target_queues << endl);
     } else {
         cout << "Could not find base example. Solver returned: " << res << endl;
+        expr_vector core = z3_optimizer->unsat_core();
+        cout << "size: " << core.size() << "\n";
+        for (unsigned i = 0; i < core.size(); i++) {
+            cout << core[i] << "\n";
+        }
         z3_optimizer->pop();
         return false;
     }
@@ -1603,24 +1608,6 @@ string ContentionPoint::get_model_str(model& m) {
 
         ss << "other info: " << endl;
         ss << cp_model_str(m, net_ctx, t) << endl;
-
-
-        for (unsigned int n = 0; n < nodes.size(); n++) {
-            ss << "------------- " << endl;
-            QueuingModule* qm = id_to_qm[nodes[n]];
-            ss << qm->get_id() << endl;
-            ss << "input queues: " << endl;
-            for (unsigned int q = 0; q < qm->in_queue_cnt(); q++) {
-                Queue* queue = qm->get_in_queue(q);
-                ss << queue->get_model_str(m, net_ctx, t) << endl;
-            }
-
-            ss << "output queues: " << endl;
-            for (unsigned int q = 0; q < qm->out_queue_cnt(); q++) {
-                Queue* queue = qm->get_out_queue(q);
-                ss << queue->get_model_str(m, net_ctx, t) << endl;
-            }
-        }
     }
 
     return ss.str();

@@ -12,15 +12,16 @@
 #include <iostream>
 #include <sstream>
 
-const map<metric_t, metric_properties> Metric::properties = {{metric_t::CENQ, {true, true, true}},
-                                                             {metric_t::AIPG, {true, false, false}},
-                                                             {metric_t::DST, {true, false, false}},
-                                                             {metric_t::ECMP, {true, false, false}},
-                                                             {metric_t::QSIZE,
-                                                              {true, false, false}},
-                                                             {metric_t::CDEQ, {true, true, true}},
-                                                             {metric_t::CBLOCKED,
-                                                              {true, false, false}}};
+const map<metric_t, metric_properties> Metric::properties = {
+    {metric_t::CENQ, {true, true, true}},
+    {metric_t::AIPG, {true, false, false}},
+    {metric_t::DST, {true, false, false}},
+    {metric_t::ECMP, {true, false, false}},
+    {metric_t::QSIZE, {true, false, false}},
+    {metric_t::CDEQ, {true, true, true}},
+    {metric_t::CBLOCKED, {true, false, false}},
+    {metric_t::ICENQ1, {true, true, true}},
+    {metric_t::ICENQ2, {true, true, true}}};
 
 Metric::Metric(metric_t m, Queue* queue, unsigned int total_time, NetContext& net_ctx):
 m_type(m),
@@ -63,6 +64,8 @@ ostream& operator<<(ostream& os, const metric_t& metric) {
         case (metric_t::AIPG): os << "aipg"; break;
         case (metric_t::DST): os << "dst"; break;
         case (metric_t::ECMP): os << "ecmp"; break;
+        case (metric_t::ICENQ1): os << "icenq1"; break;
+        case (metric_t::ICENQ2): os << "icenq2"; break;
     }
     return os;
 }

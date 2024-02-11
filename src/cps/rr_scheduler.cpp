@@ -8,6 +8,7 @@
 
 #include "rr_scheduler.hpp"
 #include "rr_qm.hpp"
+#include "icenq.hpp"
 
 #include <sstream>
 
@@ -44,6 +45,26 @@ void RRScheduler::add_metrics() {
         metrics[metric_t::CENQ][queue->get_id()] = ce;
         queue->add_metric(metric_t::CENQ, ce);
     }
+
+
+    // ICEnq1
+    for (unsigned int q = 0; q < in_queues.size(); q++) {
+        Queue* queue = in_queues[q];
+        ICEnq* ce1 = new ICEnq(queue, 1, total_time, net_ctx);
+        icenq1.push_back(ce1);
+        metrics[metric_t::ICENQ1][queue->get_id()] = ce1;
+        queue->add_metric(metric_t::ICENQ1, ce1);
+    }
+
+    // ICEnq2
+    for (unsigned int q = 0; q < in_queues.size(); q++) {
+        Queue* queue = in_queues[q];
+        ICEnq* ce1 = new ICEnq(queue, 2, total_time, net_ctx);
+        icenq1.push_back(ce1);
+        metrics[metric_t::ICENQ2][queue->get_id()] = ce1;
+        queue->add_metric(metric_t::ICENQ2, ce1);
+    }
+
 
     // CDeq
     for (unsigned int q = 0; q < in_queues.size(); q++) {

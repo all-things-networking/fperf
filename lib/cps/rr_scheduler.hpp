@@ -14,6 +14,8 @@
 #include "cenq.hpp"
 #include "contention_point.hpp"
 #include "qsize.hpp"
+#include "dst.hpp"
+#include "icenq.hpp"
 
 using namespace std;
 
@@ -26,6 +28,8 @@ private:
     vector<CEnq*> cenq;
     vector<CDeq*> cdeq;
     vector<AIPG*> aipg;
+    vector<ICEnq*> icenq1;
+    vector<ICEnq*> icenq2;
 
     void add_nodes();
     void add_edges();

@@ -30,21 +30,21 @@ using namespace std::chrono;
 typedef pair<unsigned int, unsigned int> qpair;
 typedef pair<string, expr> named_constr;
 
+//************************************* CID *************************************//
+typedef string cid_t;
+typedef pair<cid_t, cid_t> cid_pair;
+
+cid_t get_unique_id(cid_t module_id, cid_t queue_id);
+
 //************************************* QSET *************************************//
 
-typedef set<unsigned int> qset_t;
+typedef set<cid_t> qset_t;
 
 bool is_superset(qset_t qset1, qset_t qset2);
 
 ostream& operator<<(ostream& os, const qset_t& qset);
 
 bool satisfies(unsigned int q, qset_t qset);
-
-//************************************* CID *************************************//
-typedef string cid_t;
-typedef pair<cid_t, cid_t> cid_pair;
-
-cid_t get_unique_id(cid_t module_id, cid_t queue_id);
 
 //************************************* OP *************************************//
 enum class op_t { GT = 0, GE, LT, LE, EQ };

@@ -19,7 +19,7 @@
 QSum::QSum(qset_t qset, metric_t metric): qset(qset), metric(metric) {
 }
 
-bool QSum::applies_to_queue(unsigned int queue) const {
+bool QSum::applies_to_queue(cid_t queue) const {
     return (qset.find(queue) != qset.end());
 }
 
@@ -50,15 +50,15 @@ bool operator<(const QSum& s1, const QSum& s2) {
 
 //************************************* Indiv *************************************//
 
-Indiv::Indiv(metric_t metric, unsigned int queue): metric(metric), queue(queue) {
+Indiv::Indiv(metric_t metric, cid_t queue): metric(metric), queue(queue) {
 }
 
 
-bool Indiv::applies_to_queue(unsigned int queue) const {
+bool Indiv::applies_to_queue(cid_t queue) const {
     return this->queue == queue;
 }
 
-unsigned int Indiv::get_queue() const {
+cid_t Indiv::get_queue() const {
     return queue;
 }
 
@@ -104,7 +104,7 @@ bool operator<(const Time& t1, const Time& t2) {
 
 //************************************* MTRC_EXPR *************************************//
 
-bool m_expr_applies_to_queue(const m_expr_t m_expr, unsigned int queue) {
+bool m_expr_applies_to_queue(const m_expr_t m_expr, cid_t queue) {
     switch (m_expr.index()) {
         // QSum
         case 0: {
@@ -173,7 +173,7 @@ bool operator<(const m_expr_t& m_expr1, const m_expr_t& m_expr2) {
 
 //************************************* LHS *************************************//
 
-bool lhs_applies_to_queue(const lhs_t lhs, unsigned int queue) {
+bool lhs_applies_to_queue(const lhs_t lhs, cid_t queue) {
     return m_expr_applies_to_queue(lhs, queue);
 }
 
@@ -184,7 +184,7 @@ unsigned int lhs_ast_size(const lhs_t lhs) {
 
 //************************************* RHS *************************************//
 
-bool rhs_applies_to_queue(const rhs_t rhs, unsigned int queue) {
+bool rhs_applies_to_queue(const rhs_t rhs, cid_t queue) {
     if (holds_alternative<m_expr_t>(rhs)) {
         m_expr_t rhs_m_expr = get<m_expr_t>(rhs);
         return m_expr_applies_to_queue(rhs_m_expr, queue);
@@ -273,7 +273,7 @@ Unique::Unique(metric_t metric, qset_t qset): metric(metric), qset(qset) {
 }
 
 
-bool Unique::applies_to_queue(unsigned int queue) const {
+bool Unique::applies_to_queue(cid_t queue) const {
     return (qset.find(queue) != qset.end());
 }
 
@@ -300,15 +300,15 @@ bool operator<(const Unique& u1, const Unique& u2) {
 
 //************************************* SAME *************************************//
 
-Same::Same(metric_t metric, unsigned int queue): metric(metric), queue(queue) {
+Same::Same(metric_t metric, cid_t queue): metric(metric), queue(queue) {
 }
 
 
-bool Same::applies_to_queue(unsigned int queue) const {
+bool Same::applies_to_queue(cid_t queue) const {
     return this->queue == queue;
 }
 
-unsigned int Same::get_queue() const {
+cid_t Same::get_queue() const {
     return queue;
 }
 
@@ -331,15 +331,15 @@ bool operator<(const Same& s1, const Same& s2) {
 
 //************************************* INCR *************************************//
 
-Incr::Incr(metric_t metric, unsigned int queue): metric(metric), queue(queue) {
+Incr::Incr(metric_t metric, cid_t queue): metric(metric), queue(queue) {
 }
 
 
-bool Incr::applies_to_queue(unsigned int queue) const {
+bool Incr::applies_to_queue(cid_t queue) const {
     return this->queue == queue;
 }
 
-unsigned int Incr::get_queue() const {
+cid_t Incr::get_queue() const {
     return queue;
 }
 
@@ -363,15 +363,15 @@ bool operator<(const Incr& incr1, const Incr& incr2) {
 
 //************************************* DECR *************************************//
 
-Decr::Decr(metric_t metric, unsigned int queue): metric(metric), queue(queue) {
+Decr::Decr(metric_t metric, cid_t queue): metric(metric), queue(queue) {
 }
 
 
-bool Decr::applies_to_queue(unsigned int queue) const {
+bool Decr::applies_to_queue(cid_t queue) const {
     return this->queue == queue;
 }
 
-unsigned int Decr::get_queue() const {
+cid_t Decr::get_queue() const {
     return queue;
 }
 
@@ -403,7 +403,7 @@ Comp::Comp(lhs_t lhs, op_t op, rhs_t rhs): lhs(lhs), op(op), rhs(rhs) {
     normalize();
 }
 
-bool Comp::applies_to_queue(unsigned int queue) const {
+bool Comp::applies_to_queue(cid_t queue) const {
     bool lhs_applies = lhs_applies_to_queue(lhs, queue);
     bool rhs_applies = rhs_applies_to_queue(rhs, queue);
     return lhs_applies || rhs_applies;
@@ -432,7 +432,7 @@ void Comp::normalize() {
                 qset_t lhs_qset = lhs_qsum.get_qset();
                 qset_t rhs_qset = rhs_qsum.get_qset();
 
-                set<unsigned int> inters;
+                set<cid_t> inters;
                 set_intersection(lhs_qset.begin(),
                                  lhs_qset.end(),
                                  rhs_qset.begin(),
@@ -444,7 +444,7 @@ void Comp::normalize() {
                     if (op == op_t::GE || op == op_t::LE) is_all = true;
                     if (op == op_t::GT || op == op_t::LT) is_empty = true;
                 } else if (is_superset(rhs_qset, lhs_qset)) {
-                    set<unsigned int> diff;
+                    set<cid_t> diff;
                     set_difference(rhs_qset.begin(),
                                    rhs_qset.end(),
                                    lhs_qset.begin(),
@@ -471,7 +471,7 @@ void Comp::normalize() {
                         rhs = 0u;
                     }
                 } else if (is_superset(lhs_qset, rhs_qset)) {
-                    set<unsigned int> diff;
+                    set<cid_t> diff;
                     set_difference(lhs_qset.begin(),
                                    lhs_qset.end(),
                                    rhs_qset.begin(),
@@ -490,14 +490,14 @@ void Comp::normalize() {
                         rhs = 0u;
                     }
                 } else if (intersect) {
-                    set<unsigned int> lhs_diff;
+                    set<cid_t> lhs_diff;
                     set_difference(lhs_qset.begin(),
                                    lhs_qset.end(),
                                    rhs_qset.begin(),
                                    rhs_qset.end(),
                                    inserter(lhs_diff, lhs_diff.begin()));
 
-                    set<unsigned int> rhs_diff;
+                    set<cid_t> rhs_diff;
                     set_difference(rhs_qset.begin(),
                                    rhs_qset.end(),
                                    lhs_qset.begin(),
@@ -562,7 +562,7 @@ void Comp::normalize() {
             Indiv rhs_indiv = get<Indiv>(rhs_m_expr);
 
             qset_t lhs_qset = lhs_qsum.get_qset();
-            unsigned int rhs_queue = rhs_indiv.get_queue();
+            cid_t rhs_queue = rhs_indiv.get_queue();
 
             if (lhs_qsum.get_metric() == rhs_indiv.get_metric()) {
                 qset_t::iterator it = lhs_qset.find(rhs_queue);
@@ -738,7 +738,7 @@ unsigned int wl_spec_ast_size(const wl_spec_t wl_spec) {
         return 1u;
 }
 
-bool wl_spec_applies_to_queue(wl_spec_t spec, unsigned int queue) {
+bool wl_spec_applies_to_queue(wl_spec_t spec, cid_t queue) {
     switch (spec.index()) {
         case 0: return get<Comp>(spec).applies_to_queue(queue);
         case 1: return get<Same>(spec).applies_to_queue(queue);
@@ -871,7 +871,7 @@ total_time(total_time) {
 }
 
 
-bool TimedSpec::applies_to_queue(unsigned int queue) const {
+bool TimedSpec::applies_to_queue(cid_t queue) const {
     return wl_spec_applies_to_queue(wl_spec, queue);
 }
 
@@ -1174,7 +1174,7 @@ void Workload::normalize(time_range_t time_range) {
 
     // ** Zero Propagation ** //
 
-    typedef pair<metric_t, unsigned int> zero_pair;
+    typedef pair<metric_t, cid_t> zero_pair;
     vector<zero_pair> zeros;
 
 
@@ -1205,7 +1205,7 @@ void Workload::normalize(time_range_t time_range) {
 
             for (qset_t::iterator z_it = zero_queue_set.begin(); z_it != zero_queue_set.end();
                  z_it++) {
-                unsigned int q = *z_it;
+                cid_t q = *z_it;
                 zero_pair p(metric, q);
                 zeros.push_back(p);
             }
@@ -1240,7 +1240,7 @@ void Workload::normalize(time_range_t time_range) {
 
             for (unsigned int j = 0; j < zeros.size(); j++) {
                 metric_t z_metric = zeros[j].first;
-                unsigned int z_q = zeros[j].second;
+                cid_t z_q = zeros[j].second;
 
                 if (rhs_applies_to_queue(rhs, z_q)) {
                     m_expr_t m_expr = get<m_expr_t>(rhs);
@@ -1256,7 +1256,7 @@ void Workload::normalize(time_range_t time_range) {
                             qset_t qset = qsum.get_qset();
                             qset.erase(z_q);
                             if (qset.size() == 1) {
-                                unsigned int q = *(qset.begin());
+                                cid_t q = *(qset.begin());
                                 rhs = Indiv(qsum.get_metric(), q);
                             } else {
                                 rhs = QSum(qset, qsum.get_metric());

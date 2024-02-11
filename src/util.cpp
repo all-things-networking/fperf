@@ -14,7 +14,7 @@
 
 //************************************* QSET *************************************//
 bool is_superset(qset_t qset1, qset_t qset2) {
-    set<unsigned int> res;
+    set<cid_t> res;
     set_difference(
         qset2.begin(), qset2.end(), qset1.begin(), qset1.end(), inserter(res, res.begin()));
     return res.size() == 0;
@@ -29,7 +29,7 @@ ostream& operator<<(ostream& os, const qset_t& qset) {
     return os;
 }
 
-bool satisfies(unsigned int q, qset_t qset) {
+bool satisfies(cid_t q, qset_t qset) {
     return qset.find(q) != qset.end();
 }
 

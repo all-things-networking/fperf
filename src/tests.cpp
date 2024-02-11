@@ -112,20 +112,23 @@ void rr(string good_examples_file, string bad_examples_file) {
 
     unsigned int queue1 = 1;
     unsigned int queue2 = 2;
+    cid_t queue1_id = rr->get_in_queues()[queue1]->get_id();
+    cid_t queue2_id = rr->get_in_queues()[queue2]->get_id();
 
     // Base workload
     Workload wl(100, in_queue_cnt, total_time);
 
     for (unsigned int i = 1; i <= recur; i++) {
         for (unsigned int q = 0; q < in_queue_cnt; q++) {
-            wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::GE, i * rate),
+            cid_t qid = rr->get_in_queues()[q]->get_id();
+            wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, qid), op_t::GE, i * rate),
                                   time_range_t(i * period - 1, i * period - 1),
                                   total_time));
         }
     }
 
     wl.add_spec(
-        TimedSpec(Comp(Indiv(metric_t::CENQ, queue1), op_t::GT, Indiv(metric_t::CENQ, queue2)),
+        TimedSpec(Comp(Indiv(metric_t::CENQ, queue1_id), op_t::GT, Indiv(metric_t::CENQ, queue2_id)),
                   time_range_t(total_time - 1, total_time - 1),
                   total_time));
 
@@ -134,9 +137,6 @@ void rr(string good_examples_file, string bad_examples_file) {
     rr->set_base_workload(wl);
 
     // Query
-    cid_t queue1_id = rr->get_in_queues()[queue1]->get_id();
-    cid_t queue2_id = rr->get_in_queues()[queue2]->get_id();
-
     Query query(query_quant_t::FORALL,
                 time_range_t(total_time - 1 - (period - 1), total_time - 1),
                 qdiff_t(queue2_id, queue1_id),
@@ -207,8 +207,9 @@ void fq_codel(string good_examples_file, string bad_examples_file) {
     // Base Workload
     Workload wl(in_queue_cnt * 5, in_queue_cnt, total_time);
     for (unsigned int q = 0; q < last_queue; q++) {
+        cid_t qid = cp->get_in_queues()[q]->get_id();
         wl.add_spec(
-            TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::GE, Time(1)), total_time, total_time));
+            TimedSpec(Comp(Indiv(metric_t::CENQ, qid), op_t::GE, Time(1)), total_time, total_time));
     }
 
     cp->set_base_workload(wl);
@@ -287,10 +288,11 @@ void loom(string good_examples_file, string bad_examples_file) {
     qset_t tenant2_qset;
 
     for (unsigned int i = 0; i < cp->in_queue_cnt(); i++) {
+        cid_t qid = cp->get_in_queues()[i]->get_id();
         if (i % 3 == 0)
-            tenant1_qset.insert(i);
+            tenant1_qset.insert(qid);
         else
-            tenant2_qset.insert(i);
+            tenant2_qset.insert(qid);
     }
 
     // Base Workload
@@ -304,9 +306,10 @@ void loom(string good_examples_file, string bad_examples_file) {
                           total_time));
 
     for (unsigned int q = 0; q < cp->in_queue_cnt(); q++) {
+        cid_t qid = cp->get_in_queues()[q]->get_id();
         if (q % 3 == 2) {
             wl.add_spec(
-                TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::LE, 0u), total_time, total_time));
+                TimedSpec(Comp(Indiv(metric_t::CENQ, qid), op_t::LE, 0u), total_time, total_time));
         }
     }
 
@@ -389,23 +392,26 @@ void leaf_spine_bw(string good_examples_file, string bad_examples_file) {
 
     // Base Workload
     Workload wl(in_queue_cnt + 5, in_queue_cnt, total_time);
-
-    wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, src_server), op_t::GE, Time(1)),
+    cid_t src_qid = cp->get_in_queues()[src_server]->get_id();
+    wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, src_qid), op_t::GE, Time(1)),
                           total_time - 1,
                           total_time));
 
-    wl.add_spec(TimedSpec(Comp(Indiv(metric_t::DST, src_server), op_t::EQ, dst_server),
+    wl.add_spec(TimedSpec(Comp(Indiv(metric_t::DST, src_qid), op_t::EQ, dst_server),
                           total_time - 1,
                           total_time));
 
     for (unsigned int q = 0; q < in_queue_cnt; q++) {
-        Same s(metric_t::DST, q);
+        cid_t qid = cp->get_in_queues()[q]->get_id();
+        Same s(metric_t::DST, qid);
         wl.add_spec(TimedSpec(s, time_range_t(0, total_time - 1), total_time));
     }
 
     qset_t unique_qset;
-    for (unsigned int q = 0; q < in_queue_cnt; q++)
-        unique_qset.insert(q);
+    for (unsigned int q = 0; q < in_queue_cnt; q++) {
+        cid_t qid = cp->get_in_queues()[q]->get_id();
+        unique_qset.insert(qid);
+    }
     Unique uniq(metric_t::DST, unique_qset);
     wl.add_spec(TimedSpec(uniq, time_range_t(0, total_time - 1), total_time));
 

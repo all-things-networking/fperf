@@ -417,7 +417,7 @@ expr ContentionPoint::get_random_eg_mod(IndexedExample* eg,
 
     expr_vector res_vec(net_ctx.z3_ctx());
 
-    typedef pair<unsigned int, unsigned int> modpair_t;
+    typedef pair<cid_t, unsigned int> modpair_t;
     set<modpair_t> mods;
 
     uniform_int_distribution<unsigned int> queue_dist(0, queue_set.size() - 1);
@@ -427,22 +427,22 @@ expr ContentionPoint::get_random_eg_mod(IndexedExample* eg,
         unsigned int ind = queue_dist(gen);
         qset_t::iterator it = queue_set.begin();
         advance(it, ind);
-        unsigned int qid = *it;
+        cid_t qid = *it;
         unsigned int timestep = time_dist(gen);
         modpair_t modpair(qid, timestep);
         mods.insert(modpair);
     }
 
     for (set<modpair_t>::iterator it = mods.begin(); it != mods.end(); it++) {
-        unsigned int qid = it->first;
+        cid_t qid = it->first;
         unsigned int timestep = it->second;
-        unsigned int enq = eg->enqs[qid][timestep];
+        unsigned int enq = unindex_example(eg)->enqs[qid][timestep];
         unsigned int new_enq = dists->enq();
 
         while (new_enq == enq)
             new_enq = dists->enq();
 
-        expr mod_expr = in_queues[qid]->enq_cnt(timestep) == (int) new_enq;
+        expr mod_expr = id_to_ioq[qid]->enq_cnt(timestep) == (int) new_enq;
         res_vec.push_back(mod_expr);
     }
 
@@ -568,9 +568,9 @@ bool ContentionPoint::generate_base_example(IndexedExample* base_eg,
         for (unsigned int q = 0; q < in_queues.size(); q++) {
             expr total_cenq_val = m.eval(per_queue_enq_sum[q]);
             if (total_cenq_val.is_numeral() && total_cenq_val.get_numeral_int() == 0) {
-                zero_queues.insert(q);
+                zero_queues.insert(in_queues[q]->get_id());
             } else {
-                target_queues.insert(q);
+                target_queues.insert(in_queues[q]->get_id());
             }
         }
         DEBUG_MSG("zero_queues: " << zero_queues << endl);
@@ -612,7 +612,7 @@ void ContentionPoint::generate_good_examples(IndexedExample* base_eg,
     // zero in the rest of the examples too.
     char constr_name[100];
     for (unsigned int q = 0; q < in_queues.size(); q++) {
-        if (target_queues.find(q) != target_queues.end()) continue;
+        if (target_queues.find(in_queues[q]->get_id()) != target_queues.end()) continue;
 
         Metric* cenq_metric = in_queues[q]->get_metric(metric_t::CENQ);
         for (unsigned int t = 0; t < total_time; t++) {
@@ -741,7 +741,7 @@ void ContentionPoint::generate_bad_examples(unsigned int count, deque<IndexedExa
     // are "zero" in the base example will stay
     // zero in the rest of the examples too.
     for (unsigned int q = 0; q < in_queues.size(); q++) {
-        if (target_queues.find(q) == target_queues.end()) {
+        if (target_queues.find(in_queues[q]->get_id()) == target_queues.end()) {
             Metric* cenq_metric = in_queues[q]->get_metric(metric_t::CENQ);
             for (unsigned int t = 0; t < total_time; t++) {
                 snprintf(constr_name, 100, "%d_is_zerod_queue[%d}", q, t);
@@ -868,7 +868,7 @@ void ContentionPoint::generate_good_examples_from_base_flow(deque<IndexedExample
     char constr_name[100];
 
     for (unsigned int q = 0; q < in_queues.size(); q++) {
-        if (non_zero_queues.find(q) != non_zero_queues.end()) continue;
+        if (non_zero_queues.find(in_queues[q]->get_id()) != non_zero_queues.end()) continue;
         Metric* cenq_metric = in_queues[q]->get_metric(metric_t::CENQ);
         for (unsigned int t = 0; t < total_time; t++) {
             snprintf(constr_name, 100, "%d_is_zerod_queue[%d}", q, t);
@@ -879,18 +879,19 @@ void ContentionPoint::generate_good_examples_from_base_flow(deque<IndexedExample
 
 
     for (qset_t::iterator it = non_zero_queues.begin(); it != non_zero_queues.end(); it++) {
-        unsigned int q = *it;
-        snprintf(constr_name, 100, "%d_example_trimming", q);
-        expr constr_expr = in_queues[q]->enq_cnt(total_time - 1) == 0 &&
-                           in_queues[q]->enq_cnt(total_time - 2) <= 1;
+        cid_t q = *it;
+        snprintf(constr_name, 100, "%s_example_trimming", q.c_str());
+        expr constr_expr = id_to_ioq[q]->enq_cnt(total_time - 1) == 0 &&
+                           id_to_ioq[q]->enq_cnt(total_time - 2) <= 1;
         z3_optimizer->add(constr_expr, constr_name);
     }
 
     expr_vector smooth_flow_vec(net_ctx.z3_ctx());
     for (qset_t::iterator it = non_zero_queues.begin(); it != non_zero_queues.end(); it++) {
-        unsigned int q = *it;
+        cid_t q = *it;
+        Queue* queue = id_to_ioq[q];
         for (unsigned int t = 0; t < total_time - 1; t++) {
-            expr pkt1 = in_queues[q]->enqs(0)[t + 1];
+            expr pkt1 = queue->enqs(0)[t + 1];
             expr val1 = net_ctx.pkt2val(pkt1);
             expr meta11 = net_ctx.pkt2meta1(pkt1);
             expr meta12 = net_ctx.pkt2meta2(pkt1);
@@ -898,7 +899,7 @@ void ContentionPoint::generate_good_examples_from_base_flow(deque<IndexedExample
             expr prev_empty = net_ctx.bool_val(true);
 
             for (int t2 = t; t2 >= 0; t2--) {
-                expr pkt2 = in_queues[q]->enqs(0)[t2];
+                expr pkt2 = queue->enqs(0)[t2];
                 expr val2 = net_ctx.pkt2val(pkt2);
                 expr meta21 = net_ctx.pkt2meta1(pkt2);
                 expr meta22 = net_ctx.pkt2meta2(pkt2);
@@ -1118,10 +1119,11 @@ void ContentionPoint::generate_good_examples_flow(deque<IndexedExample*>& exampl
         // populate zero queues
         for (unsigned int q = 0; q < in_queues.size(); q++) {
             expr total_cenq_val = m.eval(per_queue_enq_sum[q]);
+            cid_t qid = in_queues[q]->get_id();
             if (total_cenq_val.is_numeral() && total_cenq_val.get_numeral_int() == 0) {
-                zero_queues.insert(q);
+                zero_queues.insert(qid);
             } else {
-                non_zero_queues.insert(q);
+                non_zero_queues.insert(qid);
             }
         }
         DEBUG_MSG("zero_queues: " << zero_queues << endl);
@@ -1145,20 +1147,20 @@ void ContentionPoint::generate_good_examples_flow(deque<IndexedExample*>& exampl
 
     char constr_name[100];
     for (qset_t::iterator it = zero_queues.begin(); it != zero_queues.end(); it++) {
-        unsigned int queue = *it;
-        Metric* cenq_metric = in_queues[queue]->get_metric(metric_t::CENQ);
+        cid_t qid = *it;
+        Metric* cenq_metric = metrics[metric_t::CENQ][qid];
         for (unsigned int t = 0; t < total_time; t++) {
-            snprintf(constr_name, 100, "%d_is_zerod_queue[%d}", queue, t);
+            snprintf(constr_name, 100, "%d_is_zerod_queue[%d}", qid.c_str(), t);
             expr constr_expr = cenq_metric->val(t).second == 0;
             z3_optimizer->add(constr_expr, constr_name);
         }
     }
 
     for (qset_t::iterator it = target_queues.begin(); it != target_queues.end(); it++) {
-        unsigned int q = *it;
+        cid_t qid = *it;
+        Queue* q = id_to_ioq[qid];
         snprintf(constr_name, 100, "%d_example_trimming", q);
-        expr constr_expr = in_queues[q]->enq_cnt(total_time - 1) == 0 &&
-                           in_queues[q]->enq_cnt(total_time - 2) <= 1;
+        expr constr_expr = q->enq_cnt(total_time - 1) == 0 && q->enq_cnt(total_time - 2) <= 1;
         z3_optimizer->add(constr_expr, constr_name);
     }
 
@@ -1179,9 +1181,10 @@ void ContentionPoint::generate_good_examples_flow(deque<IndexedExample*>& exampl
 
     expr_vector smooth_flow_vec(net_ctx.z3_ctx());
     for (qset_t::iterator it = target_queues.begin(); it != target_queues.end(); it++) {
-        unsigned int q = *it;
+        cid_t qid = *it;
+        Queue* q = id_to_ioq[qid];
         for (unsigned int t = 0; t < total_time - 1; t++) {
-            expr pkt1 = in_queues[q]->enqs(0)[t + 1];
+            expr pkt1 = q->enqs(0)[t + 1];
             expr val1 = net_ctx.pkt2val(pkt1);
             expr meta11 = net_ctx.pkt2meta1(pkt1);
             expr meta12 = net_ctx.pkt2meta2(pkt1);
@@ -1189,7 +1192,7 @@ void ContentionPoint::generate_good_examples_flow(deque<IndexedExample*>& exampl
             expr prev_empty = net_ctx.bool_val(true);
 
             for (int t2 = t; t2 >= 0; t2--) {
-                expr pkt2 = in_queues[q]->enqs(0)[t2];
+                expr pkt2 = q->enqs(0)[t2];
                 expr val2 = net_ctx.pkt2val(pkt2);
                 expr meta21 = net_ctx.pkt2meta1(pkt2);
                 expr meta22 = net_ctx.pkt2meta2(pkt2);
@@ -1337,9 +1340,10 @@ void ContentionPoint::generate_good_examples2(IndexedExample* base_eg,
     // zero in the rest of the examples too.
     char constr_name[100];
     for (unsigned int q = 0; q < in_queues.size(); q++) {
-        if (target_queues.find(q) != target_queues.end()) continue;
+        cid_t qid = in_queues[q]->get_id();
+        if (target_queues.find(qid) != target_queues.end()) continue;
 
-        Metric* cenq_metric = in_queues[q]->get_metric(metric_t::CENQ);
+        Metric* cenq_metric = metrics[metric_t::CENQ][qid];
         for (unsigned int t = 0; t < total_time; t++) {
             snprintf(constr_name, 100, "%d_is_zerod_queue[%d}", q, t);
             expr constr_expr = cenq_metric->val(t).second == 0;
@@ -1363,9 +1367,10 @@ void ContentionPoint::generate_good_examples2(IndexedExample* base_eg,
 
     expr_vector smooth_flow_vec(net_ctx.z3_ctx());
     for (qset_t::iterator it = target_queues.begin(); it != target_queues.end(); it++) {
-        unsigned int q = *it;
+        cid_t qid = *it;
+        Queue* q = id_to_ioq[qid];
         for (unsigned int t = 0; t < total_time - 1; t++) {
-            expr pkt1 = in_queues[q]->enqs(0)[t + 1];
+            expr pkt1 = q->enqs(0)[t + 1];
             expr val1 = net_ctx.pkt2val(pkt1);
             expr meta11 = net_ctx.pkt2meta1(pkt1);
             expr meta12 = net_ctx.pkt2meta2(pkt1);
@@ -1373,7 +1378,7 @@ void ContentionPoint::generate_good_examples2(IndexedExample* base_eg,
             expr prev_empty = net_ctx.bool_val(true);
 
             for (int t2 = t; t2 >= 0; t2--) {
-                expr pkt2 = in_queues[q]->enqs(0)[t2];
+                expr pkt2 = q->enqs(0)[t2];
                 expr val2 = net_ctx.pkt2val(pkt2);
                 expr meta21 = net_ctx.pkt2meta1(pkt2);
                 expr meta22 = net_ctx.pkt2meta2(pkt2);
@@ -2007,7 +2012,7 @@ expr ContentionPoint::get_expr(TimedSpec spec) {
 expr ContentionPoint::get_expr(Unique uniq, time_range_t time_range) {
     qset_t qset = uniq.get_qset();
     metric_t metric = uniq.get_metric();
-    vector<unsigned int> queues(qset.begin(), qset.end());
+    vector<cid_t> queues(qset.begin(), qset.end());
     unsigned int start = time_range.first;
     unsigned int end = time_range.second;
 
@@ -2015,17 +2020,17 @@ expr ContentionPoint::get_expr(Unique uniq, time_range_t time_range) {
 
     for (unsigned int t = start; t <= end; t++) {
         for (unsigned int i = 0; i < queues.size(); i++) {
-            unsigned int q = queues[i];
-            Queue* queue = in_queues[q];
+            cid_t q = queues[i];
+            Queue* queue = id_to_ioq[q];
             Metric* metric1 = queue->get_metric(metric);
             m_val_expr_t metric1_val_expr = metric1->val(t);
             expr m1_valid = metric1_val_expr.first;
             expr m1_value = metric1_val_expr.second;
 
             for (unsigned int j = i + 1; j < queues.size(); j++) {
-                unsigned int q2 = queues[j];
+                cid_t q2 = queues[j];
                 if (q2 == q) continue;
-                Queue* queue2 = in_queues[q2];
+                Queue* queue2 = id_to_ioq[q2];
                 Metric* metric2 = queue2->get_metric(metric);
                 m_val_expr_t metric2_val_expr = metric2->val(t);
                 expr m2_valid = metric2_val_expr.first;
@@ -2039,7 +2044,7 @@ expr ContentionPoint::get_expr(Unique uniq, time_range_t time_range) {
 }
 
 expr ContentionPoint::get_expr(Same same, time_range_t time_range) {
-    Queue* queue = in_queues[same.get_queue()];
+    Queue* queue = id_to_ioq[same.get_queue()];
     Metric* metric = queue->get_metric(same.get_metric());
     m_val_expr_t initial_val_expr = metric->val(time_range.first);
 
@@ -2062,7 +2067,7 @@ expr ContentionPoint::get_expr(Same same, time_range_t time_range) {
 }
 
 expr ContentionPoint::get_expr(Incr incr, time_range_t time_range) {
-    Queue* queue = in_queues[incr.get_queue()];
+    Queue* queue = id_to_ioq[incr.get_queue()];
     Metric* metric = queue->get_metric(incr.get_metric());
     m_val_expr_t initial_val_expr = metric->val(time_range.first);
 
@@ -2083,7 +2088,7 @@ expr ContentionPoint::get_expr(Incr incr, time_range_t time_range) {
 }
 
 expr ContentionPoint::get_expr(Decr decr, time_range_t time_range) {
-    Queue* queue = in_queues[decr.get_queue()];
+    Queue* queue = id_to_ioq[decr.get_queue()];
     Metric* metric = queue->get_metric(decr.get_metric());
     m_val_expr_t initial_val_expr = metric->val(time_range.first);
 
@@ -2135,8 +2140,7 @@ m_val_expr_t ContentionPoint::get_expr(Time time, unsigned int t) {
 }
 
 m_val_expr_t ContentionPoint::get_expr(Indiv indiv, unsigned int t) {
-    Queue* queue = in_queues[indiv.get_queue()];
-    Metric* metric = queue->get_metric(indiv.get_metric());
+    Metric* metric = metrics[indiv.get_metric()][indiv.get_queue()];
     // TODO: This a temporary fix, after parametrizing search based on metrics we need to throw
     // exception and stop the search if metric not exists
     if (metric != nullptr)
@@ -2151,8 +2155,9 @@ m_val_expr_t ContentionPoint::get_expr(QSum qsum, unsigned int t) {
 
     qset_t qset = qsum.get_qset();
     for (qset_t::iterator it = qset.begin(); it != qset.end(); it++) {
-        unsigned int q = *it;
-        m_val_expr_t val_expr = in_queues[q]->get_metric(qsum.get_metric())->val(t);
+        cid_t qid = *it;
+        Queue* q = id_to_ioq[qid];
+        m_val_expr_t val_expr = q->get_metric(qsum.get_metric())->val(t);
         valid.push_back(val_expr.first);
         res = res + val_expr.second;
     }
@@ -2186,8 +2191,7 @@ bool ContentionPoint::eval_spec(Unique uniq, IndexedExample* eg, time_range_t ti
     for (unsigned int t = time_range.first + 1; t <= time_range.second; t++) {
         set<int>::size_type vals_count = 0;
         set<int> unique_vals;
-        for (unsigned int queue : uniq.get_qset()) {
-            cid_t qid = in_queues[queue]->get_id();
+        for (cid_t qid : uniq.get_qset()) {
             Metric* metric = metrics[uniq.get_metric()][qid];
             metric_val m_val;
             metric->eval(unindex_example(eg), t, qid, m_val);
@@ -2202,8 +2206,7 @@ bool ContentionPoint::eval_spec(Unique uniq, IndexedExample* eg, time_range_t ti
 }
 
 bool ContentionPoint::eval_spec(Same same, IndexedExample* eg, time_range_t time_range) {
-    unsigned int queue = same.get_queue();
-    cid_t qid = in_queues[queue]->get_id();
+    cid_t qid = same.get_queue();
     Metric* metric = metrics[same.get_metric()][qid];
     metric_val m_val;
     metric->eval(unindex_example(eg), time_range.first, qid, m_val);
@@ -2220,8 +2223,7 @@ bool ContentionPoint::eval_spec(Same same, IndexedExample* eg, time_range_t time
 }
 
 bool ContentionPoint::eval_spec(Incr incr, IndexedExample* eg, time_range_t time_range) {
-    unsigned int queue = incr.get_queue();
-    cid_t qid = in_queues[queue]->get_id();
+    cid_t qid = incr.get_queue();
     Metric* metric = metrics[incr.get_metric()][qid];
     metric_val m_val;
     metric->eval(unindex_example(eg), time_range.first, qid, m_val);
@@ -2239,8 +2241,7 @@ bool ContentionPoint::eval_spec(Incr incr, IndexedExample* eg, time_range_t time
 }
 
 bool ContentionPoint::eval_spec(Decr decr, IndexedExample* eg, time_range_t time_range) {
-    unsigned int queue = decr.get_queue();
-    cid_t qid = in_queues[queue]->get_id();
+    cid_t qid = decr.get_queue();
     Metric* metric = metrics[decr.get_metric()][qid];
     metric_val m_val;
     metric->eval(unindex_example(eg), time_range.first, qid, m_val);
@@ -2308,9 +2309,8 @@ void ContentionPoint::eval_m_expr(QSum qsum,
     res.value = 0;
     qset_t qset = qsum.get_qset();
     for (qset_t::iterator it = qset.begin(); it != qset.end(); it++) {
-        unsigned int q = *it;
+        cid_t qid = *it;
         metric_val m_val;
-        cid_t qid = in_queues[q]->get_id();
         Metric* metric = metrics[qsum.get_metric()][qid];
         metric->eval(unindex_example(eg), time, qid, m_val);
         if (!m_val.valid) {
@@ -2326,7 +2326,7 @@ void ContentionPoint::eval_m_expr(Indiv indiv,
                                   IndexedExample* eg,
                                   unsigned int time,
                                   metric_val& res) {
-    cid_t qid = in_queues[indiv.get_queue()]->get_id();
+    cid_t qid = indiv.get_queue();
     Metric* metric = metrics[indiv.get_metric()][qid];
     // TODO: This a temporary fix, after parametrizing search based on metrics we need to throw
     // exception and stop the search if metric not exists

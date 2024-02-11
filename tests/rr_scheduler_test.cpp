@@ -4,101 +4,111 @@
 #include "rr_scheduler_test.hpp"
 
 bool test_unsat_query() {
-  unsigned int in_queue_cnt = 5;
-  unsigned int period = 5;
-  unsigned int recur = 2;
+    unsigned int in_queue_cnt = 5;
+    unsigned int period = 5;
+    unsigned int recur = 2;
 
-  unsigned int total_time = recur * period;
+    unsigned int total_time = recur * period;
 
-  RRScheduler *rr = new RRScheduler(in_queue_cnt, total_time);
+    RRScheduler* rr = new RRScheduler(in_queue_cnt, total_time);
 
-  unsigned int queue1 = 1;
-  unsigned int queue2 = 2;
+    unsigned int queue1 = 1;
+    unsigned int queue2 = 2;
 
-  Workload wl(100, in_queue_cnt, total_time);
+    Workload wl(100, in_queue_cnt, total_time);
 
-  for (unsigned int q = 0; q < in_queue_cnt; q++) {
+    for (unsigned int q = 0; q < in_queue_cnt; q++) {
+        cid_t qid = rr->get_in_queues()[q]->get_id();
+        wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, qid), op_t::GE, Time(1)),
+                              time_range_t(0, total_time - 1),
+                              total_time));
+    }
+
+    cid_t qid_queue1 = rr->get_in_queues()[queue1]->get_id();
+    cid_t qid_queue2 = rr->get_in_queues()[queue2]->get_id();
     wl.add_spec(
-        TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::GE, Time(1)),
-                  time_range_t(0, total_time - 1), total_time));
-  }
+        TimedSpec(Comp(Indiv(metric_t::CENQ, qid_queue1), op_t::GT, Indiv(metric_t::CENQ, qid_queue2)),
+                  time_range_t(total_time - 1, total_time - 1),
+                  total_time));
 
-  wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, queue1), op_t::GT,
-                                  Indiv(metric_t::CENQ, queue2)),
-                           time_range_t(total_time - 1, total_time - 1),
-                           total_time));
+    cout << "base workload: " << endl << wl << endl;
 
-  cout << "base workload: " << endl << wl << endl;
+    rr->set_base_workload(wl);
 
-  rr->set_base_workload(wl);
+    // Query
+    cid_t queue1_id = rr->get_in_queues()[queue1]->get_id();
+    cid_t queue2_id = rr->get_in_queues()[queue2]->get_id();
 
-  // Query
-  cid_t queue1_id = rr->get_in_queues()[queue1]->get_id();
-  cid_t queue2_id = rr->get_in_queues()[queue2]->get_id();
+    Query query(query_quant_t::FORALL,
+                time_range_t(total_time - 1 - (period - 1), total_time - 1),
+                qdiff_t(queue2_id, queue1_id),
+                metric_t::CDEQ,
+                op_t::GE,
+                3);
 
-  Query query(query_quant_t::FORALL,
-              time_range_t(total_time - 1 - (period - 1), total_time - 1),
-              qdiff_t(queue2_id, queue1_id), metric_t::CDEQ, op_t::GE, 3);
+    rr->set_query(query);
 
-  rr->set_query(query);
+    solver_res_t result = rr->satisfy_query();
 
-  solver_res_t result = rr->satisfy_query();
+    cout << result << endl;
 
-  cout << result << endl;
-
-  return result == solver_res_t::UNSAT;
+    return result == solver_res_t::UNSAT;
 }
 
 bool test_sat_query() {
-  unsigned int in_queue_cnt = 5;
-  unsigned int period = 5;
-  unsigned int recur = 2;
-  unsigned int rate = 4;
+    unsigned int in_queue_cnt = 5;
+    unsigned int period = 5;
+    unsigned int recur = 2;
+    unsigned int rate = 4;
 
-  unsigned int total_time = recur * period;
+    unsigned int total_time = recur * period;
 
-  RRScheduler *rr = new RRScheduler(in_queue_cnt, total_time);
+    RRScheduler* rr = new RRScheduler(in_queue_cnt, total_time);
 
-  unsigned int queue1 = 1;
-  unsigned int queue2 = 2;
+    unsigned int queue1 = 1;
+    unsigned int queue2 = 2;
 
-  Workload wl(100, in_queue_cnt, total_time);
+    Workload wl(100, in_queue_cnt, total_time);
 
-  for (unsigned int i = 1; i <= recur; i++) {
-    for (unsigned int q = 0; q < in_queue_cnt; q++) {
-      wl.add_spec(
-          TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::GE, i * rate),
-                    time_range_t(i * period - 1, i * period - 1), total_time));
+    for (unsigned int i = 1; i <= recur; i++) {
+        for (unsigned int q = 0; q < in_queue_cnt; q++) {
+            cid_t qid = rr->get_in_queues()[q]->get_id();
+            wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, qid), op_t::GE, i * rate),
+                                  time_range_t(i * period - 1, i * period - 1),
+                                  total_time));
+        }
     }
-  }
 
-  wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, queue1), op_t::GT,
-                                  Indiv(metric_t::CENQ, queue2)),
-                           time_range_t(total_time - 1, total_time - 1),
-                           total_time));
+    cid_t queue1_id = rr->get_in_queues()[queue1]->get_id();
+    cid_t queue2_id = rr->get_in_queues()[queue2]->get_id();
+    wl.add_spec(
+        TimedSpec(Comp(Indiv(metric_t::CENQ, queue1_id), op_t::GT, Indiv(metric_t::CENQ, queue2_id)),
+                  time_range_t(total_time - 1, total_time - 1),
+                  total_time));
 
-  cout << "base workload: " << endl << wl << endl;
+    cout << "base workload: " << endl << wl << endl;
 
-  rr->set_base_workload(wl);
+    rr->set_base_workload(wl);
 
-  // Query
-  cid_t queue1_id = rr->get_in_queues()[queue1]->get_id();
-  cid_t queue2_id = rr->get_in_queues()[queue2]->get_id();
+    // Query
 
-  Query query(query_quant_t::FORALL,
-              time_range_t(total_time - 1 - (period - 1), total_time - 1),
-              qdiff_t(queue2_id, queue1_id), metric_t::CDEQ, op_t::GE, 3);
+    Query query(query_quant_t::FORALL,
+                time_range_t(total_time - 1 - (period - 1), total_time - 1),
+                qdiff_t(queue2_id, queue1_id),
+                metric_t::CDEQ,
+                op_t::GE,
+                3);
 
-  rr->set_query(query);
+    rr->set_query(query);
 
-  solver_res_t result = rr->satisfy_query();
+    solver_res_t result = rr->satisfy_query();
 
-  cout << result << endl;
+    cout << result << endl;
 
-  return result == solver_res_t::SAT;
+    return result == solver_res_t::SAT;
 }
 
-void RRSchedulerTest::add_to_runner(TestRunner *runner) {
-  runner->add_test_case("rr_unsat", test_sat_query);
-  runner->add_test_case("rr_sat", test_unsat_query);
+void RRSchedulerTest::add_to_runner(TestRunner* runner) {
+    runner->add_test_case("rr_unsat", test_sat_query);
+    runner->add_test_case("rr_sat", test_unsat_query);
 }

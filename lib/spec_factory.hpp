@@ -34,7 +34,7 @@ class SpecFactory {
 public:
     RandomSpecGenerationParameters get_metric_params(metric_t metric_type);
 
-    SpecFactory(SharedConfig* shared_config);
+    SpecFactory(SharedConfig* shared_config, vector<Queue*> in_queues);
 
     //**** TimedSpec ****//
     TimedSpec random_timed_spec();
@@ -82,6 +82,7 @@ private:
     SharedConfig* shared_config = NULL;
     unsigned int total_time;
     unsigned int in_queue_cnt;
+    vector<Queue*> in_queues;
     qset_t target_queues;
     Dists* dists = NULL;
 };

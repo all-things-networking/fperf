@@ -14,8 +14,9 @@
 
 #include "util.hpp"
 
-SpecFactory::SpecFactory(SharedConfig* shared_config):
+SpecFactory::SpecFactory(SharedConfig* shared_config, vector<Queue*> in_queues):
 shared_config(shared_config),
+in_queues(in_queues),
 dists(shared_config->get_dists()) {
     total_time = shared_config->get_total_time();
     in_queue_cnt = shared_config->get_in_queue_cnt();
@@ -278,12 +279,13 @@ qset_t SpecFactory::random_qsum_qset() {
 
     while (res.size() < cnt) {
         unsigned int q = dists->input_queue();
-
-        while (target_queues.find(q) == target_queues.end()) {
+        cid_t qid = in_queues[q]->get_id();
+        while (target_queues.find(qid) == target_queues.end()) {
             q = dists->input_queue();
+            qid = in_queues[q]->get_id();
         }
 
-        res.insert(q);
+        res.insert(qid);
     }
     return res;
 }
@@ -307,12 +309,13 @@ void SpecFactory::pick_neighbors(QSum& qsum, vector<m_expr_t>& neighbors) {
         qset_t qset_neighbor = qset;
         while (qset_neighbor.size() == qset.size()) {
             unsigned int q = dists->input_queue();
-
-            while (target_queues.find(q) == target_queues.end()) {
+            cid_t qid = in_queues[q]->get_id();
+            while (target_queues.find(qid) == target_queues.end()) {
                 q = dists->input_queue();
+                qid = in_queues[q]->get_id();
             }
 
-            qset_neighbor.insert(q);
+            qset_neighbor.insert(qid);
         }
         neighbors.push_back(QSum(qset_neighbor, qsum.metric));
     }
@@ -336,11 +339,12 @@ void SpecFactory::pick_neighbors(QSum& qsum, vector<m_expr_t>& neighbors) {
 Indiv SpecFactory::random_indiv() {
     metric_t metric = dists->wl_metric();
     unsigned int queue = dists->input_queue();
-
-    while (target_queues.find(queue) == target_queues.end()) {
+    cid_t qid = in_queues[queue]->get_id();
+    while (target_queues.find(qid) == target_queues.end()) {
         queue = dists->input_queue();
+        qid = in_queues[queue]->get_id();
     }
-    return Indiv(metric, queue);
+    return Indiv(metric, qid);
 }
 
 void SpecFactory::pick_neighbors(Indiv& indiv, vector<m_expr_t>& neighbors) {
@@ -348,11 +352,13 @@ void SpecFactory::pick_neighbors(Indiv& indiv, vector<m_expr_t>& neighbors) {
 
     // changing queue
     unsigned int queue_neighbor = dists->input_queue();
-    while ((queue_neighbor == indiv.get_queue() && target_queues.size() > 1) ||
-           target_queues.find(queue_neighbor) == target_queues.end()) {
+    cid_t qid_neighbor = in_queues[queue_neighbor]->get_id();
+    while ((qid_neighbor == indiv.get_queue() && target_queues.size() > 1) ||
+           target_queues.find(qid_neighbor) == target_queues.end()) {
         queue_neighbor = dists->input_queue();
+        qid_neighbor = in_queues[queue_neighbor]->get_id();
     }
-    neighbors.push_back(Indiv(indiv.get_metric(), queue_neighbor));
+    neighbors.push_back(Indiv(indiv.get_metric(), qid_neighbor));
 }
 
 //************************************* TIME *************************************//

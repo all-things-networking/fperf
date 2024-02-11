@@ -47,7 +47,7 @@ public:
     QSum(qset_t qset, metric_t metric);
 
     unsigned int ast_size() const;
-    bool applies_to_queue(unsigned int queue) const;
+    bool applies_to_queue(cid_t queue) const;
 
     qset_t get_qset() const;
     metric_t get_metric() const;
@@ -67,16 +67,16 @@ private:
 class Indiv {
 
 public:
-    Indiv(metric_t metric, unsigned int queue);
+    Indiv(metric_t metric, cid_t queue);
 
-    bool applies_to_queue(unsigned int queue) const;
+    bool applies_to_queue(cid_t queue) const;
 
-    unsigned int get_queue() const;
+    cid_t get_queue() const;
     metric_t get_metric() const;
 
 private:
     metric_t metric;
-    unsigned int queue;
+    cid_t queue;
 
     friend ostream& operator<<(ostream& os, const Indiv& tone);
     friend bool operator==(const Indiv& s1, const Indiv& s2);
@@ -107,8 +107,8 @@ typedef m_expr_t lhs_t;
 unsigned int lhs_ast_size(const lhs_t lhs);
 unsigned int m_expr_ast_size(const m_expr_t m_expr);
 
-bool lhs_applies_to_queue(const lhs_t lhs, unsigned int queue);
-bool m_expr_applies_to_queue(const m_expr_t m_expr, unsigned int queue);
+bool lhs_applies_to_queue(const lhs_t lhs, cid_t queue);
+bool m_expr_applies_to_queue(const m_expr_t m_expr, cid_t queue);
 
 ostream& operator<<(ostream& os, const m_expr_t& m_expr);
 
@@ -120,7 +120,7 @@ bool operator<(const m_expr_t& m_expr1, const m_expr_t& m_expr2);
 typedef variant<m_expr_t, Time, unsigned int> rhs_t;
 
 unsigned int rhs_ast_size(const rhs_t rhs);
-bool rhs_applies_to_queue(const rhs_t rhs, unsigned int queue);
+bool rhs_applies_to_queue(const rhs_t rhs, cid_t queue);
 
 ostream& operator<<(ostream& os, const rhs_t& rhs);
 
@@ -133,7 +133,7 @@ class Unique {
 public:
     Unique(metric_t metric, qset_t qset);
 
-    bool applies_to_queue(unsigned int queue) const;
+    bool applies_to_queue(cid_t queue) const;
 
     qset_t get_qset() const;
     metric_t get_metric() const;
@@ -151,16 +151,16 @@ private:
 class Same {
 
 public:
-    Same(metric_t metric, unsigned int queue);
+    Same(metric_t metric, cid_t queue);
 
-    bool applies_to_queue(unsigned int queue) const;
+    bool applies_to_queue(cid_t queue) const;
 
-    unsigned int get_queue() const;
+    cid_t get_queue() const;
     metric_t get_metric() const;
 
 private:
     metric_t metric;
-    unsigned int queue;
+    cid_t queue;
 
     friend ostream& operator<<(ostream& os, const Same& s);
     friend bool operator==(const Same& s1, const Same& s2);
@@ -171,16 +171,16 @@ private:
 class Incr {
 
 public:
-    Incr(metric_t metric, unsigned int queue);
+    Incr(metric_t metric, cid_t queue);
 
-    bool applies_to_queue(unsigned int queue) const;
+    bool applies_to_queue(cid_t queue) const;
 
-    unsigned int get_queue() const;
+    cid_t get_queue() const;
     metric_t get_metric() const;
 
 private:
     metric_t metric;
-    unsigned int queue;
+    cid_t queue;
 
     friend ostream& operator<<(ostream& os, const Incr& incr);
     friend bool operator==(const Incr& incr1, const Incr& incr2);
@@ -191,16 +191,16 @@ private:
 class Decr {
 
 public:
-    Decr(metric_t metric, unsigned int queue);
+    Decr(metric_t metric, cid_t queue);
 
-    bool applies_to_queue(unsigned int queue) const;
+    bool applies_to_queue(cid_t queue) const;
 
-    unsigned int get_queue() const;
+    cid_t get_queue() const;
     metric_t get_metric() const;
 
 private:
     metric_t metric;
-    unsigned int queue;
+    cid_t queue;
 
     friend ostream& operator<<(ostream& os, const Decr& decr);
     friend bool operator==(const Decr& decr1, const Decr& decr2);
@@ -216,7 +216,7 @@ public:
     bool spec_is_empty() const;
     bool spec_is_all() const;
     unsigned int ast_size() const;
-    bool applies_to_queue(unsigned int queue) const;
+    bool applies_to_queue(cid_t queue) const;
     pair<metric_t, qset_t> get_zero_queues() const;
 
     lhs_t get_lhs() const;
@@ -243,7 +243,7 @@ private:
 //************************************* WlSpec *************************************//
 typedef variant<Comp, Same, Incr, Decr, Unique> wl_spec_t;
 
-bool wl_spec_applies_to_queue(wl_spec_t spec, unsigned int queue);
+bool wl_spec_applies_to_queue(wl_spec_t spec, cid_t queue);
 
 bool wl_spec_is_empty(wl_spec_t spec);
 
@@ -266,7 +266,7 @@ public:
 
     bool spec_is_empty() const;
     bool spec_is_all() const;
-    bool applies_to_queue(unsigned int queue) const;
+    bool applies_to_queue(cid_t queue) const;
 
     time_range_t get_time_range() const;
     wl_spec_t get_wl_spec() const;

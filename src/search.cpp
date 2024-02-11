@@ -23,7 +23,7 @@ query(query),
 max_spec(max_spec),
 shared_config(shared_config),
 dists(shared_config->get_dists()),
-spec_factory(SpecFactory(shared_config)),
+spec_factory(SpecFactory(shared_config, cp->get_in_queues())),
 wl_last_step(
     Workload(max_spec, shared_config->get_in_queue_cnt(), shared_config->get_total_time())) {
     target_queues = shared_config->get_target_queues();
@@ -67,7 +67,7 @@ query(query),
 max_spec(max_spec),
 shared_config(shared_config),
 dists(shared_config->get_dists()),
-spec_factory(SpecFactory(shared_config)),
+spec_factory(SpecFactory(shared_config, cp->get_in_queues())),
 wl_last_step(
     Workload(max_spec, shared_config->get_in_queue_cnt(), shared_config->get_total_time())) {
     target_queues = shared_config->get_target_queues();
@@ -259,8 +259,9 @@ void Search::search(Workload wl) {
         Workload to_check(max_spec + in_queue_cnt, in_queue_cnt, total_time);
         to_check = wl;
         for (unsigned int q = 0; q < cp->in_queue_cnt(); q++) {
-            if (target_queues.find(q) == target_queues.end()) {
-                Indiv n_indiv = Indiv(metric_t::CENQ, q);
+            cid_t qid = cp->get_in_queues()[q]->get_id();
+            if (target_queues.find(qid) == target_queues.end()) {
+                Indiv n_indiv = Indiv(metric_t::CENQ, qid);
                 Comp n_wl_spec = Comp(n_indiv, op_t::LE, 0u);
                 TimedSpec n_spec = TimedSpec(n_wl_spec, total_time, total_time);
                 to_check.add_spec(n_spec);
@@ -395,8 +396,9 @@ Workload Search::refine(Workload wl) {
 
     // Add specs for "zero queues" back in
     for (unsigned int q = 0; q < cp->in_queue_cnt(); q++) {
-        if (target_queues.find(q) == target_queues.end()) {
-            Indiv n_indiv = Indiv(metric_t::CENQ, q);
+        cid_t qid = cp->get_in_queues()[q]->get_id();
+        if (target_queues.find(qid) == target_queues.end()) {
+            Indiv n_indiv = Indiv(metric_t::CENQ, qid);
             Comp n_wl_spec = Comp(n_indiv, op_t::LE, 0u);
             wl.add_spec(TimedSpec(n_wl_spec, total_time, total_time));
         }
@@ -450,12 +452,12 @@ Workload Search::refine(Workload wl) {
             metric_t m = indiv.get_metric();
             // TODO: This assumes that rhs is constant
             if (m == metric_t::DST || m == metric_t::ECMP) {
-                unsigned int q = indiv.get_queue();
                 unsigned int c = get<unsigned int>(comp.get_rhs());
                 if (c < 1) c = 1;
 
                 candidate = wl;
-                Indiv n_indiv = Indiv(metric_t::CENQ, q);
+                cid_t qid = indiv.get_queue();
+                Indiv n_indiv = Indiv(metric_t::CENQ, qid);
                 Comp n_comp = Comp(n_indiv, op_t::GE, Time(c));
                 TimedSpec new_spec = TimedSpec(n_comp, tspec.get_time_range(), total_time);
                 candidate.mod_spec(*it, new_spec);
@@ -595,8 +597,9 @@ Workload Search::refine(Workload wl) {
     DEBUG_MSG("zero_in_base: " << zero_in_base << endl);
     DEBUG_MSG("in_wl: " << in_wl << endl);
     for (unsigned int q = 0; q < cp->in_queue_cnt(); q++) {
-        if (in_wl.find(q) != in_wl.end()) continue;
-        if (zero_in_base.find(q) != zero_in_base.end()) continue;
+        cid_t qid = cp->get_in_queues()[q]->get_id();
+        if (in_wl.find(qid) != in_wl.end()) continue;
+        if (zero_in_base.find(qid) != zero_in_base.end()) continue;
 
         set<TimedSpec> specs = wl.get_all_specs();
         for (set<TimedSpec>::iterator it = specs.begin(); it != specs.end(); it++) {
@@ -621,7 +624,7 @@ Workload Search::refine(Workload wl) {
                 if (tone.get_metric() != metric_t::CENQ) continue;
 
                 qset_t new_qset;
-                new_qset.insert(q);
+                new_qset.insert(qid);
                 new_qset.insert(tone.get_queue());
                 new_lhs = QSum(new_qset, tone.get_metric());
             } else if (holds_alternative<QSum>(lhs)) {
@@ -630,7 +633,7 @@ Workload Search::refine(Workload wl) {
                 // TODO: aggregatable
                 if (tsum.get_metric() != metric_t::CENQ) continue;
                 qset_t new_qset = tsum.get_qset();
-                new_qset.insert(q);
+                new_qset.insert(qid);
                 new_lhs = QSum(new_qset, tsum.get_metric());
             }
 

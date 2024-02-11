@@ -42,8 +42,7 @@ public:
     Metric(metric_t m, Queue* queue, unsigned int total_time, NetContext& net_ctx);
 
     m_val_expr_t val(unsigned int ind);
-    virtual void
-    eval(const IndexedExample* eg, unsigned int time, unsigned int qind, metric_val& res) = 0;
+    virtual void eval(Example* eg, unsigned int time, cid_t qind, metric_val& res) = 0;
 
     virtual void populate_val_exprs(NetContext& net_ctx) = 0;
 

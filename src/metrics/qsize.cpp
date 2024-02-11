@@ -14,7 +14,7 @@ Metric(metric_t::QSIZE, queue, total_time, net_ctx) {
 }
 
 // TODO: FIX for leaf_spine_lat
-void QSize::eval(const IndexedExample* eg, unsigned int time, unsigned int qind, metric_val& res) {
+void QSize::eval(Example* eg, unsigned int time, cid_t qind, metric_val& res) {
     res.valid = true;
     unsigned int enq_sum = 0;
     unsigned int deq_sum = 0;

@@ -13,7 +13,7 @@ Metric(metric_t::CDEQ, queue, total_time, net_ctx) {
     init(net_ctx);
 }
 
-void CDeq::eval(const IndexedExample* eg, unsigned int time, unsigned int qind, metric_val& res) {
+void CDeq::eval(Example* eg, unsigned int time, cid_t qind, metric_val& res) {
 
     res.valid = true;
     res.value = 0;

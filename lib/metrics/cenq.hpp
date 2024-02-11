@@ -18,7 +18,7 @@ public:
 
     void populate_val_exprs(NetContext& net_ctx);
 
-    void eval(const IndexedExample* eg, unsigned int time, unsigned int qind, metric_val& res);
+    void eval(Example* eg, unsigned int time, cid_t qind, metric_val& res);
 };
 
 #endif /* cenq_hpp */

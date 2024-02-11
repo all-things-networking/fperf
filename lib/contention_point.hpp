@@ -163,17 +163,17 @@ private:
 
     /* *********** Workload Satisifes Example ************ */
     bool timedspec_satisfies_example(TimedSpec spec, IndexedExample* eg);
-    bool eval_spec(Unique uniq, IndexedExample* eg, time_range_t time_range) const;
-    bool eval_spec(Same same, IndexedExample* eg, time_range_t time_range) const;
-    bool eval_spec(Incr incr, IndexedExample* eg, time_range_t time_range) const;
-    bool eval_spec(Decr decr, IndexedExample* eg, time_range_t time_range) const;
-    bool eval_spec(Comp comp, IndexedExample* eg, time_range_t time_range) const;
-    void eval_rhs(rhs_t rhs, IndexedExample* eg, unsigned int time, metric_val& res) const;
-    void eval_lhs(lhs_t lhs, IndexedExample* eg, unsigned int time, metric_val& res) const;
-    void eval_m_expr(m_expr_t m_expr, IndexedExample* eg, unsigned int time, metric_val& res) const;
-    void eval_m_expr(QSum tsum, IndexedExample* eg, unsigned int time, metric_val& res) const;
-    void eval_m_expr(Indiv tone, IndexedExample* eg, unsigned int time, metric_val& res) const;
-    void eval_Time(Time time, IndexedExample* eg, unsigned int t, metric_val& res) const;
+    bool eval_spec(Unique uniq, IndexedExample* eg, time_range_t time_range);
+    bool eval_spec(Same same, IndexedExample* eg, time_range_t time_range);
+    bool eval_spec(Incr incr, IndexedExample* eg, time_range_t time_range);
+    bool eval_spec(Decr decr, IndexedExample* eg, time_range_t time_range);
+    bool eval_spec(Comp comp, IndexedExample* eg, time_range_t time_range);
+    void eval_rhs(rhs_t rhs, IndexedExample* eg, unsigned int time, metric_val& res);
+    void eval_lhs(lhs_t lhs, IndexedExample* eg, unsigned int time, metric_val& res);
+    void eval_m_expr(m_expr_t m_expr, IndexedExample* eg, unsigned int time, metric_val& res);
+    void eval_m_expr(QSum tsum, IndexedExample* eg, unsigned int time, metric_val& res);
+    void eval_m_expr(Indiv tone, IndexedExample* eg, unsigned int time, metric_val& res);
+    void eval_Time(Time time, IndexedExample* eg, unsigned int t, metric_val& res);
 };
 
 #endif /* contention_point_hpp */

@@ -13,7 +13,7 @@ void Deq::populate_val_exprs(NetContext& net_ctx) {
     }
 }
 
-void Deq::eval(const IndexedExample* eg, unsigned int time, unsigned int qind, metric_val& res) {
+void Deq::eval(Example* eg, unsigned int time, cid_t qind, metric_val& res) {
     res.valid = true;
     res.value = eg->deqs[qind][time];
 }

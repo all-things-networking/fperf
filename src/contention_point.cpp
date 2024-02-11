@@ -1137,8 +1137,6 @@ void ContentionPoint::generate_good_examples_flow(deque<IndexedExample*>& exampl
     // POP
     z3_optimizer->pop();
 
-    DEBUG_MSG("base eg: " << (get_diff_millisec(start, noww()) / 1000.0) << endl);
-
     // PUSH
     z3_optimizer->push();
 
@@ -1941,7 +1939,7 @@ expr ContentionPoint::get_expr(IndexedExample* eg, vector<metric_t>& metrics) {
             for (unsigned int t = 0; t < total_time; t++) {
                 m_val_expr_t m_q_t = m->val(t);
                 metric_val eg_val;
-                m->eval(eg, t, q, eg_val);
+                m->eval(unindex_example(eg), t, queue->get_id(), eg_val);
                 if (eg_val.valid) {
                     res_vec.push_back(m_q_t.first && (m_q_t.second == (int) eg_val.value));
                 } else {
@@ -2184,14 +2182,15 @@ bool ContentionPoint::timedspec_satisfies_example(TimedSpec spec, IndexedExample
                  spec.get_wl_spec());
 }
 
-bool ContentionPoint::eval_spec(Unique uniq, IndexedExample* eg, time_range_t time_range) const {
+bool ContentionPoint::eval_spec(Unique uniq, IndexedExample* eg, time_range_t time_range) {
     for (unsigned int t = time_range.first + 1; t <= time_range.second; t++) {
         set<int>::size_type vals_count = 0;
         set<int> unique_vals;
         for (unsigned int queue : uniq.get_qset()) {
-            Metric* metric = in_queues[queue]->get_metric(uniq.get_metric());
+            cid_t qid = in_queues[queue]->get_id();
+            Metric* metric = metrics[uniq.get_metric()][qid];
             metric_val m_val;
-            metric->eval(eg, t, queue, m_val);
+            metric->eval(unindex_example(eg), t, qid, m_val);
             if (m_val.valid) {
                 vals_count++;
                 unique_vals.insert(m_val.value);
@@ -2202,34 +2201,36 @@ bool ContentionPoint::eval_spec(Unique uniq, IndexedExample* eg, time_range_t ti
     return true;
 }
 
-bool ContentionPoint::eval_spec(Same same, IndexedExample* eg, time_range_t time_range) const {
+bool ContentionPoint::eval_spec(Same same, IndexedExample* eg, time_range_t time_range) {
     unsigned int queue = same.get_queue();
-    Metric* metric = in_queues[queue]->get_metric(same.get_metric());
+    cid_t qid = in_queues[queue]->get_id();
+    Metric* metric = metrics[same.get_metric()][qid];
     metric_val m_val;
-    metric->eval(eg, time_range.first, queue, m_val);
+    metric->eval(unindex_example(eg), time_range.first, qid, m_val);
     if (!m_val.valid) return false;
 
     unsigned int first_value = m_val.value;
 
     for (unsigned int t = time_range.first + 1; t <= time_range.second; t++) {
-        metric->eval(eg, t, queue, m_val);
+        metric->eval(unindex_example(eg), t, qid, m_val);
         if (!m_val.valid) return false;
         if (m_val.value != first_value) return false;
     }
     return true;
 }
 
-bool ContentionPoint::eval_spec(Incr incr, IndexedExample* eg, time_range_t time_range) const {
+bool ContentionPoint::eval_spec(Incr incr, IndexedExample* eg, time_range_t time_range) {
     unsigned int queue = incr.get_queue();
-    Metric* metric = in_queues[queue]->get_metric(incr.get_metric());
+    cid_t qid = in_queues[queue]->get_id();
+    Metric* metric = metrics[incr.get_metric()][qid];
     metric_val m_val;
-    metric->eval(eg, time_range.first, queue, m_val);
+    metric->eval(unindex_example(eg), time_range.first, qid, m_val);
     if (!m_val.valid) return false;
 
     unsigned int m_value = m_val.value;
 
     for (unsigned int t = time_range.first + 1; t <= time_range.second; t++) {
-        metric->eval(eg, t, queue, m_val);
+        metric->eval(unindex_example(eg), t, qid, m_val);
         if (!m_val.valid) return false;
         if (m_val.value <= m_value) return false;
         m_value = m_val.value;
@@ -2237,17 +2238,18 @@ bool ContentionPoint::eval_spec(Incr incr, IndexedExample* eg, time_range_t time
     return true;
 }
 
-bool ContentionPoint::eval_spec(Decr decr, IndexedExample* eg, time_range_t time_range) const {
+bool ContentionPoint::eval_spec(Decr decr, IndexedExample* eg, time_range_t time_range) {
     unsigned int queue = decr.get_queue();
-    Metric* metric = in_queues[queue]->get_metric(decr.get_metric());
+    cid_t qid = in_queues[queue]->get_id();
+    Metric* metric = metrics[decr.get_metric()][qid];
     metric_val m_val;
-    metric->eval(eg, time_range.first, queue, m_val);
+    metric->eval(unindex_example(eg), time_range.first, qid, m_val);
     if (!m_val.valid) return false;
 
     unsigned int m_value = m_val.value;
 
     for (unsigned int t = time_range.first + 1; t <= time_range.second; t++) {
-        metric->eval(eg, t, queue, m_val);
+        metric->eval(unindex_example(eg), t, qid, m_val);
         if (!m_val.valid) return false;
         if (m_val.value >= m_value) return false;
         m_value = m_val.value;
@@ -2255,7 +2257,7 @@ bool ContentionPoint::eval_spec(Decr decr, IndexedExample* eg, time_range_t time
     return true;
 }
 
-bool ContentionPoint::eval_spec(Comp comp, IndexedExample* eg, time_range_t time_range) const {
+bool ContentionPoint::eval_spec(Comp comp, IndexedExample* eg, time_range_t time_range) {
     for (unsigned int t = time_range.first; t <= time_range.second; t++) {
         metric_val lhs_m_val, rhs_m_val;
 
@@ -2274,10 +2276,7 @@ bool ContentionPoint::eval_spec(Comp comp, IndexedExample* eg, time_range_t time
     return true;
 }
 
-void ContentionPoint::eval_rhs(rhs_t rhs,
-                               IndexedExample* eg,
-                               unsigned int time,
-                               metric_val& res) const {
+void ContentionPoint::eval_rhs(rhs_t rhs, IndexedExample* eg, unsigned int time, metric_val& res) {
     if (holds_alternative<m_expr_t>(rhs)) {
         eval_m_expr(get<m_expr_t>(rhs), eg, time, res);
     } else if (holds_alternative<Time>(rhs)) {
@@ -2290,17 +2289,14 @@ void ContentionPoint::eval_rhs(rhs_t rhs,
     }
 }
 
-void ContentionPoint::eval_lhs(lhs_t lhs,
-                               IndexedExample* eg,
-                               unsigned int time,
-                               metric_val& res) const {
+void ContentionPoint::eval_lhs(lhs_t lhs, IndexedExample* eg, unsigned int time, metric_val& res) {
     eval_m_expr(lhs, eg, time, res);
 }
 
 void ContentionPoint::eval_m_expr(m_expr_t m_expr,
                                   IndexedExample* eg,
                                   unsigned int time,
-                                  metric_val& res) const {
+                                  metric_val& res) {
     visit([&eg, time, &res, this](auto const& sf) { this->eval_m_expr(sf, eg, time, res); },
           m_expr);
 }
@@ -2308,14 +2304,15 @@ void ContentionPoint::eval_m_expr(m_expr_t m_expr,
 void ContentionPoint::eval_m_expr(QSum qsum,
                                   IndexedExample* eg,
                                   unsigned int time,
-                                  metric_val& res) const {
+                                  metric_val& res) {
     res.value = 0;
     qset_t qset = qsum.get_qset();
-    metric_t metric = qsum.get_metric();
     for (qset_t::iterator it = qset.begin(); it != qset.end(); it++) {
         unsigned int q = *it;
         metric_val m_val;
-        in_queues[q]->get_metric(metric)->eval(eg, time, q, m_val);
+        cid_t qid = in_queues[q]->get_id();
+        Metric* metric = metrics[qsum.get_metric()][qid];
+        metric->eval(unindex_example(eg), time, qid, m_val);
         if (!m_val.valid) {
             res.valid = false;
             return;
@@ -2328,21 +2325,18 @@ void ContentionPoint::eval_m_expr(QSum qsum,
 void ContentionPoint::eval_m_expr(Indiv indiv,
                                   IndexedExample* eg,
                                   unsigned int time,
-                                  metric_val& res) const {
-    unsigned int queue = indiv.get_queue();
-    Metric* metric = in_queues[queue]->get_metric(indiv.get_metric());
+                                  metric_val& res) {
+    cid_t qid = in_queues[indiv.get_queue()]->get_id();
+    Metric* metric = metrics[indiv.get_metric()][qid];
     // TODO: This a temporary fix, after parametrizing search based on metrics we need to throw
     // exception and stop the search if metric not exists
     if (metric != nullptr)
-        metric->eval(eg, time, queue, res);
+        metric->eval(unindex_example(eg), time, qid, res);
     else
         res.valid = false;
 }
 
-void ContentionPoint::eval_Time(Time time,
-                                IndexedExample* eg,
-                                unsigned int t,
-                                metric_val& res) const {
+void ContentionPoint::eval_Time(Time time, IndexedExample* eg, unsigned int t, metric_val& res) {
     (void) eg;
     unsigned int coeff = time.get_coeff();
     res.value = coeff * (t + 1);

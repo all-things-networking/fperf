@@ -13,7 +13,7 @@ Metric(metric_t::CENQ, queue, total_time, net_ctx) {
     init(net_ctx);
 }
 
-void CEnq::eval(const IndexedExample* eg, unsigned int time, unsigned int qind, metric_val& res) {
+void CEnq::eval(Example* eg, unsigned int time, cid_t qind, metric_val& res) {
     res.valid = true;
     res.value = 0;
     for (unsigned int t = 0; t <= time; t++) {

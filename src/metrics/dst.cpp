@@ -13,7 +13,7 @@ Metric(metric_t::CENQ, queue, total_time, net_ctx) {
     init(net_ctx);
 }
 
-void Dst::eval(const IndexedExample* eg, unsigned int time, unsigned int qind, metric_val& res) {
+void Dst::eval(Example* eg, unsigned int time, cid_t qind, metric_val& res) {
 
     vector<int> enqs_meta1 = eg->enqs_meta1[qind][time];
     if (enqs_meta1.size() == 0) {

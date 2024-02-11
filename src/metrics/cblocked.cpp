@@ -13,10 +13,7 @@ Metric(metric_t::CBLOCKED, queue, total_time, net_ctx) {
     init(net_ctx);
 }
 
-void CBlocked::eval(const IndexedExample* eg,
-                    unsigned int time,
-                    unsigned int qind,
-                    metric_val& res) {
+void CBlocked::eval(Example* eg, unsigned int time, cid_t qind, metric_val& res) {
     res.valid = true;
     unsigned int enq_sum = 0;
     unsigned int deq_sum = 0;

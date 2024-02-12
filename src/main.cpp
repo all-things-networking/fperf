@@ -13,6 +13,9 @@
 #include "tests.hpp"
 #include "util.hpp"
 
+#include "global_vars.h"
+std::vector<std::string> globalArgs;
+
 #ifdef DEBUG
 bool debug = true;
 #else
@@ -32,8 +35,9 @@ const string help_message = "Usage: ./fperf TEST_NAME";
 
 int main(int argc, const char* argv[]) {
     vector<string> arguments(argv + 1, argv + argc);
+    globalArgs.assign(argv + 1, argv + argc);
 
-    if (arguments.size() != 1) throw invalid_argument("Invalid number of arguments");
+    if (arguments.size() != 2) throw invalid_argument("Invalid number of arguments");
 
     if (arguments[0] == "--help") {
         cout << help_message << endl;

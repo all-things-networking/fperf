@@ -50,8 +50,9 @@ public:
 
     unsigned int cost(Workload wl);
 
-private:
     ContentionPoint* cp;
+
+private:
     InputOnlySolver* input_only_solver;
     Query query;
     unsigned int max_spec;

@@ -353,6 +353,18 @@ solver_res_t ContentionPoint::check_workload_without_query(Workload wl) {
     // solver_res_t res = solve();
 
     check_result z3_res = z3_solver->check();
+
+//    if (z3_res == sat) {
+//        model m = z3_solver->get_model();
+//        cout << get_model_str(m) << endl;
+//    } else if (z3_res == unsat) {
+//        expr_vector core = z3_solver->unsat_core();
+//        cout << "size: " << core.size() << "\n";
+//        for (unsigned i = 0; i < core.size(); i++) {
+//            cout << core[i] << "\n";
+//        }
+//    }
+
     solver_res_t res = solver_res_t::UNKNOWN;
     if (z3_res == sat) res = solver_res_t::SAT;
     if (z3_res == unsat) res = solver_res_t::UNSAT;

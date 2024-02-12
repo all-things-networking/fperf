@@ -63,6 +63,24 @@ void Buggy2LRRScheduler::add_metrics() {
         metrics[metric_t::AIPG][queue->get_id()] = g;
         queue->add_metric(metric_t::AIPG, g);
     }
+
+    // DST
+    for (unsigned int q = 0; q < in_queues.size(); q++) {
+        Queue* queue = in_queues[q];
+        Dst* d = new Dst(queue, total_time, net_ctx);
+        dst.push_back(d);
+        metrics[metric_t::DST][queue->get_id()] = d;
+        queue->add_metric(metric_t::DST, d);
+    }
+
+    // ECMP
+    for (unsigned int q = 0; q < in_queues.size(); q++) {
+        Queue* queue = in_queues[q];
+        Ecmp* e = new Ecmp(queue, total_time, net_ctx);
+        ecmp.push_back(e);
+        metrics[metric_t::ECMP][queue->get_id()] = e;
+        queue->add_metric(metric_t::ECMP, e);
+    }
 }
 
 string Buggy2LRRScheduler::cp_model_str(model& m, NetContext& net_ctx, unsigned int t) {

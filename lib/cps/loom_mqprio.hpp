@@ -11,6 +11,8 @@
 
 #include "aipg.hpp"
 #include "cenq.hpp"
+#include "dst.hpp"
+#include "ecmp.hpp"
 #include "contention_point.hpp"
 
 using namespace std;
@@ -28,6 +30,8 @@ private:
 
     vector<CEnq*> cenq;
     vector<AIPG*> aipg;
+    vector<Dst*> dst;
+    vector<Ecmp*> ecmp;
 
     void add_nodes();
     void add_edges();

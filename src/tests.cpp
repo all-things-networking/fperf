@@ -446,6 +446,10 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
 
     // Print global arguments std::vector<std::string> globalArgs;
     string searchMode = globalArgs[1];
+    if(searchMode != "random" && searchMode != "default" && searchMode != "front_back" && searchMode != "back_front"){
+        cout << "Invalid search mode: " << searchMode << endl;
+        return;
+    }
 
     cout << "Base example: " << endl << *base_eg << endl;
 
@@ -567,9 +571,10 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
             wl.rm_spec(specToRemove);
             if (search.check(wl)) {
                 lastValidWl = wl;          // Update the last valid state.
-                meta_data_specs.erase(it); // Remove the spec from the set of meta-data specs.
+                meta_data_specs.erase(it); // Remove the spec from the set of potential meta-data specs.
             } else {
                 wl.add_spec(specToRemove); // Put the last removed spec back.
+                meta_data_specs.erase(it); // Remove the spec from the set of potential meta-data specs.
             }
         }
 

@@ -1,0 +1,55 @@
+#QM: 1 2
+#bool_vars: 360
+#int_vars:  510
+#constrs: 2819
+base workload: 
+[3, 6]: cenq(0, t) >= 3
+[4, 6]: cenq(0, t) >= 6
+
+base example:
+total time: 6
+TBF.0
+enqs:
+0 1 4 1 1 1 1 
+deqs:
+0 0 1 4 1 1 1 
+pkts metadata: 
+0 [20, 21]  | [20, 21] [20, 21] [22, 24] [20, 21]  | [20, 21]  | [20, 21]  | [20, 21]  | [20, 21]  | 
+
+zero_queues: {}
+target_queues: {0, }
+seed is: 14748
+Original Workload: 
+[1, 1]: cenq(0, t) = 1
+[2, 2]: cenq(0, t) = 5
+[3, 3]: cenq(0, t) = 6
+[4, 4]: cenq(0, t) = 7
+[5, 5]: cenq(0, t) = 8
+[6, 6]: cenq(0, t) = 9
+
+Cannot open file: 
+Cannot open file: 
+Last valid workload: 
+[1, 1]: cenq(0, t) = 1
+[2, 2]: cenq(0, t) = 5
+
+Workload after removing specs: 
+[1, 1]: cenq(0, t) = 1
+[2, 2]: cenq(0, t) = 5
+
+Workload after combining: 
+[1, 1]: cenq(0, t) = 1
+[2, 2]: cenq(0, t) = 5
+
+Workload after aggregating indivs to sums: 
+[1, 1]: cenq(0, t) = 1
+[2, 2]: cenq(0, t) = 5
+
+Workload after tightening constant bounds: 
+[1, 1]: cenq(0, t) = 1
+[2, 2]: cenq(0, t) = 5
+
+Final Workload after broadening operations (Back-to-Front Iterative Approach): 
+[1, 1]: cenq(0, t) <= 1
+[2, 6]: cenq(0, t) >= 5
+

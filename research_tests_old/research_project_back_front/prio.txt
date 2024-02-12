@@ -1,0 +1,85 @@
+Prio
+#QM: 1 5
+#bool_vars: 840
+#int_vars:  1050
+#constrs: 3136
+cp setup: 0.075 s
+base example:
+total time: 7
+Prio.2
+enqs:
+0 1 1 1 1 1 1 1 
+1 0 0 0 0 0 0 0 
+2 1 1 1 1 1 1 1 
+3 0 0 0 0 0 0 0 
+deqs:
+0 0 1 1 1 1 1 1 
+1 0 0 0 0 0 0 0 
+2 0 0 0 0 0 0 0 
+3 0 0 0 0 0 0 0 
+pkts metadata: 
+0 [3, 4]  | [3, 4]  | [3, 4]  | [3, 4]  | [3, 4]  | [3, 4]  | [3, 4]  | 
+1  |  |  |  |  |  |  | 
+2 [49, 50]  | [49, 50]  | [49, 50]  | [49, 50]  | [49, 50]  | [49, 50]  | [49, 50]  | 
+3  |  |  |  |  |  |  | 
+
+zero_queues: {1, 3, }
+target_queues: {0, 2, }
+base example generation: 1.167 s
+seed is: 2000
+Original Workload: 
+[1, 1]: cenq(0, t) = 1
+[1, 1]: cenq(2, t) = 1
+[1, 7]: cenq(1, t) = 0
+[1, 7]: cenq(3, t) = 0
+[2, 2]: cenq(0, t) = 2
+[2, 2]: cenq(2, t) = 2
+[3, 3]: cenq(0, t) = 3
+[3, 3]: cenq(2, t) = 3
+[4, 4]: cenq(0, t) = 4
+[4, 4]: cenq(2, t) = 4
+[5, 5]: cenq(0, t) = 5
+[5, 5]: cenq(2, t) = 5
+[6, 6]: cenq(0, t) = 6
+[6, 6]: cenq(2, t) = 6
+[7, 7]: cenq(0, t) = 7
+[7, 7]: cenq(2, t) = 7
+
+Cannot open file: 
+Cannot open file: 
+Last valid workload: 
+[1, 1]: cenq(0, t) = 1
+[1, 1]: cenq(2, t) = 1
+[1, 7]: cenq(1, t) = 0
+[1, 7]: cenq(3, t) = 0
+[2, 2]: cenq(0, t) = 2
+[3, 3]: cenq(0, t) = 3
+[4, 4]: cenq(0, t) = 4
+[5, 5]: cenq(0, t) = 5
+[6, 6]: cenq(0, t) = 6
+
+Workload after removing specs: 
+[1, 1]: cenq(0, t) = 1
+[1, 1]: cenq(2, t) = 1
+[2, 2]: cenq(0, t) = 2
+[3, 3]: cenq(0, t) = 3
+[4, 4]: cenq(0, t) = 4
+[5, 5]: cenq(0, t) = 5
+[6, 6]: cenq(0, t) = 6
+
+Workload after combining: 
+[1, 1]: cenq(2, t) = 1
+[1, 6]: cenq(0, t) = t
+
+Workload after aggregating indivs to sums: 
+[1, 1]: cenq(2, t) = 1
+[1, 6]: SUM_[q in {0, 1, }] cenq(q ,t) = t
+
+Workload after tightening constant bounds: 
+[1, 1]: cenq(2, t) = 1
+[1, 6]: SUM_[q in {0, 1, }] cenq(q ,t) = t
+
+Final Workload after broadening operations (Back-to-Front Iterative Approach): 
+[1, 6]: SUM_[q in {0, 1, }] cenq(q ,t) >= t
+[1, 7]: cenq(2, t) >= 1
+

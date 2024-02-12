@@ -2,7 +2,7 @@
 
 # Define the arrays of arguments
 tests=("prio" "rr" "fq_codel" "loom" "leaf_spine_bw" "tbf")
-modes=("default" "random" "front_back" "back_front")
+modes=("random" "front_back" "back_front")
 
 # Base directory for research tests
 baseDir="research_tests"

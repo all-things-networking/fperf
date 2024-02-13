@@ -14,7 +14,7 @@ bool test_search() {
   SimpleCP *ss = new SimpleCP(total_time);
 
   Workload wl(100, 1, total_time);
-  wl.add_spec(TimedSpec(new Comp(Indiv(metric_t::CENQ, 0), op_t::LE, static_cast<uint>(1)), time_range_t(last_t, last_t), total_time));
+  wl.add_spec(TimedSpec(new Comp(Indiv(metric_t::CENQ, 0), op_t::LE, (uint)1), time_range_t(last_t, last_t), total_time));
   ss->set_base_workload(wl);
 
   // Query

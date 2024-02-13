@@ -4,6 +4,7 @@
 #include "deq.hpp"
 #include "dst.hpp"
 #include "ecmp.hpp"
+#include "aipg.hpp"
 #include "qsize.hpp"
 #include "tbf_qm.hpp"
 
@@ -19,6 +20,7 @@ private:
     std::vector<Deq*> deq;
     std::vector<Dst*> dst;
     std::vector<Ecmp*> ecmp;
+    std::vector<AIPG*> aipg;
 
     void add_nodes();
     void add_edges();

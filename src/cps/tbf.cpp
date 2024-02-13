@@ -57,6 +57,15 @@ void TBF::add_metrics() {
     metrics[metric_t::DEQ][get_in_queue()->get_id()] = d;
     get_in_queue()->add_metric(metric_t::DEQ, d);
 
+    // AIPG
+    for (unsigned int q = 0; q < in_queues.size(); q++) {
+        Queue* queue = in_queues[q];
+        AIPG* g = new AIPG(queue, total_time, net_ctx);
+        aipg.push_back(g);
+        metrics[metric_t::AIPG][queue->get_id()] = g;
+        queue->add_metric(metric_t::AIPG, g);
+    }
+
     // DST
     for (unsigned int q = 0; q < in_queues.size(); q++) {
         Queue* queue = in_queues[q];

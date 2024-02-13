@@ -775,7 +775,7 @@ total_time(total_time) {
 }
 
 TimedSpec::TimedSpec(WlSpec* wl_spec, unsigned int until_time, unsigned int total_time):
-wl_spec((wl_spec),
+wl_spec(wl_spec),
 time_range(time_range_t(0, until_time - 1)),
 total_time(total_time) {
     if (until_time == 0) time_range = time_range_t(1, 0);

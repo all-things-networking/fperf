@@ -94,7 +94,7 @@ WlSpec* SpecFactory::random_wl_spec() {
 void SpecFactory::pick_neighbors(WlSpec* spec, std::vector<WlSpec*>& neighbors) {
     Comp* compSpec = dynamic_cast<Comp*>(spec);
     if (compSpec) {
-        std::vector<Comp> comp_neighbors;
+        vector<Comp> comp_neighbors;
         pick_neighbors(*compSpec, comp_neighbors);
         for (const Comp& neighbor : comp_neighbors) {
             neighbors.push_back(new Comp(neighbor));

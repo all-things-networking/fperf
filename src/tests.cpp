@@ -118,16 +118,14 @@ void rr(string good_examples_file, string bad_examples_file) {
 
     for (unsigned int i = 1; i <= recur; i++) {
         for (unsigned int q = 0; q < in_queue_cnt; q++) {
-            Comp* spec = new Comp(Indiv(metric_t::CENQ, q), op_t::GE, i * rate);
-            wl.add_spec(TimedSpec(spec,
+            wl.add_spec(TimedSpec(new Comp(Indiv(metric_t::CENQ, q), op_t::GE, i * rate),
                                   time_range_t(i * period - 1, i * period - 1),
                                   total_time));
         }
     }
 
-    Comp* spec1 = new Comp(Indiv(metric_t::CENQ, queue1), op_t::GT, Indiv(metric_t::CENQ, queue2));
     wl.add_spec(
-        TimedSpec(spec1,
+        TimedSpec(new Comp(Indiv(metric_t::CENQ, queue1), op_t::GT, Indiv(metric_t::CENQ, queue2)),
                   time_range_t(total_time - 1, total_time - 1),
                   total_time));
 
@@ -209,9 +207,8 @@ void fq_codel(string good_examples_file, string bad_examples_file) {
     // Base Workload
     Workload wl(in_queue_cnt * 5, in_queue_cnt, total_time);
     for (unsigned int q = 0; q < last_queue; q++) {
-        Comp* comp_spec = new Comp(Indiv(metric_t::CENQ, q), op_t::GE, Time(1));
         wl.add_spec(
-            TimedSpec(comp_spec, total_time, total_time));
+            TimedSpec(new Comp(Indiv(metric_t::CENQ, q), op_t::GE, Time(1)), total_time, total_time));
     }
 
     cp->set_base_workload(wl);
@@ -484,9 +481,8 @@ void tbf(std::string good_examples_file, std::string bad_examples_file) {
     Workload wl(100, 1, total_time);
 
     for (uint i = 0; i < interval; i++) {
-        Comp* comp_spec = new Comp(Indiv(metric_t::CENQ, 0), op_t::GE, (unsigned int)(i + 1) * link_rate);
         wl.add_spec(
-            TimedSpec(comp_spec,
+            TimedSpec(new Comp(Indiv(metric_t::CENQ, 0), op_t::GE, (unsigned int)(i + 1) * link_rate),
                       time_range_t(start + i, start + i),
                       total_time));
     }

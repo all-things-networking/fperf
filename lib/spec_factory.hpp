@@ -42,7 +42,7 @@ public:
 
     //**** WlSpec ****//
     WlSpec* random_wl_spec();
-    void pick_neighbors(WlSpec*& spec, std::vector<WlSpec*>& neighbors);
+    void pick_neighbors(WlSpec* spec, std::vector<WlSpec*>& neighbors);
 
     //**** COMP ****//
     Comp random_comp();

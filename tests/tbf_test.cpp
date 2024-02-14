@@ -68,8 +68,7 @@ bool test_max_burst() {
 
   Workload wl(100, 1, total_time);
 
-  Comp* comp_spec = new Comp(Indiv(metric_t::CENQ, 0), op_t::GT, (unsigned int)total_time * max_tokens);
-  wl.add_spec(TimedSpec(comp_spec, time_range_t(last_t, last_t), total_time));
+  wl.add_spec(TimedSpec(new Comp(Indiv(metric_t::CENQ, 0), op_t::GT, (unsigned int)total_time * max_tokens), time_range_t(last_t, last_t), total_time));
 
   tbf->set_base_workload(wl);
 

@@ -625,11 +625,10 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
             cout << "Workload after combining: " << endl << lastValidWl << endl;
             lastValidWl = search.aggregate_indivs_to_sums(lastValidWl);
             cout << "Workload after aggregating indivs to sums: " << endl << lastValidWl << endl;
-            lastValidWl = search.tighten_constant_bounds(lastValidWl);
-            cout << "Workload after tightening constant bounds: " << endl << lastValidWl << endl;
             lastValidWl = broaden_operations(lastValidWl, search);
-            cout << "Final Workload after broadening operations (Random approach): " << endl
-                 << lastValidWl << endl;
+            cout << "Workload after broadening operations: " << endl << lastValidWl << endl;
+            lastValidWl = search.tighten_constant_bounds(lastValidWl);
+            cout << "Final Workload after tightening constant bounds (Random approach): " << endl << lastValidWl << endl;
         }
     }
     

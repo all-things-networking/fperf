@@ -5,7 +5,7 @@ startTime=$(date +%s)
 
 # Define the arrays of arguments
 tests=("prio" "rr" "fq_codel" "loom" "leaf_spine_bw" "tbf")
-modes=("random" "front_back" "back_front")
+modes=("random")
 
 # Base directory for research tests
 baseDir="research_tests"

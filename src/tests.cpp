@@ -420,6 +420,59 @@ Workload broaden_operations(Workload wl, Search& search) {
     return wl;
 }
 
+Workload restrict_time_ranges(Workload wl, Search& search) {
+    // For each spec, try to restrict the time range and see if it's still valid
+    // If so, replace the spec with the new spec
+    // If not, keep the old spec
+    set<TimedSpec> specs = wl.get_all_specs();
+    for (const TimedSpec& spec : specs) {
+        wl_spec_t wl_spec = spec.get_wl_spec();
+        time_range_t time_range = spec.get_time_range();
+
+        // Try to restrict right side of time range
+        while(time_range.second > time_range.first){
+            time_range.second--;
+            TimedSpec spec_to_try = TimedSpec(wl_spec, time_range, wl.get_total_time());
+            // Create temp workload
+            Workload temp_wl = wl;
+            temp_wl.rm_spec(spec);
+            temp_wl.add_spec(spec_to_try);
+            if (search.check(temp_wl)) {
+                // It's valid, replace the spec
+                wl.rm_spec(spec);
+                wl.add_spec(spec_to_try);
+                continue;
+            } else {
+                // It's not valid, keep the old spec
+                time_range.second++;
+                break;
+            }
+        }
+
+        // Try to restrict left side of time range
+        while(time_range.first < time_range.second){
+            time_range.first++;
+            TimedSpec spec_to_try = TimedSpec(wl_spec, time_range, wl.get_total_time());
+            // Create temp workload
+            Workload temp_wl = wl;
+            temp_wl.rm_spec(spec);
+            temp_wl.add_spec(spec_to_try);
+            if (search.check(temp_wl)) {
+                // It's valid, replace the spec
+                wl.rm_spec(spec);
+                wl.add_spec(spec_to_try);
+                continue;
+            } else {
+                // It's not valid, keep the old spec
+                time_range.first--;
+                break;
+            }
+        }
+    }
+
+    return wl;
+}
+
 //
 // TODO:
 // 0. Base example
@@ -472,7 +525,7 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
         }
     }
 
-//    // Add aipg specs
+    // Add aipg specs
     Queue* q0 = cp->get_out_queue(0);
 //    AIPG aipg = AIPG(q0, total_time, cp->net_ctx);
 //
@@ -628,7 +681,9 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
             lastValidWl = broaden_operations(lastValidWl, search);
             cout << "Workload after broadening operations: " << endl << lastValidWl << endl;
             lastValidWl = search.tighten_constant_bounds(lastValidWl);
-            cout << "Final Workload after tightening constant bounds (Random approach): " << endl << lastValidWl << endl;
+            cout << "Workload after tightening constant bounds: " << endl << lastValidWl << endl;
+            lastValidWl = restrict_time_ranges(lastValidWl, search);
+            cout << "Final Workload after restricting time ranges (Random Approach): " << endl << lastValidWl << endl;
         }
     }
     
@@ -638,84 +693,84 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
     // For t from 1 to total_time:
     // Remove the spec that specifies cenq(q, t) = sum from 0 to t of enqs[q][t] until the workload becomes invalid (then put the last removed spec back and move on to the next queue)
 
-    if(searchMode == "front_back") {
-        Workload wl2 = wl;
-        for (unsigned int q = 0; q < enqs.size(); q++) {
-            for (unsigned int t = 0; t < enqs[q].size(); t++) {
-                TimedSpec specToRemove(Comp(Indiv(metric_t::CENQ, q), op_t::EQ, sums[q][t]),
-                                       time_range_t(t, t),
-                                       total_time);
-                wl2.rm_spec(specToRemove);
-                //            cout << "Removing spec: " << specToRemove << endl;
-                if (!search.check(wl2)) {
-                    //                cout << "Workload is invalid" << endl;
-                    wl2.add_spec(specToRemove);
-                    break;
-                }
-            }
-        }
-
-        cout << "Last valid workload: " << endl << wl2 << endl;
-        wl2 = search.setup_refinement(wl2);
-        wl2 = search.remove_specs(wl2);
-        cout << "Workload after removing specs: " << endl << wl2 << endl;
-        wl2 = combine(wl2, search);
-        cout << "Workload after combining: " << endl << wl2 << endl;
-        wl2 = search.aggregate_indivs_to_sums(wl2);
-        cout << "Workload after aggregating indivs to sums: " << endl << wl2 << endl;
-        wl2 = search.tighten_constant_bounds(wl2);
-        cout << "Workload after tightening constant bounds: " << endl << wl2 << endl;
-        wl2 = broaden_operations(wl2, search);
-        cout << "Final Workload after broadening operations (Front-to-Back Iterative Approach): "
-             << endl
-             << wl2 << endl;
-    }
+//    if(searchMode == "front_back") {
+//        Workload wl2 = wl;
+//        for (unsigned int q = 0; q < enqs.size(); q++) {
+//            for (unsigned int t = 0; t < enqs[q].size(); t++) {
+//                TimedSpec specToRemove(Comp(Indiv(metric_t::CENQ, q), op_t::EQ, sums[q][t]),
+//                                       time_range_t(t, t),
+//                                       total_time);
+//                wl2.rm_spec(specToRemove);
+//                //            cout << "Removing spec: " << specToRemove << endl;
+//                if (!search.check(wl2)) {
+//                    //                cout << "Workload is invalid" << endl;
+//                    wl2.add_spec(specToRemove);
+//                    break;
+//                }
+//            }
+//        }
+//
+//        cout << "Last valid workload: " << endl << wl2 << endl;
+//        wl2 = search.setup_refinement(wl2);
+//        wl2 = search.remove_specs(wl2);
+//        cout << "Workload after removing specs: " << endl << wl2 << endl;
+//        wl2 = combine(wl2, search);
+//        cout << "Workload after combining: " << endl << wl2 << endl;
+//        wl2 = search.aggregate_indivs_to_sums(wl2);
+//        cout << "Workload after aggregating indivs to sums: " << endl << wl2 << endl;
+//        wl2 = search.tighten_constant_bounds(wl2);
+//        cout << "Workload after tightening constant bounds: " << endl << wl2 << endl;
+//        wl2 = broaden_operations(wl2, search);
+//        cout << "Final Workload after broadening operations (Front-to-Back Iterative Approach): "
+//             << endl
+//             << wl2 << endl;
+//    }
 
     // Back-to-Front approach: same as above, except we iterate on t from total_time to 1
     // WARNING: time starts at 1, can never equal 0
-    if(searchMode == "back_front") {
-        Workload wl3 = wl;
-
-        for (unsigned int q = 0; q < enqs.size(); q++) {
-    //        cout << "Number of timesteps for queue " << q << ": " << enqs[q].size() << endl;
-            if (!enqs[q].empty()) {
-                for (int t = static_cast<int>(enqs[q].size()) - 1; t >= 0; t--) {
-                    TimedSpec specToRemove(Comp(Indiv(metric_t::CENQ, q), op_t::EQ, sums[q][t]),
-                    time_range_t(static_cast<unsigned int>(t), static_cast<unsigned int>(t)),
-                            total_time);
-                    // Check if spec is in the workload
-                    if (wl3.get_all_specs().find(specToRemove) == wl3.get_all_specs().end()) {
-    //                    cout << "Spec " << specToRemove << " not in workload" << endl;
-                        continue;
-                    }
-    //                cout << "Removing spec: " << specToRemove << endl;
-                    wl3.rm_spec(specToRemove);
-                    if (!search.check(wl3)) {
-    //                    cout << "Workload is invalid" << endl;
-                        wl3.add_spec(specToRemove);
-                        break;
-                    } else {
-    //                    cout << "Workload is valid" << endl;
-                    }
-                }
-            }
-        }
-
-
-        cout << "Last valid workload: " << endl << wl3 << endl;
-        wl3 = search.setup_refinement(wl3);
-        wl3 = search.remove_specs(wl3);
-        cout << "Workload after removing specs: " << endl << wl3 << endl;
-        wl3 = combine(wl3, search);
-        cout << "Workload after combining: " << endl << wl3 << endl;
-        wl3 = search.aggregate_indivs_to_sums(wl3);
-        cout << "Workload after aggregating indivs to sums: " << endl << wl3 << endl;
-        wl3 = search.tighten_constant_bounds(wl3);
-        cout << "Workload after tightening constant bounds: " << endl << wl3 << endl;
-        wl3 = broaden_operations(wl3, search);
-        cout << "Final Workload after broadening operations (Back-to-Front Iterative Approach): " << endl << wl3 << endl;
-
-    }
+//    if(searchMode == "back_front") {
+//        Workload wl3 = wl;
+//
+//        for (unsigned int q = 0; q < enqs.size(); q++) {
+//    //        cout << "Number of timesteps for queue " << q << ": " << enqs[q].size() << endl;
+//            if (!enqs[q].empty()) {
+//                for (int t = static_cast<int>(enqs[q].size()) - 1; t >= 0; t--) {
+//                    TimedSpec specToRemove(Comp(Indiv(metric_t::CENQ, q), op_t::EQ, sums[q][t]),
+//                    time_range_t(static_cast<unsigned int>(t), static_cast<unsigned int>(t)),
+//                            total_time);
+//                    // Check if spec is in the workload
+//                    if (wl3.get_all_specs().find(specToRemove) == wl3.get_all_specs().end()) {
+//    //                    cout << "Spec " << specToRemove << " not in workload" << endl;
+//                        continue;
+//                    }
+//    //                cout << "Removing spec: " << specToRemove << endl;
+//                    wl3.rm_spec(specToRemove);
+//                    if (!search.check(wl3)) {
+//    //                    cout << "Workload is invalid" << endl;
+//                        wl3.add_spec(specToRemove);
+//                        break;
+//                    } else {
+//    //                    cout << "Workload is valid" << endl;
+//                    }
+//                }
+//            }
+//        }
+//
+//
+//        cout << "Last valid workload: " << endl << wl3 << endl;
+//        wl3 = search.setup_refinement(wl3);
+//        wl3 = search.remove_specs(wl3);
+//        cout << "Workload after removing specs: " << endl << wl3 << endl;
+//        wl3 = combine(wl3, search);
+//        cout << "Workload after combining: " << endl << wl3 << endl;
+//        wl3 = search.aggregate_indivs_to_sums(wl3);
+//        cout << "Workload after aggregating indivs to sums: " << endl << wl3 << endl;
+//        wl3 = search.tighten_constant_bounds(wl3);
+//        cout << "Workload after tightening constant bounds: " << endl << wl3 << endl;
+//        wl3 = broaden_operations(wl3, search);
+//        cout << "Final Workload after broadening operations (Back-to-Front Iterative Approach): " << endl << wl3 << endl;
+//
+//    }
 
     if(searchMode=="default"){
         run(cp,

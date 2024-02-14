@@ -277,140 +277,163 @@ Workload broaden_operations(Workload wl, Search& search) {
             if (holds_alternative<Indiv>(comp.lhs)) {
                 Indiv indiv = get<Indiv>(comp.lhs);
                 unsigned int q = indiv.queue;
-                if (indiv.get_metric() == metric_t::CENQ) {
-                    // Try to broaden the op
-                    op_t op = comp.get_op();
-                    if (op == op_t::EQ) {
-                        // Try <=
-                        TimedSpec spec_to_try = TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::LE, comp.rhs),
-                                                          spec.get_time_range(), wl.get_total_time());
-                        // Create temp workload
-                        Workload temp_wl = wl;
-                        temp_wl.rm_spec(spec);
-                        temp_wl.add_spec(spec_to_try);
-                        if (search.check(temp_wl)) {
-                            // It's valid, replace the spec
-                            wl.rm_spec(spec);
-                            wl.add_spec(spec_to_try);
-                            continue;
-                        } else {
-                            // It's not valid, keep the old spec
-                            // TODO: Debug fq_codel using counter-example?
-                        }
 
-                        // Try >=
-                        spec_to_try = TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::GE, comp.rhs),
-                                                spec.get_time_range(), wl.get_total_time());
-                        // Create temp workload
-                        temp_wl = wl;
-                        temp_wl.rm_spec(spec);
-                        temp_wl.add_spec(spec_to_try);
-                        if (search.check(temp_wl)) {
-                            // It's valid, replace the spec
-                            wl.rm_spec(spec);
-                            wl.add_spec(spec_to_try);
-                            continue;
-                        } else {
-                            // It's not valid, keep the old spec
-                        }
-                    } else if (op == op_t::LT) {
-                        // Try <=
-                        TimedSpec spec_to_try = TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::LE, comp.rhs),
-                                                          spec.get_time_range(), wl.get_total_time());
-                        // Create temp workload
-                        Workload temp_wl = wl;
-                        temp_wl.rm_spec(spec);
-                        temp_wl.add_spec(spec_to_try);
-                        if (search.check(temp_wl)) {
-                            // It's valid, replace the spec
-                            wl.rm_spec(spec);
-                            wl.add_spec(spec_to_try);
-                            continue;
-                        } else {
-                            // It's not valid, keep the old spec
-                        }
-                    } else if (op == op_t::GT) {
-                        // Try >=
-                        TimedSpec spec_to_try = TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::GE, comp.rhs),
-                                                          spec.get_time_range(), wl.get_total_time());
-                        // Create temp workload
-                        Workload temp_wl = wl;
-                        temp_wl.rm_spec(spec);
-                        temp_wl.add_spec(spec_to_try);
-                        if (search.check(temp_wl)) {
-                            // It's valid, replace the spec
-                            wl.rm_spec(spec);
-                            wl.add_spec(spec_to_try);
-                            continue;
-                        } else {
-                            // It's not valid, keep the old spec
-                        }
+                // Get metric
+                metric_t metric = indiv.get_metric();
+
+                // Try to broaden the op
+                op_t op = comp.get_op();
+                if (op == op_t::EQ) {
+                    // Try <=
+                    TimedSpec spec_to_try = TimedSpec(Comp(Indiv(metric, q), op_t::LE, comp.rhs),
+                                                      spec.get_time_range(), wl.get_total_time());
+                    // Create temp workload
+                    Workload temp_wl = wl;
+                    temp_wl.rm_spec(spec);
+                    temp_wl.add_spec(spec_to_try);
+                    if (search.check(temp_wl)) {
+                        // It's valid, replace the spec
+                        wl.rm_spec(spec);
+                        wl.add_spec(spec_to_try);
+                        continue;
+                    } else {
+                        // It's not valid, keep the old spec
+                        // TODO: Debug fq_codel using counter-example?
+                    }
+
+                    // Try >=
+                    spec_to_try = TimedSpec(Comp(Indiv(metric, q), op_t::GE, comp.rhs),
+                                            spec.get_time_range(), wl.get_total_time());
+                    // Create temp workload
+                    temp_wl = wl;
+                    temp_wl.rm_spec(spec);
+                    temp_wl.add_spec(spec_to_try);
+                    if (search.check(temp_wl)) {
+                        // It's valid, replace the spec
+                        wl.rm_spec(spec);
+                        wl.add_spec(spec_to_try);
+                        continue;
+                    } else {
+                        // It's not valid, keep the old spec
+                    }
+                } else if (op == op_t::LT) {
+                    // Try <=
+                    TimedSpec spec_to_try = TimedSpec(Comp(Indiv(metric, q), op_t::LE, comp.rhs),
+                                                      spec.get_time_range(), wl.get_total_time());
+                    // Create temp workload
+                    Workload temp_wl = wl;
+                    temp_wl.rm_spec(spec);
+                    temp_wl.add_spec(spec_to_try);
+                    if (search.check(temp_wl)) {
+                        // It's valid, replace the spec
+                        wl.rm_spec(spec);
+                        wl.add_spec(spec_to_try);
+                        continue;
+                    } else {
+                        // It's not valid, keep the old spec
+                    }
+                } else if (op == op_t::GT) {
+                    // Try >=
+                    TimedSpec spec_to_try = TimedSpec(Comp(Indiv(metric, q), op_t::GE, comp.rhs),
+                                                      spec.get_time_range(), wl.get_total_time());
+                    // Create temp workload
+                    Workload temp_wl = wl;
+                    temp_wl.rm_spec(spec);
+                    temp_wl.add_spec(spec_to_try);
+                    if (search.check(temp_wl)) {
+                        // It's valid, replace the spec
+                        wl.rm_spec(spec);
+                        wl.add_spec(spec_to_try);
+                        continue;
+                    } else {
+                        // It's not valid, keep the old spec
                     }
                 }
             } else if (holds_alternative<QSum>(comp.lhs)) {
                 QSum qsum = get<QSum>(comp.lhs);
                 std::set<unsigned int> qset = qsum.qset;
-                if (qsum.get_metric() == metric_t::CENQ) {
-                    // Try to broaden the op
-                    op_t op = comp.get_op();
-                    if (op == op_t::EQ) {
-                        // Try <=
-                        TimedSpec spec_to_try = TimedSpec(Comp(QSum(qset, metric_t::CENQ),
-                                                               op_t::LE,
-                                                               comp.rhs),
-                                                          spec.get_time_range(),
-                                                          wl.get_total_time());
-                        // Create temp workload
-                        Workload temp_wl = wl;
-                        temp_wl.rm_spec(spec);
-                        temp_wl.add_spec(spec_to_try);
-                        if (search.check(temp_wl)) {
-                            // It's valid, replace the spec
-                            wl.rm_spec(spec);
-                            wl.add_spec(spec_to_try);
-                            continue;
-                        } else {
-                            // It's not valid, keep the old spec
-                        }
 
-                        // Try >=
-                        spec_to_try = TimedSpec(Comp(QSum(qset, metric_t::CENQ),
-                                                     op_t::GE,
-                                                     comp.rhs),
-                                                spec.get_time_range(),
-                                                wl.get_total_time());
-                        // Create temp workload
-                        temp_wl = wl;
-                        temp_wl.rm_spec(spec);
-                        temp_wl.add_spec(spec_to_try);
-                        if (search.check(temp_wl)) {
-                            // It's valid, replace the spec
-                            wl.rm_spec(spec);
-                            wl.add_spec(spec_to_try);
-                            continue;
-                        } else {
-                            // It's not valid, keep the old spec
-                        }
-                    } else if (op == op_t::LT) {
-                        // Try <=
-                        TimedSpec spec_to_try = TimedSpec(Comp(QSum(qset, metric_t::CENQ),
-                                                               op_t::LE,
-                                                               comp.rhs),
-                                                          spec.get_time_range(),
-                                                          wl.get_total_time());
-                        // Create temp workload
-                        Workload temp_wl = wl;
-                        temp_wl.rm_spec(spec);
-                        temp_wl.add_spec(spec_to_try);
-                        if (search.check(temp_wl)) {
-                            // It's valid, replace the spec
-                            wl.rm_spec(spec);
-                            wl.add_spec(spec_to_try);
-                            continue;
-                        } else {
-                            // It's not
-                            // valid, keep the old spec
-                        }
+                // Get metric
+                metric_t metric = qsum.get_metric();
+
+                // Try to broaden the op
+                op_t op = comp.get_op();
+                if (op == op_t::EQ) {
+                    // Try <=
+                    TimedSpec spec_to_try = TimedSpec(Comp(QSum(qset, metric),
+                                                           op_t::LE,
+                                                           comp.rhs),
+                                                      spec.get_time_range(),
+                                                      wl.get_total_time());
+                    // Create temp workload
+                    Workload temp_wl = wl;
+                    temp_wl.rm_spec(spec);
+                    temp_wl.add_spec(spec_to_try);
+                    if (search.check(temp_wl)) {
+                        // It's valid, replace the spec
+                        wl.rm_spec(spec);
+                        wl.add_spec(spec_to_try);
+                        continue;
+                    } else {
+                        // It's not valid, keep the old spec
+                    }
+
+                    // Try >=
+                    spec_to_try = TimedSpec(Comp(QSum(qset, metric),
+                                                 op_t::GE,
+                                                 comp.rhs),
+                                            spec.get_time_range(),
+                                            wl.get_total_time());
+                    // Create temp workload
+                    temp_wl = wl;
+                    temp_wl.rm_spec(spec);
+                    temp_wl.add_spec(spec_to_try);
+                    if (search.check(temp_wl)) {
+                        // It's valid, replace the spec
+                        wl.rm_spec(spec);
+                        wl.add_spec(spec_to_try);
+                        continue;
+                    } else {
+                        // It's not valid, keep the old spec
+                    }
+                } else if (op == op_t::LT) {
+                    // Try <=
+                    TimedSpec spec_to_try = TimedSpec(Comp(QSum(qset, metric),
+                                                           op_t::LE,
+                                                           comp.rhs),
+                                                      spec.get_time_range(),
+                                                      wl.get_total_time());
+                    // Create temp workload
+                    Workload temp_wl = wl;
+                    temp_wl.rm_spec(spec);
+                    temp_wl.add_spec(spec_to_try);
+                    if (search.check(temp_wl)) {
+                        // It's valid, replace the spec
+                        wl.rm_spec(spec);
+                        wl.add_spec(spec_to_try);
+                        continue;
+                    } else {
+                        // It's not
+                        // valid, keep the old spec
+                    }
+                } else if (op == op_t::GT) {
+                    // Try >=
+                    TimedSpec spec_to_try = TimedSpec(Comp(QSum(qset, metric),
+                                                           op_t::GE,
+                                                           comp.rhs),
+                                                      spec.get_time_range(),
+                                                      wl.get_total_time());
+                    // Create temp workload
+                    Workload temp_wl = wl;
+                    temp_wl.rm_spec(spec);
+                    temp_wl.add_spec(spec_to_try);
+                    if (search.check(temp_wl)) {
+                        // It's valid, replace the spec
+                        wl.rm_spec(spec);
+                        wl.add_spec(spec_to_try);
+                        continue;
+                    } else {
+                        // It's not valid, keep the old spec
                     }
                 }
             }
@@ -553,12 +576,14 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
             metric_val metric_value;
             ecmp.eval(base_eg, t, q, metric_value);
             unsigned int value = metric_value.value;
-            if (enqs[q][t] > 0){
+            if (metric_value.valid) {
                 wl.add_spec(TimedSpec(Comp(Indiv(metric_t::ECMP, q), op_t::EQ, value),
                                       time_range_t(t, t),
                                       total_time));
-                dst.eval(base_eg, t, q, metric_value);
-                value = metric_value.value;
+            }
+            dst.eval(base_eg, t, q, metric_value);
+            value = metric_value.value;
+            if(metric_value.valid) {
                 wl.add_spec(TimedSpec(Comp(Indiv(metric_t::DST, q), op_t::EQ, value),
                                       time_range_t(t, t),
                                       total_time));

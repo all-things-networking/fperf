@@ -134,7 +134,6 @@ bool operator<(const rhs_t& rhs1, const rhs_t& rhs2);
 class WlSpec {
 public:
     virtual bool applies_to_queue(unsigned int queue) const = 0;
-    virtual int type_id() const = 0;
     virtual bool is_available_for_search() const { return false; }
 
     virtual bool spec_is_empty() const { return false; }
@@ -143,10 +142,14 @@ public:
 
     friend ostream& operator<<(ostream& os, const WlSpec* wl_spec);
     virtual bool operator==(const WlSpec& other) const = 0;
-    virtual bool operator<(const WlSpec& other) const = 0;
+    bool operator<(const WlSpec& other) const;
 
 protected:
     virtual string to_string() const = 0;
+
+private:
+    virtual int type_id() const = 0;
+    virtual bool less_than(const WlSpec& other) const;
 };
 
 //************************************* UNIQ *************************************//
@@ -160,18 +163,16 @@ public:
     qset_t get_qset() const;
     metric_t get_metric() const;
 
-    int type_id() const override;
-
     // Override operators
     bool operator==(const WlSpec& other) const override;
-    bool operator<(const WlSpec& other) const override;
-
 
 private:
     metric_t metric;
     qset_t qset;
 
     string to_string() const override;
+    int type_id() const override;
+    bool less_than(const WlSpec& other) const override;
 };
 
 //************************************* SAME *************************************//
@@ -185,16 +186,15 @@ public:
     unsigned int get_queue() const;
     metric_t get_metric() const;
 
-    int type_id() const override;
-
     bool operator==(const WlSpec& other) const override;
-    bool operator<(const WlSpec& other) const override;
 
 private:
     metric_t metric;
     unsigned int queue;
 
     string to_string() const override;
+    int type_id() const override;
+    bool less_than(const WlSpec& other) const override;
 };
 
 //************************************* INCR *************************************//
@@ -208,16 +208,15 @@ public:
     unsigned int get_queue() const;
     metric_t get_metric() const;
 
-    int type_id() const override;
-
     bool operator==(const WlSpec& other) const override;
-    bool operator<(const WlSpec& other) const override;
 
 private:
     metric_t metric;
     unsigned int queue;
 
     string to_string() const override;
+    int type_id() const override;
+    bool less_than(const WlSpec& other) const override;
 };
 
 //************************************* DECR *************************************//
@@ -231,16 +230,15 @@ public:
     unsigned int get_queue() const;
     metric_t get_metric() const;
 
-    int type_id() const override;
-
     bool operator==(const WlSpec& other) const override;
-    bool operator<(const WlSpec& other) const override;
 
 private:
     metric_t metric;
     unsigned int queue;
 
     string to_string() const override;
+    int type_id() const override;
+    bool less_than(const WlSpec& other) const override;
 };
 
 //************************************* COMP *************************************//
@@ -255,8 +253,6 @@ public:
     bool applies_to_queue(unsigned int queue) const override;
     pair<metric_t, qset_t> get_zero_queues() const;
 
-    int type_id() const override;
-
     bool is_available_for_search() const override;
 
     lhs_t get_lhs() const;
@@ -264,7 +260,6 @@ public:
     rhs_t get_rhs() const;
 
     bool operator==(const WlSpec& other) const override;
-    bool operator<(const WlSpec& other) const override;
 
 private:
     lhs_t lhs;
@@ -275,6 +270,8 @@ private:
     bool is_all = false;
 
     string to_string() const override;
+    int type_id() const override;
+    bool less_than(const WlSpec& other) const override;
 
     void normalize();
 };

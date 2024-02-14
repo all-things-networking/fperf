@@ -291,8 +291,7 @@ bool Unique::operator==(const WlSpec& other) const {
     return (this->metric == other_unique->metric && this->qset == other_unique->qset);
 }
 
-bool Unique::operator<(const WlSpec& other) const {
-    if (dynamic_cast<const Unique*>(&other) == NULL) return false;
+bool Unique::less_than(const WlSpec& other) const {
     const Unique* other_unique = dynamic_cast<const Unique*>(&other);
     return (this->metric < other_unique->metric ||
             (this->metric == other_unique->metric && this->qset < other_unique->qset));
@@ -332,11 +331,7 @@ bool Same::operator==(const WlSpec& other) const {
     return (this->metric == other_same->metric && this->queue == other_same->queue);
 }
 
-bool Same::operator<(const WlSpec& other) const {
-    if (dynamic_cast<const Unique*>(&other) != NULL) return true;
-    if (dynamic_cast<const Decr*>(&other) != NULL) return true;
-    if (dynamic_cast<const Incr*>(&other) != NULL) return true;
-    if (dynamic_cast<const Same*>(&other) == NULL) return false;
+bool Same::less_than(const WlSpec& other) const {
     const Same* other_same = dynamic_cast<const Same*>(&other);
     return (this->metric < other_same->metric ||
             (this->metric == other_same->metric && this->queue < other_same->queue));
@@ -376,10 +371,7 @@ bool Incr::operator==(const WlSpec& other) const {
     return (this->metric == other_incr->metric && this->queue == other_incr->queue);
 }
 
-bool Incr::operator<(const WlSpec& other) const {
-    if (dynamic_cast<const Unique*>(&other) != NULL) return true;
-    if (dynamic_cast<const Decr*>(&other) != NULL) return true;
-    if (dynamic_cast<const Incr*>(&other) == NULL) return false;
+bool Incr::less_than(const WlSpec &other) const {
     const Incr* other_incr = dynamic_cast<const Incr*>(&other);
     return (this->metric < other_incr->metric ||
             (this->metric == other_incr->metric && this->queue < other_incr->queue));
@@ -419,13 +411,10 @@ bool Decr::operator==(const WlSpec& other) const {
     return (this->metric == other_decr->metric && this->queue == other_decr->queue);
 }
 
-bool Decr::operator<(const WlSpec& other) const {
-    if (dynamic_cast<const Unique*>(&other) != NULL) return true;
-    if (dynamic_cast<const Decr*>(&other) == NULL) return false;
+bool Decr::less_than(const WlSpec &other) const {
     const Decr* other_decr = dynamic_cast<const Decr*>(&other);
     return (this->metric < other_decr->metric ||
             (this->metric == other_decr->metric && this->queue < other_decr->queue));
-
 }
 
 int Decr::type_id() const {
@@ -728,12 +717,7 @@ bool Comp::operator==(const WlSpec& other) const {
     return (this->lhs == other_comp->lhs && this->op == other_comp->op && this->rhs == other_comp->rhs);
 }
 
-bool Comp::operator<(const WlSpec& other) const {
-    if (dynamic_cast<const Unique*>(&other) != NULL) return true;
-    if (dynamic_cast<const Decr*>(&other) != NULL) return true;
-    if (dynamic_cast<const Incr*>(&other) != NULL) return true;
-    if (dynamic_cast<const Same*>(&other) != NULL) return true;
-    if (dynamic_cast<const Comp*>(&other) == NULL) return false; // Should never reach here
+bool Comp::less_than(const WlSpec& other) const {
     const Comp* other_comp = dynamic_cast<const Comp*>(&other);
     return (this->lhs < other_comp->lhs ||
             (this->lhs == other_comp->lhs && this->op < other_comp->op) ||
@@ -756,6 +740,12 @@ std::string Comp::to_string() const {
 }
 
 //************************************* WlSpec *************************************//
+bool WlSpec::operator<(const WlSpec& other) const {
+    if (type_id() != other.type_id()) return type_id() < other.type_id();
+
+    return less_than(other);
+}
+
 ostream& operator<<(ostream& os, const WlSpec* wl_spec) {
     os << wl_spec->to_string();
     return os;

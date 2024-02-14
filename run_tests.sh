@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Capture the start time
+startTime=$(date +%s)
+
 # Define the arrays of arguments
 tests=("prio" "rr" "fq_codel" "loom" "leaf_spine_bw" "tbf")
 modes=("random" "front_back" "back_front")
@@ -34,3 +37,11 @@ mkdir -p "$baseDir" # Ensure base directory exists
 parallel run_test ::: "${tests[@]}" ::: "${modes[@]}" ::: "$baseDir"
 
 echo "All tests completed."
+
+# Capture the end time
+endTime=$(date +%s)
+
+# Calculate the duration
+duration=$((endTime - startTime))
+
+echo "Total execution time: $duration seconds."

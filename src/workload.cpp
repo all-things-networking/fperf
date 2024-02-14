@@ -740,6 +740,22 @@ std::string Comp::to_string() const {
 }
 
 //************************************* WlSpec *************************************//
+bool WlSpec::is_available_for_search() const {
+    return false;
+}
+
+bool WlSpec::spec_is_empty() const {
+    return false;
+}
+
+bool WlSpec::spec_is_all() const {
+    return false;
+}
+
+unsigned int WlSpec::ast_size() const {
+    return 1u;
+}
+
 bool WlSpec::operator<(const WlSpec& other) const {
     if (type_id() != other.type_id()) return type_id() < other.type_id();
 

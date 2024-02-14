@@ -134,11 +134,11 @@ bool operator<(const rhs_t& rhs1, const rhs_t& rhs2);
 class WlSpec {
 public:
     virtual bool applies_to_queue(unsigned int queue) const = 0;
-    virtual bool is_available_for_search() const { return false; }
+    virtual bool is_available_for_search() const;
 
-    virtual bool spec_is_empty() const { return false; }
-    virtual bool spec_is_all() const { return false; }
-    virtual unsigned int ast_size() const { return 1u; }
+    virtual bool spec_is_empty() const;
+    virtual bool spec_is_all() const;
+    virtual unsigned int ast_size() const;
 
     friend ostream& operator<<(ostream& os, const WlSpec* wl_spec);
     virtual bool operator==(const WlSpec& other) const = 0;
@@ -149,7 +149,7 @@ protected:
 
 private:
     virtual int type_id() const = 0;
-    virtual bool less_than(const WlSpec& other) const;
+    virtual bool less_than(const WlSpec& other) const = 0;
 };
 
 //************************************* UNIQ *************************************//

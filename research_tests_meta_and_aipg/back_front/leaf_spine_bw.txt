@@ -1,0 +1,119 @@
+leaf_spine_bw
+cp setup: 3.528 s
+base example generation: 272.089 s
+seed is: 24212
+Base example: 
+total time: 10
+L2_XBar.sink.1
+enqs:
+0 1 1 1 1 1 1 1 1 1 1 
+1 1 1 1 1 1 1 1 1 1 1 
+2 0 0 0 0 0 0 0 0 0 0 
+3 0 0 0 0 0 0 0 0 0 0 
+4 0 0 0 0 0 0 0 0 0 0 
+5 0 0 0 0 0 0 0 0 0 0 
+deqs:
+0 0 1 1 1 1 1 1 1 1 1 
+1 0 1 1 1 1 1 1 1 1 1 
+2 0 0 0 0 0 0 0 0 0 0 
+3 0 0 0 0 0 0 0 0 0 0 
+4 0 0 0 0 0 0 0 0 0 0 
+5 0 0 0 0 0 0 0 0 0 0 
+pkts metadata: 
+0 [5, 0]  | [5, 0]  | [5, 0]  | [5, 0]  | [5, 0]  | [5, 0]  | [5, 0]  | [5, 0]  | [5, 0]  | [5, 0]  | 
+1 [3, 0]  | [3, 0]  | [3, 0]  | [3, 0]  | [3, 0]  | [3, 0]  | [3, 0]  | [3, 0]  | [3, 0]  | [3, 0]  | 
+2  |  |  |  |  |  |  |  |  |  | 
+3  |  |  |  |  |  |  |  |  |  | 
+4  |  |  |  |  |  |  |  |  |  | 
+5  |  |  |  |  |  |  |  |  |  | 
+
+Original Workload: 
+[1, 1]: cenq(0, t) = 1
+[1, 1]: cenq(1, t) = 1
+[1, 1]: aipg(0, t) = 0
+[1, 1]: aipg(1, t) = 0
+[1, 10]: cenq(2, t) = 0
+[1, 10]: cenq(3, t) = 0
+[1, 10]: cenq(4, t) = 0
+[1, 10]: cenq(5, t) = 0
+[1, 10]: aipg(2, t) = 0
+[1, 10]: aipg(3, t) = 0
+[1, 10]: aipg(4, t) = 0
+[1, 10]: aipg(5, t) = 0
+[1, 10]: dst(0, t) = 5
+[1, 10]: dst(1, t) = 3
+[1, 10]: ecmp(0, t) = 0
+[1, 10]: ecmp(1, t) = 0
+[2, 2]: cenq(0, t) = 2
+[2, 2]: cenq(1, t) = 2
+[2, 10]: aipg(0, t) = 1
+[2, 10]: aipg(1, t) = 1
+[3, 3]: cenq(0, t) = 3
+[3, 3]: cenq(1, t) = 3
+[4, 4]: cenq(0, t) = 4
+[4, 4]: cenq(1, t) = 4
+[5, 5]: cenq(0, t) = 5
+[5, 5]: cenq(1, t) = 5
+[6, 6]: cenq(0, t) = 6
+[6, 6]: cenq(1, t) = 6
+[7, 7]: cenq(0, t) = 7
+[7, 7]: cenq(1, t) = 7
+[8, 8]: cenq(0, t) = 8
+[8, 8]: cenq(1, t) = 8
+[9, 9]: cenq(0, t) = 9
+[9, 9]: cenq(1, t) = 9
+[10, 10]: cenq(0, t) = 10
+[10, 10]: cenq(1, t) = 10
+
+Cannot open file: 
+Cannot open file: 
+Last valid workload: 
+[1, 1]: aipg(0, t) = 0
+[1, 1]: aipg(1, t) = 0
+[1, 10]: cenq(2, t) = 0
+[1, 10]: cenq(3, t) = 0
+[1, 10]: cenq(4, t) = 0
+[1, 10]: cenq(5, t) = 0
+[1, 10]: aipg(2, t) = 0
+[1, 10]: aipg(3, t) = 0
+[1, 10]: aipg(4, t) = 0
+[1, 10]: aipg(5, t) = 0
+[1, 10]: dst(0, t) = 5
+[1, 10]: dst(1, t) = 3
+[1, 10]: ecmp(0, t) = 0
+[1, 10]: ecmp(1, t) = 0
+[2, 10]: aipg(0, t) = 1
+[2, 10]: aipg(1, t) = 1
+
+Workload after removing specs: 
+[1, 10]: cenq(2, t) <= 0
+[1, 10]: cenq(3, t) <= 0
+[1, 10]: cenq(4, t) <= 0
+[1, 10]: dst(1, t) = 3
+[1, 10]: ecmp(0, t) = 0
+[1, 10]: ecmp(1, t) = 0
+
+Workload after combining: 
+[1, 10]: SUM_[q in {2, 3, 4, }] cenq(q ,t) <= 0
+[1, 10]: dst(1, t) = 3
+[1, 10]: ecmp(0, t) = 0
+[1, 10]: ecmp(1, t) = 0
+
+Workload after aggregating indivs to sums: 
+[1, 10]: SUM_[q in {2, 3, 4, }] cenq(q ,t) <= 0
+[1, 10]: dst(1, t) = 3
+[1, 10]: ecmp(0, t) = 0
+[1, 10]: ecmp(1, t) = 0
+
+Workload after tightening constant bounds: 
+[1, 10]: SUM_[q in {2, 3, 4, }] cenq(q ,t) <= 0
+[1, 10]: dst(1, t) = 3
+[1, 10]: ecmp(0, t) = 0
+[1, 10]: ecmp(1, t) = 0
+
+Final Workload after broadening operations (Back-to-Front Iterative Approach): 
+[1, 10]: SUM_[q in {2, 3, 4, }] cenq(q ,t) <= 0
+[1, 10]: dst(1, t) = 3
+[1, 10]: ecmp(0, t) = 0
+[1, 10]: ecmp(1, t) = 0
+

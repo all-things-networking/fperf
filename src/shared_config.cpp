@@ -7,6 +7,7 @@
 //
 
 #include "shared_config.hpp"
+#include <iostream>
 
 /******************************* Dists *****************************/
 Dists::Dists(DistsParams params) {

@@ -261,7 +261,7 @@ void Search::search(Workload wl) {
         for (unsigned int q = 0; q < cp->in_queue_cnt(); q++) {
             if (target_queues.find(q) == target_queues.end()) {
                 Indiv n_indiv = Indiv(metric_t::CENQ, q);
-                Comp n_wl_spec = Comp(n_indiv, op_t::LE, 0u);
+                WlSpec* n_wl_spec = new Comp(n_indiv, op_t::LE, 0u);
                 TimedSpec n_spec = TimedSpec(n_wl_spec, total_time, total_time);
                 to_check.add_spec(n_spec);
             }
@@ -397,7 +397,7 @@ Workload Search::refine(Workload wl) {
     for (unsigned int q = 0; q < cp->in_queue_cnt(); q++) {
         if (target_queues.find(q) == target_queues.end()) {
             Indiv n_indiv = Indiv(metric_t::CENQ, q);
-            Comp n_wl_spec = Comp(n_indiv, op_t::LE, 0u);
+            WlSpec* n_wl_spec = new Comp(n_indiv, op_t::LE, 0u);
             wl.add_spec(TimedSpec(n_wl_spec, total_time, total_time));
         }
     }
@@ -440,23 +440,23 @@ Workload Search::refine(Workload wl) {
     set<TimedSpec> specs = wl.get_all_specs();
     for (set<TimedSpec>::iterator it = specs.begin(); it != specs.end(); it++) {
         TimedSpec tspec = *it;
-        wl_spec_t wspec = tspec.get_wl_spec();
+        WlSpec* wspec = tspec.get_wl_spec();
         // TODO: Generalize to other constructs?
-        if (!holds_alternative<Comp>(wspec)) continue;
-        Comp comp = get<Comp>(wspec);
-        lhs_t lhs = comp.get_lhs();
+        Comp* compSpec = dynamic_cast<Comp*>(wspec);
+        if (!compSpec) continue;
+        lhs_t lhs = compSpec->get_lhs();
         if (holds_alternative<Indiv>(lhs)) {
             Indiv indiv = get<Indiv>(lhs);
             metric_t m = indiv.get_metric();
             // TODO: This assumes that rhs is constant
             if (m == metric_t::DST || m == metric_t::ECMP) {
                 unsigned int q = indiv.get_queue();
-                unsigned int c = get<unsigned int>(comp.get_rhs());
+                unsigned int c = get<unsigned int>(compSpec->get_rhs());
                 if (c < 1) c = 1;
 
                 candidate = wl;
                 Indiv n_indiv = Indiv(metric_t::CENQ, q);
-                Comp n_comp = Comp(n_indiv, op_t::GE, Time(c));
+                WlSpec* n_comp = new Comp(n_indiv, op_t::GE, Time(c));
                 TimedSpec new_spec = TimedSpec(n_comp, tspec.get_time_range(), total_time);
                 candidate.mod_spec(*it, new_spec);
 
@@ -479,11 +479,11 @@ Workload Search::refine(Workload wl) {
     specs = wl.get_all_specs();
     for (set<TimedSpec>::iterator it = specs.begin(); it != specs.end(); it++) {
         TimedSpec tspec = *it;
-        wl_spec_t wspec = tspec.get_wl_spec();
-        if (!holds_alternative<Comp>(wspec)) continue;
-        Comp comp = get<Comp>(wspec);
-        rhs_t rhs = comp.get_rhs();
-        op_t op = comp.get_op();
+        WlSpec* wspec = tspec.get_wl_spec();
+        Comp* compSpec = dynamic_cast<Comp*>(wspec);
+        if (!compSpec) continue;
+        rhs_t rhs = compSpec->get_rhs();
+        op_t op = compSpec->get_op();
         if (op == op_t::GT || op == op_t::GE) {
             if (holds_alternative<Time>(rhs)) {
                 Time time = get<Time>(rhs);
@@ -496,7 +496,7 @@ Workload Search::refine(Workload wl) {
                     candidate = wl;
                     unsigned int n_coeff = (unsigned int) new_coeff;
                     Time n_time = Time(n_coeff);
-                    Comp n_comp = Comp(comp.get_lhs(), comp.get_op(), n_time);
+                    WlSpec* n_comp = new Comp(compSpec->get_lhs(), compSpec->get_op(), n_time);
                     TimedSpec new_spec = TimedSpec(n_comp, tspec.get_time_range(), total_time);
                     candidate.mod_spec(*it, new_spec);
 
@@ -525,7 +525,7 @@ Workload Search::refine(Workload wl) {
 
                     candidate = wl;
                     unsigned int n_c = (unsigned int) new_c;
-                    Comp n_comp = Comp(comp.get_lhs(), comp.get_op(), n_c);
+                    WlSpec* n_comp = new Comp(compSpec->get_lhs(), compSpec->get_op(), n_c);
                     TimedSpec new_spec = TimedSpec(n_comp, tspec.get_time_range(), total_time);
                     candidate.mod_spec(*it, new_spec);
 
@@ -553,10 +553,10 @@ Workload Search::refine(Workload wl) {
     qset_t in_wl;
     specs = wl.get_all_specs();
     for (set<TimedSpec>::iterator it = specs.begin(); it != specs.end(); it++) {
-        wl_spec_t spec = it->get_wl_spec();
-        if (!holds_alternative<Comp>(spec)) continue;
-        Comp comp = get<Comp>(spec);
-        lhs_t lhs = comp.get_lhs();
+        WlSpec* spec = it->get_wl_spec();
+        Comp* compSpec = dynamic_cast<Comp*>(spec);
+        if (!compSpec) continue;
+        lhs_t lhs = compSpec->get_lhs();
 
         if (holds_alternative<Indiv>(lhs)) {
             in_wl.insert(get<Indiv>(lhs).get_queue());
@@ -571,15 +571,15 @@ Workload Search::refine(Workload wl) {
     qset_t zero_in_base;
     set<TimedSpec> base_specs = cp->get_base_workload().get_all_specs();
     for (set<TimedSpec>::iterator it = base_specs.begin(); it != base_specs.end(); it++) {
-        wl_spec_t spec = it->get_wl_spec();
-        if (!holds_alternative<Comp>(spec)) continue;
-        Comp comp = get<Comp>(spec);
-        lhs_t lhs = comp.get_lhs();
-        rhs_t rhs = comp.get_rhs();
+        WlSpec* spec = it->get_wl_spec();
+        Comp* compSpec = dynamic_cast<Comp*>(spec);
+        if (!compSpec) continue;
+        lhs_t lhs = compSpec->get_lhs();
+        rhs_t rhs = compSpec->get_rhs();
 
         if (it->get_time_range() == time_range_t(0, cp->get_total_time() - 1) &&
             holds_alternative<unsigned int>(rhs) && get<unsigned int>(rhs) == 0 &&
-            comp.get_op() == op_t::LE) {
+            compSpec->get_op() == op_t::LE) {
             if (holds_alternative<Indiv>(lhs)) {
                 zero_in_base.insert(get<Indiv>(lhs).get_queue());
             }
@@ -602,16 +602,16 @@ Workload Search::refine(Workload wl) {
         for (set<TimedSpec>::iterator it = specs.begin(); it != specs.end(); it++) {
             candidate = wl;
 
-            wl_spec_t wl_spec = it->get_wl_spec();
-            if (!holds_alternative<Comp>(wl_spec)) continue;
-            Comp comp = get<Comp>(wl_spec);
-            rhs_t rhs = comp.get_rhs();
+            WlSpec* wl_spec = it->get_wl_spec();
+            Comp* compSpec = dynamic_cast<Comp*>(wl_spec);
+            if (!compSpec) continue;
+            rhs_t rhs = compSpec->get_rhs();
 
             if (holds_alternative<unsigned int>(rhs) && get<unsigned int>(rhs) == 0 &&
-                comp.get_op() == op_t::LE)
+                compSpec->get_op() == op_t::LE)
                 continue;
 
-            lhs_t lhs = comp.get_lhs();
+            lhs_t lhs = compSpec->get_lhs();
             lhs_t new_lhs = lhs;
 
             if (holds_alternative<Indiv>(lhs)) {
@@ -634,7 +634,7 @@ Workload Search::refine(Workload wl) {
                 new_lhs = QSum(new_qset, tsum.get_metric());
             }
 
-            Comp n_comp = Comp(new_lhs, comp.get_op(), comp.get_rhs());
+            WlSpec* n_comp = new Comp(new_lhs, compSpec->get_op(), compSpec->get_rhs());
             TimedSpec new_spec = TimedSpec(n_comp, it->get_time_range(), total_time);
 
             candidate.mod_spec(*it, new_spec);

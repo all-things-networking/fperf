@@ -285,17 +285,26 @@ metric_t Unique::get_metric() const {
     return metric;
 }
 
-ostream& operator<<(ostream& os, const Unique& u) {
-    os << "Uniqe[" << u.metric << "(" << u.qset << ", t)]";
-    return os;
+bool Unique::operator==(const WlSpec& other) const {
+    if (dynamic_cast<const Unique*>(&other) == NULL) return false;
+    const Unique* other_unique = dynamic_cast<const Unique*>(&other);
+    return (this->metric == other_unique->metric && this->qset == other_unique->qset);
 }
 
-bool operator==(const Unique& u1, const Unique& u2) {
-    return (u1.metric == u2.metric && u1.qset == u2.qset);
+bool Unique::less_than(const WlSpec& other) const {
+    const Unique* other_unique = dynamic_cast<const Unique*>(&other);
+    return (this->metric < other_unique->metric ||
+            (this->metric == other_unique->metric && this->qset < other_unique->qset));
 }
 
-bool operator<(const Unique& u1, const Unique& u2) {
-    return (u1.metric < u2.metric || (u1.metric == u2.metric && u1.qset < u2.qset));
+int Unique::type_id() const {
+    return 5;
+}
+
+std::string Unique::to_string() const {
+    stringstream ss;
+    ss << "Unique[" << metric << "(" << qset << ", t)]";
+    return ss.str();
 }
 
 //************************************* SAME *************************************//
@@ -316,17 +325,26 @@ metric_t Same::get_metric() const {
     return metric;
 }
 
-ostream& operator<<(ostream& os, const Same& s) {
-    os << "Same[" << s.metric << "(" << s.queue << ", t)]";
-    return os;
+bool Same::operator==(const WlSpec& other) const {
+    if (dynamic_cast<const Same*>(&other) == NULL) return false;
+    const Same* other_same = dynamic_cast<const Same*>(&other);
+    return (this->metric == other_same->metric && this->queue == other_same->queue);
 }
 
-bool operator==(const Same& s1, const Same& s2) {
-    return (s1.metric == s2.metric && s1.queue == s2.queue);
+bool Same::less_than(const WlSpec& other) const {
+    const Same* other_same = dynamic_cast<const Same*>(&other);
+    return (this->metric < other_same->metric ||
+            (this->metric == other_same->metric && this->queue < other_same->queue));
 }
 
-bool operator<(const Same& s1, const Same& s2) {
-    return (s1.metric < s2.metric || (s1.metric == s2.metric && s1.queue < s2.queue));
+int Same::type_id() const {
+    return 2;
+}
+
+std::string Same::to_string() const {
+    stringstream ss;
+    ss << "Same[" << metric << "(" << queue << ", t)]";
+    return ss.str();
 }
 
 //************************************* INCR *************************************//
@@ -347,18 +365,26 @@ metric_t Incr::get_metric() const {
     return metric;
 }
 
-ostream& operator<<(ostream& os, const Incr& incr) {
-    os << "Incr[" << incr.metric << "(" << incr.queue << ", t)]";
-    return os;
+bool Incr::operator==(const WlSpec& other) const {
+    if (dynamic_cast<const Incr*>(&other) == NULL) return false;
+    const Incr* other_incr = dynamic_cast<const Incr*>(&other);
+    return (this->metric == other_incr->metric && this->queue == other_incr->queue);
 }
 
-bool operator==(const Incr& incr1, const Incr& incr2) {
-    return (incr1.metric == incr2.metric && incr1.queue == incr2.queue);
+bool Incr::less_than(const WlSpec &other) const {
+    const Incr* other_incr = dynamic_cast<const Incr*>(&other);
+    return (this->metric < other_incr->metric ||
+            (this->metric == other_incr->metric && this->queue < other_incr->queue));
 }
 
-bool operator<(const Incr& incr1, const Incr& incr2) {
-    return (incr1.metric < incr2.metric ||
-            (incr1.metric == incr2.metric && incr1.queue < incr2.queue));
+int Incr::type_id() const {
+    return 3;
+}
+
+std::string Incr::to_string() const {
+    stringstream ss;
+    ss << "Incr[" << metric << "(" << queue << ", t)]";
+    return ss.str();
 }
 
 //************************************* DECR *************************************//
@@ -379,18 +405,26 @@ metric_t Decr::get_metric() const {
     return metric;
 }
 
-ostream& operator<<(ostream& os, const Decr& decr) {
-    os << "Decr[" << decr.metric << "(" << decr.queue << ", t)]";
-    return os;
+bool Decr::operator==(const WlSpec& other) const {
+    if (dynamic_cast<const Decr*>(&other) == NULL) return false;
+    const Decr* other_decr = dynamic_cast<const Decr*>(&other);
+    return (this->metric == other_decr->metric && this->queue == other_decr->queue);
 }
 
-bool operator==(const Decr& decr1, const Decr& decr2) {
-    return (decr1.metric == decr2.metric && decr1.queue == decr2.queue);
+bool Decr::less_than(const WlSpec &other) const {
+    const Decr* other_decr = dynamic_cast<const Decr*>(&other);
+    return (this->metric < other_decr->metric ||
+            (this->metric == other_decr->metric && this->queue < other_decr->queue));
 }
 
-bool operator<(const Decr& decr1, const Decr& decr2) {
-    return (decr1.metric < decr2.metric ||
-            (decr1.metric == decr2.metric && decr1.queue < decr2.queue));
+int Decr::type_id() const {
+    return 4;
+}
+
+std::string Decr::to_string() const {
+    stringstream ss;
+    ss << "Decr[" << metric << "(" << queue << ", t)]";
+    return ss.str();
 }
 
 //************************************* Comp *************************************//
@@ -636,6 +670,10 @@ unsigned int Comp::ast_size() const {
     return lhs_ast_size(lhs) + rhs_ast_size(rhs);
 }
 
+bool Comp::is_available_for_search() const {
+    return true;
+}
+
 pair<metric_t, qset_t> Comp::get_zero_queues() const {
     qset_t qset;
     metric_t metric;
@@ -673,180 +711,60 @@ rhs_t Comp::get_rhs() const {
     return rhs;
 }
 
-ostream& operator<<(ostream& os, const Comp& comp) {
-    if (comp.is_all)
+bool Comp::operator==(const WlSpec& other) const {
+    if (dynamic_cast<const Comp*>(&other) == NULL) return false;
+    const Comp* other_comp = dynamic_cast<const Comp*>(&other);
+    return (this->lhs == other_comp->lhs && this->op == other_comp->op && this->rhs == other_comp->rhs);
+}
+
+bool Comp::less_than(const WlSpec& other) const {
+    const Comp* other_comp = dynamic_cast<const Comp*>(&other);
+    return (this->lhs < other_comp->lhs ||
+            (this->lhs == other_comp->lhs && this->op < other_comp->op) ||
+            (this->lhs == other_comp->lhs && this->op == other_comp->op && this->rhs < other_comp->rhs));
+}
+
+int Comp::type_id() const {
+    return 1;
+}
+
+std::string Comp::to_string() const {
+    std::ostringstream os;
+    if (is_all)
         os << "*";
-    else if (comp.is_empty)
+    else if (is_empty)
         os << "FALSE";
     else
-        os << comp.lhs << " " << comp.op << " " << comp.rhs;
-    return os;
-}
-
-ostream& operator<<(ostream& os, const Comp* comp) {
-    os << comp->lhs << " " << comp->op << " " << comp->rhs;
-    return os;
-}
-
-bool operator==(const Comp& comp1, const Comp& comp2) {
-    lhs_t lhs1 = comp1.lhs;
-    op_t op1 = comp1.op;
-    rhs_t rhs1 = comp1.rhs;
-
-    lhs_t lhs2 = comp2.lhs;
-    op_t op2 = comp2.op;
-    rhs_t rhs2 = comp2.rhs;
-
-    bool res = (lhs1 == lhs2 && op1 == op2 && rhs1 == rhs2);
-    return res;
-}
-
-bool operator!=(const Comp& comp1, const Comp& comp2) {
-    return !(comp1 == comp2);
-}
-
-bool operator<(const Comp& comp1, const Comp& comp2) {
-    lhs_t lhs1 = comp1.lhs;
-    op_t op1 = comp1.op;
-    rhs_t rhs1 = comp1.rhs;
-
-    lhs_t lhs2 = comp2.lhs;
-    op_t op2 = comp2.op;
-    rhs_t rhs2 = comp2.rhs;
-
-    return (lhs1 < lhs2 || (lhs1 == lhs2 && op1 < op2) ||
-            (lhs1 == lhs2 && op1 == op2 && rhs1 < rhs2));
+        os << lhs << " " << op << " " << rhs;
+    return os.str();
 }
 
 //************************************* WlSpec *************************************//
-// TODO: Only checks COMP
-bool wl_spec_is_all(wl_spec_t spec) {
-    if (holds_alternative<Comp>(spec)) return get<Comp>(spec).spec_is_all();
+bool WlSpec::is_available_for_search() const {
     return false;
 }
 
-// TODO: Only checks COMP
-bool wl_spec_is_empty(wl_spec_t spec) {
-    if (holds_alternative<Comp>(spec)) return get<Comp>(spec).spec_is_empty();
+bool WlSpec::spec_is_empty() const {
     return false;
 }
 
-unsigned int wl_spec_ast_size(const wl_spec_t wl_spec) {
-    if (holds_alternative<Comp>(wl_spec)) {
-        return get<Comp>(wl_spec).ast_size();
-    } else
-        return 1u;
+bool WlSpec::spec_is_all() const {
+    return false;
 }
 
-bool wl_spec_applies_to_queue(wl_spec_t spec, unsigned int queue) {
-    switch (spec.index()) {
-        case 0: return get<Comp>(spec).applies_to_queue(queue);
-        case 1: return get<Same>(spec).applies_to_queue(queue);
-        case 2: return get<Incr>(spec).applies_to_queue(queue);
-        case 3: return get<Decr>(spec).applies_to_queue(queue);
-        case 4: return get<Unique>(spec).applies_to_queue(queue);
-        default: return false;
-    }
+unsigned int WlSpec::ast_size() const {
+    return 1u;
 }
 
-ostream& operator<<(ostream& os, const wl_spec_t& wl_spec) {
-    switch (wl_spec.index()) {
-        // Comp
-        case 0: {
-            os << get<Comp>(wl_spec);
-            break;
-        }
-        // Same
-        case 1: {
-            os << get<Same>(wl_spec);
-            break;
-        }
-        // Incr
-        case 2: {
-            os << get<Incr>(wl_spec);
-            break;
-        }
-        // Decr
-        case 3: {
-            os << get<Decr>(wl_spec);
-            break;
-        }
-        // Uniq
-        case 4: {
-            os << get<Unique>(wl_spec);
-            break;
-        }
-        default: break;
-    }
+bool WlSpec::operator<(const WlSpec& other) const {
+    if (type_id() != other.type_id()) return type_id() < other.type_id();
+
+    return less_than(other);
+}
+
+ostream& operator<<(ostream& os, const WlSpec* wl_spec) {
+    os << wl_spec->to_string();
     return os;
-}
-
-bool operator==(const wl_spec_t& spec1, const wl_spec_t& spec2) {
-    if (holds_alternative<Comp>(spec1) && holds_alternative<Comp>(spec2)) {
-        return get<Comp>(spec1) == get<Comp>(spec2);
-    }
-    if (holds_alternative<Same>(spec1) && holds_alternative<Same>(spec2)) {
-        return get<Same>(spec1) == get<Same>(spec2);
-    }
-    if (holds_alternative<Incr>(spec1) && holds_alternative<Incr>(spec2)) {
-        return get<Incr>(spec1) == get<Incr>(spec2);
-    }
-    if (holds_alternative<Decr>(spec1) && holds_alternative<Decr>(spec2)) {
-        return get<Decr>(spec1) == get<Decr>(spec2);
-    }
-    return false;
-}
-
-bool operator<(const wl_spec_t& spec1, const wl_spec_t& spec2) {
-    // Comp < Same < Incr < Decr < Uniq
-
-    if (holds_alternative<Comp>(spec1)) {
-        if (holds_alternative<Comp>(spec2)) {
-            return get<Comp>(spec1) < get<Comp>(spec2);
-        } else {
-            return true;
-        }
-    }
-
-    else if (holds_alternative<Same>(spec1)) {
-        if (holds_alternative<Same>(spec2)) {
-            return get<Same>(spec1) < get<Same>(spec2);
-        } else if (holds_alternative<Comp>(spec2)) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    else if (holds_alternative<Incr>(spec1)) {
-        if (holds_alternative<Incr>(spec2)) {
-            return get<Incr>(spec1) < get<Incr>(spec2);
-        } else if (holds_alternative<Comp>(spec2) || holds_alternative<Same>(spec2)) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    else if (holds_alternative<Decr>(spec1)) {
-        if (holds_alternative<Decr>(spec2)) {
-            return get<Decr>(spec1) < get<Decr>(spec2);
-        } else {
-            return false;
-        }
-    }
-
-    else if (holds_alternative<Unique>(spec1)) {
-        if (holds_alternative<Unique>(spec2)) {
-            return get<Unique>(spec1) < get<Unique>(spec2);
-        } else if (holds_alternative<Unique>(spec2)) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-    cout << "operator < for wl_spec_t: should not reach here" << endl;
-    return false;
 }
 
 //************************************* TimedSpec *************************************//
@@ -855,14 +773,14 @@ bool operator<(const wl_spec_t& spec1, const wl_spec_t& spec2) {
 //            is always normalized independent of the operation
 //            running on it.
 
-TimedSpec::TimedSpec(wl_spec_t wl_spec, time_range_t time_range, unsigned int total_time):
+TimedSpec::TimedSpec(WlSpec* wl_spec, time_range_t time_range, unsigned int total_time):
 wl_spec(wl_spec),
 time_range(time_range),
 total_time(total_time) {
     normalize();
 }
 
-TimedSpec::TimedSpec(wl_spec_t wl_spec, unsigned int until_time, unsigned int total_time):
+TimedSpec::TimedSpec(WlSpec* wl_spec, unsigned int until_time, unsigned int total_time):
 wl_spec(wl_spec),
 time_range(time_range_t(0, until_time - 1)),
 total_time(total_time) {
@@ -872,7 +790,7 @@ total_time(total_time) {
 
 
 bool TimedSpec::applies_to_queue(unsigned int queue) const {
-    return wl_spec_applies_to_queue(wl_spec, queue);
+    return wl_spec->applies_to_queue(queue);
 }
 
 void TimedSpec::set_time_range_ub(unsigned int ub) {
@@ -881,34 +799,34 @@ void TimedSpec::set_time_range_ub(unsigned int ub) {
 }
 
 void TimedSpec::normalize() {
-    if (wl_spec_is_empty(wl_spec))
+    if (wl_spec->spec_is_empty()) {
         is_empty = true;
-    else if (wl_spec_is_all(wl_spec) || time_range.first > time_range.second)
+    } else if (wl_spec->spec_is_all() || time_range.first > time_range.second) {
         is_all = true;
-    else {
-        if (!holds_alternative<Comp>(wl_spec)) return;
+    } else {
+        auto compSpec = dynamic_cast<Comp*>(wl_spec);
+        if (compSpec) {
+            lhs_t lhs = compSpec->get_lhs();
+            op_t op = compSpec->get_op();
+            rhs_t rhs = compSpec->get_rhs();
 
-        Comp comp = get<Comp>(wl_spec);
-
-        // When rhs is constant
-        lhs_t lhs = comp.get_lhs();
-        op_t op = comp.get_op();
-        rhs_t rhs = comp.get_rhs();
-
-        if (holds_alternative<unsigned int>(rhs)) {
-            metric_t metric;
-            if (holds_alternative<Indiv>(lhs)) {
-                metric = get<Indiv>(lhs).get_metric();
-            } else {
-                metric = get<QSum>(lhs).get_metric();
-            }
-            if (Metric::properties.at(metric).non_decreasing) {
-                if (op == op_t::GE || op == op_t::GT) {
-                    time_range.second = total_time - 1;
-                } else if (op == op_t::LE || op == op_t::LT) {
-                    time_range.first = 0;
+            if (holds_alternative<unsigned int>(rhs)) {
+                metric_t metric;
+                if (holds_alternative<Indiv>(lhs)) {
+                    metric = get<Indiv>(lhs).get_metric();
+                } else {
+                    metric = get<QSum>(lhs).get_metric();
+                }
+                if (Metric::properties.at(metric).non_decreasing) {
+                    if (op == op_t::GE || op == op_t::GT) {
+                        time_range.second = total_time - 1;
+                    } else if (op == op_t::LE || op == op_t::LT) {
+                        time_range.first = 0;
+                    }
                 }
             }
+        } else {
+            // TODO: handle other types of WlSpec
         }
     }
 }
@@ -925,27 +843,25 @@ time_range_t TimedSpec::get_time_range() const {
     return time_range;
 }
 
-wl_spec_t TimedSpec::get_wl_spec() const {
+WlSpec* TimedSpec::get_wl_spec() const {
     return wl_spec;
 }
 
 ostream& operator<<(ostream& os, const TimedSpec& spec) {
     os << spec.time_range << ": ";
     os << spec.wl_spec;
-
     return os;
 }
 ostream& operator<<(ostream& os, const TimedSpec* spec) {
-    os << spec->time_range << ": ";
-    os << spec->wl_spec;
-
+    if (spec) {
+        os << *spec;
+    }
     return os;
 }
 
 bool operator==(const TimedSpec& spec1, const TimedSpec& spec2) {
-    wl_spec_t wl_spec1 = spec1.wl_spec;
-    wl_spec_t wl_spec2 = spec2.wl_spec;
-
+    WlSpec* wl_spec1 = spec1.get_wl_spec();
+    WlSpec* wl_spec2 = spec2.get_wl_spec();
     return (wl_spec1 == wl_spec2 && spec1.time_range == spec2.time_range);
 }
 
@@ -993,7 +909,7 @@ void Workload::add_spec(TimedSpec spec) {
 void Workload::rm_spec(TimedSpec spec) {
     auto erase_res = all_specs.erase(spec);
     time_range_t spec_time_range = spec.get_time_range();
-    wl_spec_t wl_spec = spec.get_wl_spec();
+    WlSpec* wl_spec = spec.get_wl_spec();
     if (erase_res > 0) {
         for (timeline_t::iterator it = timeline.begin(); it != timeline.end(); it++) {
             if (is_superset(spec_time_range, it->first)) {
@@ -1040,7 +956,8 @@ set<TimedSpec> Workload::get_all_specs() const {
 wl_cost_t Workload::cost() const {
     unsigned int ast_val = 0;
     for (set<TimedSpec>::iterator it = all_specs.begin(); it != all_specs.end(); it++) {
-        ast_val += wl_spec_ast_size(it->get_wl_spec());
+        WlSpec* spec = it->get_wl_spec();
+        ast_val += spec->ast_size();
     }
 
     unsigned int timeline_val = (unsigned int) timeline.size();
@@ -1082,8 +999,7 @@ void Workload::normalize() {
     // check that first?
     if (timeline.size() > 1) {
         vector<time_range_t> to_erase;
-
-        typedef pair<time_range_t, set<wl_spec_t>> timeline_entry;
+        typedef pair<time_range_t, set<WlSpec*>> timeline_entry;
         vector<timeline_entry> to_add;
 
         bool valid_last_new_entry = false;
@@ -1095,14 +1011,12 @@ void Workload::normalize() {
 
             timeline_t::iterator next_it = next(it);
 
-            set<wl_spec_t> specs1 = it->second;
-            set<wl_spec_t> specs2 = next_it->second;
+            set<WlSpec*> specs1 = it->second;
+            set<WlSpec*> specs2 = next_it->second;
 
             if (specs1 == specs2) {
                 time_range_t time_range_1 = it->first;
-
-                time_range_t time_range_2 = next(it)->first;
-
+                time_range_t time_range_2 = next_it->first;
                 to_erase.push_back(time_range_1);
                 to_erase.push_back(time_range_2);
 
@@ -1146,12 +1060,13 @@ void Workload::normalize() {
 }
 
 void Workload::normalize(time_range_t time_range) {
-    set<wl_spec_t> specs = timeline[time_range];
+    set<WlSpec*> specs = timeline[time_range];
 
     // if one is empty, the entire thing is empty
-    for (set<wl_spec_t>::iterator it = specs.begin(); it != specs.end(); it++) {
-        if (wl_spec_is_empty(*it)) {
-            wl_spec_t spec = *it;
+    for (set<WlSpec*>::iterator it = specs.begin(); it != specs.end(); it++) {
+        WlSpec* spec = *it;
+        if (spec->spec_is_empty()) {
+            WlSpec* spec = *it;
             timeline[time_range].clear();
             timeline[time_range].insert(spec);
             return;
@@ -1162,10 +1077,11 @@ void Workload::normalize(time_range_t time_range) {
     // - Remove the "alls".
     // TODO: implement with the std utilities like sort and remove_if
 
-    set<wl_spec_t> filtered_specs;
-    for (set<wl_spec_t>::iterator it = specs.begin(); it != specs.end(); it++) {
+    set<WlSpec*> filtered_specs;
+    for (set<WlSpec*>::iterator it = specs.begin(); it != specs.end(); it++) {
 
-        if (wl_spec_is_all(*it)) continue;
+        // Check if all
+        if ((*it)->spec_is_all()) { continue; }
 
         filtered_specs.insert(*it);
     }
@@ -1183,38 +1099,37 @@ void Workload::normalize(time_range_t time_range) {
 
     vector<Comp> zero_comps;
     vector<Comp> non_zero_comps;
-    vector<wl_spec_t> non_op_specs;
+    vector<WlSpec*> non_op_specs;
 
-    for (set<wl_spec_t>::iterator it = specs.begin(); it != specs.end(); it++) {
-        wl_spec_t spec = *it;
+    for (auto it = specs.begin(); it != specs.end(); it++) {
+        auto spec = *it;
 
-        if (!holds_alternative<Comp>(spec)) {
-            non_op_specs.push_back(spec);
-            continue;
-        }
+        // Attempt to cast spec to Comp.
+        auto compSpec = dynamic_cast<Comp*>(spec);
 
-        Comp comp = get<Comp>(spec);
+        if (compSpec) {
+            // If spec is of Comp type, process it.
+            auto zero_queues = compSpec->get_zero_queues();
+            qset_t zero_queue_set = zero_queues.second;
+            bool has_zero = zero_queue_set.size() > 0;
 
-        auto zero_queues = comp.get_zero_queues();
-        qset_t zero_queue_set = zero_queues.second;
-        bool has_zero = zero_queue_set.size() > 0;
+            if (has_zero) {
+                metric_t metric = zero_queues.first;
 
+                for (auto z_it = zero_queue_set.begin(); z_it != zero_queue_set.end(); z_it++) {
+                    unsigned int q = *z_it;
+                    zero_pair p(metric, q);
+                    zeros.push_back(p);
+                }
 
-        if (has_zero) {
-            metric_t metric = zero_queues.first;
-
-            for (qset_t::iterator z_it = zero_queue_set.begin(); z_it != zero_queue_set.end();
-                 z_it++) {
-                unsigned int q = *z_it;
-                zero_pair p(metric, q);
-                zeros.push_back(p);
+                zero_comps.push_back(*compSpec);
+            } else {
+                non_zero_comps.push_back(*compSpec);
             }
-
-            zero_comps.push_back(get<Comp>(spec));
+        } else {
+            // If spec is not of Comp type, handle accordingly.
+            non_op_specs.push_back(spec);
         }
-
-        else
-            non_zero_comps.push_back(get<Comp>(spec));
     }
 
     bool changed = true;
@@ -1366,10 +1281,14 @@ void Workload::normalize(time_range_t time_range) {
     }
 
 
-    set<wl_spec_t> final_specs;
+    set<WlSpec*> final_specs;
 
-    final_specs.insert(zero_comps.begin(), zero_comps.end());
-    final_specs.insert(non_zero_comps.begin(), non_zero_comps.end());
+    for (const auto& comp : zero_comps) {
+        final_specs.insert(new Comp(comp));
+    }
+    for (const auto& comp : non_zero_comps) {
+        final_specs.insert(new Comp(comp));
+    }
     final_specs.insert(non_op_specs.begin(), non_op_specs.end());
 
     timeline[time_range] = final_specs;
@@ -1385,9 +1304,10 @@ void Workload::regenerate_spec_set() {
 
     for (timeline_t::iterator it = timeline.begin(); it != timeline.end(); it++) {
         time_range_t time_range = it->first;
-        set<wl_spec_t> specs = it->second;
+        set<WlSpec*> specs = it->second;
 
-        for (set<wl_spec_t>::iterator s_it = specs.begin(); s_it != specs.end(); s_it++) {
+        for (set<WlSpec*>::iterator s_it = specs.begin(); s_it != specs.end();
+             s_it++) {
 
             bool already_exists = false;
             for (unsigned int i = 0; i < new_all_specs.size(); i++) {
@@ -1412,11 +1332,11 @@ void Workload::regenerate_spec_set() {
 unsigned int Workload::ast_size() const {
     unsigned int res = 0;
     for (timeline_t::const_iterator it = timeline.cbegin(); it != timeline.cend(); it++) {
-        set<wl_spec_t> specs = it->second;
+        set<WlSpec*> specs = it->second;
 
         if (specs.size() == 0) res++;
-        for (set<wl_spec_t>::iterator s_it = specs.begin(); s_it != specs.end(); s_it++) {
-            res += wl_spec_ast_size(*s_it);
+        for (set<WlSpec*>::const_iterator s_it = specs.cbegin(); s_it != specs.cend(); s_it++) {
+            res += (*s_it)->ast_size();
         }
     }
     return res;
@@ -1437,7 +1357,7 @@ set<time_range_t> Workload::add_time_range(time_range_t time_range) {
     }
 
     time_range_t beginning_time_range = beginning->first;
-    set<wl_spec_t> beginning_set = beginning->second;
+    set<WlSpec*> beginning_set = beginning->second;
 
     if (time_range.first > beginning_time_range.first) {
         timeline[time_range_t(beginning_time_range.first, time_range.first - 1)] = beginning_set;
@@ -1456,7 +1376,7 @@ set<time_range_t> Workload::add_time_range(time_range_t time_range) {
     }
 
     time_range_t end_time_range = end->first;
-    set<wl_spec_t> end_set = end->second;
+    set<WlSpec*> end_set = end->second;
 
     if (time_range.second < end_time_range.second) {
         timeline[time_range_t(end_time_range.first, time_range.second)] = end_set;
@@ -1485,14 +1405,15 @@ string Workload::get_timeline_str() {
     } else {
         for (timeline_t::iterator it = timeline.begin(); it != timeline.end(); it++) {
             ss << it->first << ": ";
-            set<wl_spec_t> specs = it->second;
+            set<WlSpec*> specs = it->second;
             if (specs.size() == 0) {
                 ss << "*" << endl;
                 continue;
             }
 
             bool is_first = true;
-            for (set<wl_spec_t>::iterator it2 = specs.begin(); it2 != specs.end(); it2++) {
+            for (set<WlSpec*>::iterator it2 = specs.begin(); it2 != specs.end();
+                 it2++) {
                 if (!is_first) {
                     ss << "        ";
                 }

@@ -2000,10 +2000,23 @@ expr ContentionPoint::get_expr(Workload wl) {
 
 expr ContentionPoint::get_expr(TimedSpec spec) {
     time_range_t time_range = spec.get_time_range();
-    wl_spec_t wl_spec = spec.get_wl_spec();
+    WlSpec* wl_spec = spec.get_wl_spec();
 
-    return visit([time_range, this](auto const& sf) { return this->get_expr(sf, time_range); },
-                 wl_spec);
+    // Dynamic casting to determine the specific type of WlSpec
+    if (Comp* compSpec = dynamic_cast<Comp*>(wl_spec)) {
+        return get_expr(*compSpec, time_range);
+    } else if (Same* sameSpec = dynamic_cast<Same*>(wl_spec)) {
+        return get_expr(*sameSpec, time_range);
+    } else if (Incr* incrSpec = dynamic_cast<Incr*>(wl_spec)) {
+        return get_expr(*incrSpec, time_range);
+    } else if (Decr* decrSpec = dynamic_cast<Decr*>(wl_spec)) {
+        return get_expr(*decrSpec, time_range);
+    } else if (Unique* uniqSpec = dynamic_cast<Unique*>(wl_spec)) {
+        return get_expr(*uniqSpec, time_range);
+    } else {
+        cout << "ContentionPoint::get_expr(TimedSpec): Invalid WlSpec" << endl;
+        return net_ctx.bool_val(false);
+    }
 }
 
 expr ContentionPoint::get_expr(Unique uniq, time_range_t time_range) {
@@ -2179,9 +2192,21 @@ bool ContentionPoint::timedspec_satisfies_example(TimedSpec spec, IndexedExample
     time_range_t time_range = spec.get_time_range();
     if (eg->total_time - 1 < time_range.first) return false;
 
-    return visit([time_range, eg, this](
-                     auto const& sf) { return this->eval_spec(sf, eg, time_range); },
-                 spec.get_wl_spec());
+    WlSpec* wlspec = spec.get_wl_spec();
+
+    if(Comp* compSpec = dynamic_cast<Comp*>(wlspec)) {
+        return eval_spec(*compSpec, eg, time_range);
+    } else if(Incr* incrSpec = dynamic_cast<Incr*>(wlspec)) {
+        return eval_spec(*incrSpec, eg, time_range);
+    } else if(Decr* decrSpec = dynamic_cast<Decr*>(wlspec)) {
+        return eval_spec(*decrSpec, eg, time_range);
+    } else if(Same* sameSpec = dynamic_cast<Same*>(wlspec)) {
+        return eval_spec(*sameSpec, eg, time_range);
+    } else if(Unique* uniqueSpec = dynamic_cast<Unique*>(wlspec)) {
+        return eval_spec(*uniqueSpec, eg, time_range);
+    } else {
+        throw std::runtime_error("ContentionPoint::timedspec_satisfies_example: Invalid WlSpec");
+    }
 }
 
 bool ContentionPoint::eval_spec(Unique uniq, IndexedExample* eg, time_range_t time_range) const {

@@ -78,8 +78,8 @@ public:
     //**** COMP ****/
     op_t random_op();
 
-    typedef WlSpec* (SpecFactory::*MyFunctionPointer)();
-    static vector<MyFunctionPointer> spec_generators;
+    typedef WlSpec* (SpecFactory::*SpecGeneratorFuncPtr)();
+    static vector<SpecGeneratorFuncPtr> spec_generators;
 
 private:
     static void initializeSpecs();

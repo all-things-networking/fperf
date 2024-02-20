@@ -33,12 +33,12 @@ RandomSpecGenerationParameters SpecFactory::get_metric_params(metric_t metric_ty
     }
 }
 
-std::vector<SpecFactory::MyFunctionPointer> SpecFactory::spec_generators;
+std::vector<SpecFactory::SpecGeneratorFuncPtr> SpecFactory::spec_generators;
 
 void SpecFactory::initializeSpecs() {
     SpecFactory::spec_generators.clear();
 
-    MyFunctionPointer comp_ptr = &SpecFactory::random_comp;
+    SpecGeneratorFuncPtr comp_ptr = &SpecFactory::random_comp;
     SpecFactory::spec_generators.push_back(comp_ptr);
 }
 

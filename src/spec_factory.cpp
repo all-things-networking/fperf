@@ -100,7 +100,7 @@ void SpecFactory::pick_neighbors(TimedSpec& spec, vector<TimedSpec>& neighbors) 
 //************************************* WlSpec *************************************//
 
 WlSpec* SpecFactory::random_wl_spec() {
-    std::mt19937 gen;
+    mt19937& gen = dists->get_gen();
     std::uniform_int_distribution<> dist(0, spec_generators.size() - 1);
     int index = dist(gen);
     return (this->*spec_generators[index])();

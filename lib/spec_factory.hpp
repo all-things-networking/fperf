@@ -45,7 +45,7 @@ public:
     void pick_neighbors(WlSpec* spec, std::vector<WlSpec*>& neighbors);
 
     //**** COMP ****//
-    Comp random_comp();
+    WlSpec* random_comp();
     void pick_neighbors(Comp& spec, vector<Comp>& neighbors);
 
     //**** rhs_t ****//
@@ -78,7 +78,12 @@ public:
     //**** COMP ****/
     op_t random_op();
 
+    typedef WlSpec* (SpecFactory::*MyFunctionPointer)();
+    static vector<MyFunctionPointer> spec_generators;
+
 private:
+    static void initializeSpecs();
+
     SharedConfig* shared_config = NULL;
     unsigned int total_time;
     unsigned int in_queue_cnt;

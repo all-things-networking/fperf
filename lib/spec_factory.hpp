@@ -82,7 +82,7 @@ public:
     static vector<SpecGeneratorFuncPtr> spec_generators;
 
 private:
-    static void initializeSpecs();
+    void initializeSpecs();
 
     SharedConfig* shared_config = NULL;
     unsigned int total_time;

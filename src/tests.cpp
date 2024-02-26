@@ -582,11 +582,10 @@ vector<Workload> transform_aipg_to_cenq(Workload wl, Search& search) {
                             } else {
                                 // It's not valid, try another option
 
-                                // Try to replace it with [t1-1, t2]: cenq(q, t) = t2
-                                unsigned int t2 = time_range.second;
+                                // Try to replace it with [t1-1, t2]: cenq(q, t) = t
                                 spec_to_try = TimedSpec(Comp(Indiv(metric_t::CENQ, q),
                                                              op_t::EQ,
-                                                             t2),
+                                                             Time(1)),
                                                         new_time_range,
                                                         wl.get_total_time());
                                 // Create temp workload
@@ -604,10 +603,11 @@ vector<Workload> transform_aipg_to_cenq(Workload wl, Search& search) {
                                 } else {
                                     // It's not valid, try another option
 
-                                    // Try to replace it with [t1-1, t2]: cenq(q, t) = t
+                                    // Try to replace it with [t1-1, t2]: cenq(q, t) = t2
+                                    unsigned int t2 = time_range.second;
                                     spec_to_try = TimedSpec(Comp(Indiv(metric_t::CENQ, q),
                                                                  op_t::EQ,
-                                                                 Time(1)),
+                                                                 t2),
                                                             new_time_range,
                                                             wl.get_total_time());
                                     // Create temp workload
@@ -616,6 +616,7 @@ vector<Workload> transform_aipg_to_cenq(Workload wl, Search& search) {
                                     // Remove all cenq specs which are overlapping with the aipg
                                     temp_wl = remove_cenq_in_time_range(temp_wl, new_time_range, q);
                                     temp_wl.add_spec(spec_to_try);
+
                                     if (search.check(temp_wl)) {
                                         // It's valid, replace the spec
                                         wl.rm_spec(spec);

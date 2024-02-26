@@ -1569,6 +1569,20 @@ ostream& operator<<(ostream& os, const Workload& wl) {
     return os;
 }
 
+string print(const Workload& wl) {
+    stringstream ss;
+    if (wl.is_empty())
+        ss << "empty";
+    else if (wl.is_all())
+        ss << "*";
+    else {
+        set<TimedSpec> all_specs = wl.get_all_specs();
+        for (set<TimedSpec>::iterator it = all_specs.begin(); it != all_specs.end(); it++) {
+            ss << *it << endl;
+        }
+    }
+    return ss.str();
+}
 
 ostream& operator<<(ostream& os, const Workload* wl) {
     if (wl->is_empty())

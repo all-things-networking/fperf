@@ -33,8 +33,6 @@ RandomSpecGenerationParameters SpecFactory::get_metric_params(metric_t metric_ty
     }
 }
 
-std::vector<SpecFactory::SpecGeneratorFuncPtr> SpecFactory::spec_generators;
-
 void SpecFactory::initializeSpecs() {
     SpecFactory::spec_generators.clear();
 

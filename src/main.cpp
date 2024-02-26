@@ -37,7 +37,7 @@ int main(int argc, const char* argv[]) {
     vector<string> arguments(argv + 1, argv + argc);
     globalArgs.assign(argv + 1, argv + argc);
 
-//    if (arguments.size() != 2) throw invalid_argument("Invalid number of arguments");
+    if (arguments.size() != 2) throw invalid_argument("Invalid number of arguments");
 
     if (arguments[0] == "--help") {
         cout << help_message << endl;

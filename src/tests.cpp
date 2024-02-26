@@ -533,11 +533,11 @@ vector<Workload> transform_aipg_to_cenq(Workload wl, Search& search) {
     // cenq(q, t) = t or [t1-1, t2]: cenq(q, t) = 1 We return a vector of the original workload and
     // the two new workloads
 
-    Workload originalWorkload = wl;
+    cout << "Transforming aipg to cenq" << endl;
 
     // Queue for BFS
-    std::queue<Workload> q;
-    q.push(wl);
+    std::queue<Workload> workloadQueue;
+    workloadQueue.push(wl);
 
     set<TimedSpec> specs = wl.get_all_specs();
     for (const TimedSpec& spec : specs) {
@@ -556,76 +556,84 @@ vector<Workload> transform_aipg_to_cenq(Workload wl, Search& search) {
                             op_t::EQ) { // They should all be EQ at this point, because this
                                         // function is called before any refinement / broadening
                                         // operations have been performed
-                            time_range_t new_time_range = time_range_t(time_range.first - 1,
-                                                                       time_range.second);
 
-                            // First try to replace it with [t1-1, t2]: cenq(q, t) = 1
-                            unsigned int one = 1;
-                            TimedSpec spec_to_try = TimedSpec(Comp(Indiv(metric_t::CENQ, q),
-                                                                   op_t::EQ,
-                                                                   one),
-                                                              new_time_range,
-                                                              wl.get_total_time());
-                            // Create temp workload
-                            Workload temp_wl = wl;
-                            temp_wl.rm_spec(spec); // TODO: Must also remove all cenq specs which
-                                                   // are overlapping with the aipg... Remove all
-                                                   // cenq specs which are overlapping with the aipg
-                            temp_wl = remove_cenq_in_time_range(temp_wl, new_time_range, q);
-                            temp_wl.add_spec(spec_to_try);
-                            if (search.check(temp_wl)) {
-                                // It's valid, replace the spec
-                                wl.rm_spec(spec);
-                                // Remove all cenq specs which are overlapping with the aipg
-                                wl = remove_cenq_in_time_range(wl, new_time_range, q);
-                                wl.add_spec(spec_to_try);
-                            } else {
-                                // It's not valid, try another option
+                            // At this point, we've determined that the spec we're considering (from
+                            // the original workload) is of the correct aipg type We'll try to
+                            // change it for each of the current Workloads in the queue
 
-                                // Try to replace it with [t1-1, t2]: cenq(q, t) = t
-                                spec_to_try = TimedSpec(Comp(Indiv(metric_t::CENQ, q),
-                                                             op_t::EQ,
-                                                             Time(1)),
-                                                        new_time_range,
-                                                        wl.get_total_time());
+                            int queueSize = workloadQueue.size();
+                            for (int i = 0; i < queueSize; i++) {
+                                Workload currentWl = workloadQueue.front();
+                                workloadQueue.pop();
+                                workloadQueue.push(
+                                    currentWl); // Push the current workload with no changes
+                                                // (keeping aipg might be the better option)
+
+                                time_range_t new_time_range = time_range_t(time_range.first - 1,
+                                                                           time_range.second);
+
+                                // First try to replace it with [t1-1, t2]: cenq(q, t) = 1
+                                unsigned int one = 1;
+                                TimedSpec spec_to_try = TimedSpec(Comp(Indiv(metric_t::CENQ, q),
+                                                                       op_t::EQ,
+                                                                       one),
+                                                                  new_time_range,
+                                                                  wl.get_total_time());
                                 // Create temp workload
-                                temp_wl = wl;
-                                temp_wl.rm_spec(spec);
-                                // Remove all cenq specs which are overlapping with the aipg
+                                Workload temp_wl = currentWl;
+                                temp_wl.rm_spec(
+                                    spec); // TODO: Must also remove all cenq specs which
+                                           // are overlapping with the aipg... Remove all
+                                           // cenq specs which are overlapping with the aipg
                                 temp_wl = remove_cenq_in_time_range(temp_wl, new_time_range, q);
                                 temp_wl.add_spec(spec_to_try);
                                 if (search.check(temp_wl)) {
-                                    // It's valid, replace the spec
-                                    wl.rm_spec(spec);
-                                    // Remove all cenq specs which are overlapping with the aipg
-                                    wl = remove_cenq_in_time_range(wl, new_time_range, q);
-                                    wl.add_spec(spec_to_try);
+                                    // Add to queue
+                                    workloadQueue.push(temp_wl);
                                 } else {
                                     // It's not valid, try another option
 
-                                    // Try to replace it with [t1-1, t2]: cenq(q, t) = t2
-                                    unsigned int t2 = time_range.second;
+                                    // Try to replace it with [t1-1, t2]: cenq(q, t) = t
                                     spec_to_try = TimedSpec(Comp(Indiv(metric_t::CENQ, q),
                                                                  op_t::EQ,
-                                                                 t2),
+                                                                 Time(1)),
                                                             new_time_range,
                                                             wl.get_total_time());
                                     // Create temp workload
-                                    temp_wl = wl;
+                                    temp_wl = currentWl;
                                     temp_wl.rm_spec(spec);
                                     // Remove all cenq specs which are overlapping with the aipg
                                     temp_wl = remove_cenq_in_time_range(temp_wl, new_time_range, q);
                                     temp_wl.add_spec(spec_to_try);
-
                                     if (search.check(temp_wl)) {
-                                        // It's valid, replace the spec
-                                        wl.rm_spec(spec);
-                                        // Remove all cenq specs which are overlapping with the aipg
-                                        wl = remove_cenq_in_time_range(wl, new_time_range, q);
-                                        wl.add_spec(spec_to_try);
+                                        // Add to queue
+                                        workloadQueue.push(temp_wl);
                                     } else {
-                                        // It's not valid, keep the old spec
-                                        // At this point, we just keep aipg
+                                        // It's not valid, try another option
+
+                                        // Try to replace it with [t1-1, t2]: cenq(q, t) = t2
+                                        unsigned int t2 = time_range.second;
+                                        spec_to_try = TimedSpec(Comp(Indiv(metric_t::CENQ, q),
+                                                                     op_t::EQ,
+                                                                     t2),
+                                                                new_time_range,
+                                                                wl.get_total_time());
+                                        // Create temp workload
+                                        temp_wl = currentWl;
+                                        temp_wl.rm_spec(spec);
+                                        // Remove all cenq specs which are overlapping with the aipg
+                                        temp_wl = remove_cenq_in_time_range(temp_wl,
+                                                                            new_time_range,
+                                                                            q);
+                                        temp_wl.add_spec(spec_to_try);
+
+                                        if (search.check(temp_wl)) {
+                                            // Add to queue
+                                            workloadQueue.push(temp_wl);
+                                        } else {
+                                            // It's not valid, don't add any new workloads to the
+                                            // queue At this point, we just keep aipg
+                                        }
                                     }
                                 }
                             }
@@ -636,9 +644,12 @@ vector<Workload> transform_aipg_to_cenq(Workload wl, Search& search) {
         }
     }
 
+    // Return vector of all the queues left in the queue
     vector<Workload> workloads;
-    workloads.push_back(originalWorkload);
-    workloads.push_back(wl);
+    while (!workloadQueue.empty()) {
+        workloads.push_back(workloadQueue.front());
+        workloadQueue.pop();
+    }
 
     return workloads;
 }
@@ -668,11 +679,14 @@ Workload refine(Workload wl, Search& search) {
 }
 
 Workload improve(Workload wl, Search& search) {
+    cout << "Starting improvement process" << endl;
     if (!search.check(wl)) {
         throw std::runtime_error("IMPROVEMENT ERROR: Original workload is invalid");
     }
 
     std::vector<Workload> possible_workloads = transform_aipg_to_cenq(wl, search);
+    cout << "Done transforming aipg to cenq" << endl;
+    cout << "Number of possible workloads: " << possible_workloads.size() << endl;
     if (possible_workloads.empty()) {
         throw std::runtime_error("No possible workloads generated");
     }
@@ -680,7 +694,11 @@ Workload improve(Workload wl, Search& search) {
     std::unique_ptr<Workload> bestWorkloadPtr;
     unsigned int lowestCost = std::numeric_limits<unsigned int>::max();
 
+    int numWorkloads = 1;
+
     for (auto& workload : possible_workloads) {
+        cout << "Refining " << numWorkloads << "th workload" << endl;
+        numWorkloads++;
         Workload refinedWorkload = refine(workload, search);
         unsigned int currentCost = search.cost(refinedWorkload);
 
@@ -729,386 +747,403 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
     //        return;
     //    }
 
-    cout << "Base example: " << endl << *base_eg << endl;
+    if (searchMode == "research") {
+        cout << "Base example: " << endl << *base_eg << endl;
 
-    vector<vector<unsigned int>> enqs = base_eg->enqs;
-    vector<vector<unsigned int>> sums(cp->in_queue_cnt(), vector<unsigned int>(total_time, 0));
-    for (unsigned int q = 0; q < enqs.size(); q++) {
-        for (unsigned int t = 0; t < enqs[q].size(); t++) {
-            sums[q][t] = (t == 0) ? enqs[q][t] : sums[q][t - 1] + enqs[q][t];
-        }
-    }
-
-    // Add cenq specs
-    Workload wl(100, cp->in_queue_cnt(), total_time);
-    for (unsigned int q = 0; q < enqs.size(); q++) {
-        for (unsigned int t = 0; t < enqs[q].size(); t++) {
-            //            cout << "cenq(q" << q << ", " << t << ") = " << sums[q][t] << endl;
-            wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::EQ, sums[q][t]),
-                                  time_range_t(t, t),
-                                  total_time));
-        }
-    }
-
-    // Add aipg specs
-    Queue* q0 = cp->get_out_queue(0);
-
-
-//     Add meta-data specs (ecmp and dst)
-    Ecmp ecmp = Ecmp(q0, total_time, cp->net_ctx);
-    Dst dst = Dst(q0, total_time, cp->net_ctx);
-
-    // Add ecmp and dst specs to the workload
-
-    for (unsigned int q = 0; q < enqs.size(); q++) {
-        for (unsigned int t = 0; t < enqs[q].size(); t++) {
-            metric_val metric_value;
-            ecmp.eval(base_eg, t, q, metric_value);
-            unsigned int value = metric_value.value;
-            if (metric_value.valid) {
-                wl.add_spec(TimedSpec(Comp(Indiv(metric_t::ECMP, q), op_t::EQ, value),
-                                      time_range_t(t, t),
-                                      total_time));
+        vector<vector<unsigned int>> enqs = base_eg->enqs;
+        vector<vector<unsigned int>> sums(cp->in_queue_cnt(), vector<unsigned int>(total_time, 0));
+        for (unsigned int q = 0; q < enqs.size(); q++) {
+            for (unsigned int t = 0; t < enqs[q].size(); t++) {
+                sums[q][t] = (t == 0) ? enqs[q][t] : sums[q][t - 1] + enqs[q][t];
             }
-            dst.eval(base_eg, t, q, metric_value);
-            value = metric_value.value;
-            if(metric_value.valid) {
-                wl.add_spec(TimedSpec(Comp(Indiv(metric_t::DST, q), op_t::EQ, value),
+        }
+
+        // Add cenq specs
+        Workload wl(100, cp->in_queue_cnt(), total_time);
+        for (unsigned int q = 0; q < enqs.size(); q++) {
+            for (unsigned int t = 0; t < enqs[q].size(); t++) {
+                //            cout << "cenq(q" << q << ", " << t << ") = " << sums[q][t] << endl;
+                wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::EQ, sums[q][t]),
                                       time_range_t(t, t),
                                       total_time));
             }
         }
-    }
+
+        // Add aipg specs
+        Queue* q0 = cp->get_out_queue(0);
 
 
-    cout << "Original Workload: " << endl << wl << endl;
+        //     Add meta-data specs (ecmp and dst)
+        Ecmp ecmp = Ecmp(q0, total_time, cp->net_ctx);
+        Dst dst = Dst(q0, total_time, cp->net_ctx);
 
-    Search search(cp, query, max_spec, config, good_examples_file, bad_examples_file);
-    if(!search.check(wl)) {
-        cout << "ERROR: Original workload is invalid" << endl;
+        // Add ecmp and dst specs to the workload
 
-        solver_res_t workload_feasible = search.cp->check_workload_without_query(wl);
-        if(workload_feasible == solver_res_t::UNSAT) {
-            cout << "Workload is infeasible" << endl;
-        }
-
-        IndexedExample* counter_eg = new IndexedExample();
-        solver_res_t query_only_res = search.cp->check_workload_with_query(wl, counter_eg);
-        if(query_only_res == solver_res_t::UNKNOWN){
-            cout << "Counter-example: " << endl << *counter_eg << endl;
-        }
-        return;
-    }
-
-    // Keep randomly removing specs until we hit 'minimum' workload
-    // (i.e. the workload that is valid but removing any spec makes it invalid)
-
-    // First filter out meta-data specs (ecmp and dst) : they are not essential for some network types
-    auto all_specs = wl.get_all_specs();
-    auto meta_data_specs = std::vector<TimedSpec>();
-    //    for(auto const& timed_spec : all_specs){
-    //        wl_spec_t spec = timed_spec.get_wl_spec();
-    //        if(holds_alternative<Comp>(spec)){
-    //            Comp comp = get<Comp>(spec);
-    //            if(holds_alternative<Indiv>(comp.lhs)){
-    //                Indiv indiv = get<Indiv>(comp.lhs);
-    //                if(indiv.get_metric() == metric_t::ECMP || indiv.get_metric() ==
-    //                metric_t::DST){
-    //                    meta_data_specs.push_back(timed_spec);
-    //                }
-    //            }
-    //        }
-    //    }
-    //
-    Workload originalWorkload = wl;
-
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    wl = originalWorkload;
-    Workload lastValidWl = wl; // Store the initial workload state.
-
-    std::set<TimedSpec> attemptedSpecs; // To track specs we've attempted to remove.
-    std::set<TimedSpec> essentialSpecs; // To track specs confirmed as essential.
-                                        //
-                                        //    // Randomly remove meta-data specs
-                                        //    while (true) {
-                                        //        if (meta_data_specs.empty()) {
-                                        //            break;
-                                        //        }
-    //        std::uniform_int_distribution<> dis(0, meta_data_specs.size() - 1);
-    //        auto it = std::next(meta_data_specs.begin(), dis(gen));
-    //        TimedSpec const& specToRemove = *it;
-    //        wl.rm_spec(specToRemove);
-    //        if (search.check(wl)) {
-    //            lastValidWl = wl;          // Update the last valid state.
-    //            meta_data_specs.erase(it); // Remove the spec from the set of potential meta-data
-    //            specs.
-    //        } else {
-    //            wl.add_spec(specToRemove); // Put the last removed spec back.
-    //            meta_data_specs.erase(it); // Remove the spec from the set of potential meta-data
-    //            specs.
-    //        }
-    //    }
-    //
-    //    while (true) {
-    //        auto specs = wl.get_all_specs(); // Get the current specs.
-    //
-    //        // Break the loop if all current specs are confirmed as essential.
-    //        if (essentialSpecs.size() == specs.size()) {
-    //            break;
-    //        }
-    //
-    //        std::uniform_int_distribution<> dis(0, specs.size() - 1);
-    //        auto it = std::next(specs.begin(), dis(gen));
-    //        TimedSpec const& specToRemove = *it;
-    //        //        cout << "Removing spec: " << specToRemove << endl;
-    //
-    //        // If we've already attempted to remove this spec, skip it.
-    //        if (attemptedSpecs.find(specToRemove) != attemptedSpecs.end()) {
-    //            //            cout << "Spec already attempted" << endl;
-    //            continue;
-    //        }
-    //
-    //        // Attempt to remove the spec.
-    //        Workload tempWl = wl;
-    //        tempWl.rm_spec(specToRemove);
-    //
-    //        if (search.check(tempWl)) {
-    //            //            cout << "Workload is valid after removing spec" << endl;
-    //            wl = tempWl;            // Update the original workload if the temp one is valid.
-    //            lastValidWl = wl;       // Update the last valid state.
-    //            attemptedSpecs.clear(); // Reset attempted specs since the workload has changed.
-    //        } else {
-    //            //            cout << "Workload is invalid after removing spec" << endl;
-    //            attemptedSpecs.insert(specToRemove); // Mark this spec as attempted.
-    //            essentialSpecs.insert(specToRemove); // Confirm this spec as essential.
-    //        }
-    //    }
-    //
-    //    cout << "Last valid workload: " << endl << lastValidWl << endl;
-    //
-    //    if (!search.check(lastValidWl)) {
-    //        cout << "ERROR: Last valid workload is invalid" << endl;
-    //    } else {
-    //        lastValidWl = search.setup_refinement(lastValidWl);
-    //        lastValidWl = search.remove_specs(lastValidWl);
-    //        cout << "Workload after removing specs: " << endl << lastValidWl << endl;
-    //        lastValidWl = combine(lastValidWl, search);
-    //        cout << "Workload after combining: " << endl << lastValidWl << endl;
-    //        lastValidWl = search.aggregate_indivs_to_sums(lastValidWl);
-    //        cout << "Workload after aggregating indivs to sums: " << endl << lastValidWl << endl;
-    //        lastValidWl = broaden_operations(lastValidWl, search);
-    //        cout << "Workload after broadening operations: " << endl << lastValidWl << endl;
-    //        lastValidWl = search.tighten_constant_bounds(lastValidWl);
-    //        cout << "Workload after tightening constant bounds: " << endl << lastValidWl << endl;
-    //        lastValidWl = restrict_time_ranges(lastValidWl, search);
-    //        cout << "Final Workload after restricting time ranges (Random Approach): " << endl <<
-    //        lastValidWl << endl;
-    //    }
-    //
-    //    Workload lastValidWlRandom = lastValidWl;
-    //    unsigned int random_cost = search.cost(lastValidWlRandom);
-
-    wl = originalWorkload;
-
-    AIPG aipg = AIPG(q0, total_time, cp->net_ctx);
-    // Add aipg specs to the workload
-    for (unsigned int q = 0; q < enqs.size(); q++) {
-        for (unsigned int t = 0; t < enqs[q].size(); t++) {
-            metric_val metric_value;
-            aipg.eval(base_eg, t, q, metric_value);
-            unsigned int value = metric_value.value;
-            wl.add_spec(TimedSpec(Comp(Indiv(metric_t::AIPG, q), op_t::EQ, value),
-                                  time_range_t(t, t),
-                                  total_time));
-        }
-    }
-
-    lastValidWl = wl; // Store the initial workload state.
-
-    attemptedSpecs.clear(); // To track specs we've attempted to remove.
-    essentialSpecs.clear(); // To track specs confirmed as essential.
-
-    meta_data_specs.clear();
-    for(auto const& timed_spec : all_specs){
-        wl_spec_t spec = timed_spec.get_wl_spec();
-        if(holds_alternative<Comp>(spec)){
-            Comp comp = get<Comp>(spec);
-            if(holds_alternative<Indiv>(comp.lhs)){
-                Indiv indiv = get<Indiv>(comp.lhs);
-                if(indiv.get_metric() == metric_t::ECMP || indiv.get_metric() == metric_t::DST){
-                    meta_data_specs.push_back(timed_spec);
+        for (unsigned int q = 0; q < enqs.size(); q++) {
+            for (unsigned int t = 0; t < enqs[q].size(); t++) {
+                metric_val metric_value;
+                ecmp.eval(base_eg, t, q, metric_value);
+                unsigned int value = metric_value.value;
+                if (metric_value.valid) {
+                    wl.add_spec(TimedSpec(Comp(Indiv(metric_t::ECMP, q), op_t::EQ, value),
+                                          time_range_t(t, t),
+                                          total_time));
+                }
+                dst.eval(base_eg, t, q, metric_value);
+                value = metric_value.value;
+                if (metric_value.valid) {
+                    wl.add_spec(TimedSpec(Comp(Indiv(metric_t::DST, q), op_t::EQ, value),
+                                          time_range_t(t, t),
+                                          total_time));
                 }
             }
         }
-    }
 
-    // Randomly remove meta-data specs
-    while (true) {
-        if (meta_data_specs.empty()) {
-            break;
-        }
-        std::uniform_int_distribution<> dis(0, meta_data_specs.size() - 1);
-        auto it = std::next(meta_data_specs.begin(), dis(gen));
-        TimedSpec const& specToRemove = *it;
-        wl.rm_spec(specToRemove);
-        if (search.check(wl)) {
-            lastValidWl = wl;          // Update the last valid state.
-            meta_data_specs.erase(it); // Remove the spec from the set of potential meta-data specs.
-        } else {
-            wl.add_spec(specToRemove); // Put the last removed spec back.
-            meta_data_specs.erase(it); // Remove the spec from the set of potential meta-data specs.
-        }
-    }
 
-    while (true) {
-        auto specs = wl.get_all_specs(); // Get the current specs.
+        cout << "Original Workload: " << endl << wl << endl;
 
-        // Break the loop if all current specs are confirmed as essential.
-        if (essentialSpecs.size() == specs.size()) {
-            break;
+        Search search(cp, query, max_spec, config, good_examples_file, bad_examples_file);
+        if (!search.check(wl)) {
+            cout << "ERROR: Original workload is invalid" << endl;
+
+            solver_res_t workload_feasible = search.cp->check_workload_without_query(wl);
+            if (workload_feasible == solver_res_t::UNSAT) {
+                cout << "Workload is infeasible" << endl;
+            }
+
+            IndexedExample* counter_eg = new IndexedExample();
+            solver_res_t query_only_res = search.cp->check_workload_with_query(wl, counter_eg);
+            if (query_only_res == solver_res_t::UNKNOWN) {
+                cout << "Counter-example: " << endl << *counter_eg << endl;
+            }
+            return;
         }
 
-        // Sort the specs by time range length (
-        std::vector<TimedSpec> sortedSpecs(specs.begin(), specs.end());
-        std::sort(sortedSpecs.begin(),
-                  sortedSpecs.end(),
-                  [](const TimedSpec& a, const TimedSpec& b) {
-                      return a.get_time_range().second - a.get_time_range().first <
-                             b.get_time_range().second - b.get_time_range().first;
-                  });
+        // Keep randomly removing specs until we hit 'minimum' workload
+        // (i.e. the workload that is valid but removing any spec makes it invalid)
 
-        // Pick the shortest time range spec, keep picking until we find one we havent't tried
-        int index = 0;
-        TimedSpec specToRemove = sortedSpecs[index];
+        // First filter out meta-data specs (ecmp and dst) : they are not essential for some network
+        // types
+        auto all_specs = wl.get_all_specs();
+        auto meta_data_specs = std::vector<TimedSpec>();
+        //    for(auto const& timed_spec : all_specs){
+        //        wl_spec_t spec = timed_spec.get_wl_spec();
+        //        if(holds_alternative<Comp>(spec)){
+        //            Comp comp = get<Comp>(spec);
+        //            if(holds_alternative<Indiv>(comp.lhs)){
+        //                Indiv indiv = get<Indiv>(comp.lhs);
+        //                if(indiv.get_metric() == metric_t::ECMP || indiv.get_metric() ==
+        //                metric_t::DST){
+        //                    meta_data_specs.push_back(timed_spec);
+        //                }
+        //            }
+        //        }
+        //    }
+        //
+        Workload originalWorkload = wl;
+
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        wl = originalWorkload;
+        Workload lastValidWl = wl; // Store the initial workload state.
+
+        std::set<TimedSpec> attemptedSpecs; // To track specs we've attempted to remove.
+        std::set<TimedSpec> essentialSpecs; // To track specs confirmed as essential.
+                                            //
+                                            //    // Randomly remove meta-data specs
+                                            //    while (true) {
+                                            //        if (meta_data_specs.empty()) {
+                                            //            break;
+                                            //        }
+        //        std::uniform_int_distribution<> dis(0, meta_data_specs.size() - 1);
+        //        auto it = std::next(meta_data_specs.begin(), dis(gen));
+        //        TimedSpec const& specToRemove = *it;
+        //        wl.rm_spec(specToRemove);
+        //        if (search.check(wl)) {
+        //            lastValidWl = wl;          // Update the last valid state.
+        //            meta_data_specs.erase(it); // Remove the spec from the set of potential
+        //            meta-data specs.
+        //        } else {
+        //            wl.add_spec(specToRemove); // Put the last removed spec back.
+        //            meta_data_specs.erase(it); // Remove the spec from the set of potential
+        //            meta-data specs.
+        //        }
+        //    }
+        //
+        //    while (true) {
+        //        auto specs = wl.get_all_specs(); // Get the current specs.
+        //
+        //        // Break the loop if all current specs are confirmed as essential.
+        //        if (essentialSpecs.size() == specs.size()) {
+        //            break;
+        //        }
+        //
+        //        std::uniform_int_distribution<> dis(0, specs.size() - 1);
+        //        auto it = std::next(specs.begin(), dis(gen));
+        //        TimedSpec const& specToRemove = *it;
+        //        //        cout << "Removing spec: " << specToRemove << endl;
+        //
+        //        // If we've already attempted to remove this spec, skip it.
+        //        if (attemptedSpecs.find(specToRemove) != attemptedSpecs.end()) {
+        //            //            cout << "Spec already attempted" << endl;
+        //            continue;
+        //        }
+        //
+        //        // Attempt to remove the spec.
+        //        Workload tempWl = wl;
+        //        tempWl.rm_spec(specToRemove);
+        //
+        //        if (search.check(tempWl)) {
+        //            //            cout << "Workload is valid after removing spec" << endl;
+        //            wl = tempWl;            // Update the original workload if the temp one is
+        //            valid. lastValidWl = wl;       // Update the last valid state.
+        //            attemptedSpecs.clear(); // Reset attempted specs since the workload has
+        //            changed.
+        //        } else {
+        //            //            cout << "Workload is invalid after removing spec" << endl;
+        //            attemptedSpecs.insert(specToRemove); // Mark this spec as attempted.
+        //            essentialSpecs.insert(specToRemove); // Confirm this spec as essential.
+        //        }
+        //    }
+        //
+        //    cout << "Last valid workload: " << endl << lastValidWl << endl;
+        //
+        //    if (!search.check(lastValidWl)) {
+        //        cout << "ERROR: Last valid workload is invalid" << endl;
+        //    } else {
+        //        lastValidWl = search.setup_refinement(lastValidWl);
+        //        lastValidWl = search.remove_specs(lastValidWl);
+        //        cout << "Workload after removing specs: " << endl << lastValidWl << endl;
+        //        lastValidWl = combine(lastValidWl, search);
+        //        cout << "Workload after combining: " << endl << lastValidWl << endl;
+        //        lastValidWl = search.aggregate_indivs_to_sums(lastValidWl);
+        //        cout << "Workload after aggregating indivs to sums: " << endl << lastValidWl <<
+        //        endl; lastValidWl = broaden_operations(lastValidWl, search); cout << "Workload
+        //        after broadening operations: " << endl << lastValidWl << endl; lastValidWl =
+        //        search.tighten_constant_bounds(lastValidWl); cout << "Workload after tightening
+        //        constant bounds: " << endl << lastValidWl << endl; lastValidWl =
+        //        restrict_time_ranges(lastValidWl, search); cout << "Final Workload after
+        //        restricting time ranges (Random Approach): " << endl << lastValidWl << endl;
+        //    }
+        //
+        //    Workload lastValidWlRandom = lastValidWl;
+        //    unsigned int random_cost = search.cost(lastValidWlRandom);
+
+        wl = originalWorkload;
+
+        AIPG aipg = AIPG(q0, total_time, cp->net_ctx);
+        // Add aipg specs to the workload
+        for (unsigned int q = 0; q < enqs.size(); q++) {
+            for (unsigned int t = 0; t < enqs[q].size(); t++) {
+                metric_val metric_value;
+                aipg.eval(base_eg, t, q, metric_value);
+                unsigned int value = metric_value.value;
+                wl.add_spec(TimedSpec(Comp(Indiv(metric_t::AIPG, q), op_t::EQ, value),
+                                      time_range_t(t, t),
+                                      total_time));
+            }
+        }
+
+        lastValidWl = wl; // Store the initial workload state.
+
+        attemptedSpecs.clear(); // To track specs we've attempted to remove.
+        essentialSpecs.clear(); // To track specs confirmed as essential.
+
+        meta_data_specs.clear();
+        for (auto const& timed_spec : all_specs) {
+            wl_spec_t spec = timed_spec.get_wl_spec();
+            if (holds_alternative<Comp>(spec)) {
+                Comp comp = get<Comp>(spec);
+                if (holds_alternative<Indiv>(comp.lhs)) {
+                    Indiv indiv = get<Indiv>(comp.lhs);
+                    if (indiv.get_metric() == metric_t::ECMP ||
+                        indiv.get_metric() == metric_t::DST) {
+                        meta_data_specs.push_back(timed_spec);
+                    }
+                }
+            }
+        }
+
+        // Randomly remove meta-data specs
+        cout << "Removing meta-data specs..." << endl;
         while (true) {
-            if (index == sortedSpecs.size()) {
+            if (meta_data_specs.empty()) {
                 break;
             }
-            specToRemove = sortedSpecs[index];
-            if (attemptedSpecs.find(specToRemove) != attemptedSpecs.end()) {
-                index++;
-                continue;
+            std::uniform_int_distribution<> dis(0, meta_data_specs.size() - 1);
+            auto it = std::next(meta_data_specs.begin(), dis(gen));
+            TimedSpec const& specToRemove = *it;
+            wl.rm_spec(specToRemove);
+            if (search.check(wl)) {
+                lastValidWl = wl; // Update the last valid state.
+                meta_data_specs.erase(
+                    it); // Remove the spec from the set of potential meta-data specs.
+            } else {
+                wl.add_spec(specToRemove); // Put the last removed spec back.
+                meta_data_specs.erase(
+                    it); // Remove the spec from the set of potential meta-data specs.
             }
-            break;
+        }
+        cout << "Finished removing meta-data specs" << endl;
+
+        cout << "Starting random approach..." << endl;
+        while (true) {
+            auto specs = wl.get_all_specs(); // Get the current specs.
+
+            // Break the loop if all current specs are confirmed as essential.
+            if (essentialSpecs.size() == specs.size()) {
+                break;
+            }
+
+            // Sort the specs by time range length (
+            std::vector<TimedSpec> sortedSpecs(specs.begin(), specs.end());
+            std::sort(sortedSpecs.begin(),
+                      sortedSpecs.end(),
+                      [](const TimedSpec& a, const TimedSpec& b) {
+                          return a.get_time_range().second - a.get_time_range().first <
+                                 b.get_time_range().second - b.get_time_range().first;
+                      });
+
+            // Pick the shortest time range spec, keep picking until we find one we havent't tried
+            int index = 0;
+            TimedSpec specToRemove = sortedSpecs[index];
+            while (true) {
+                if (index == sortedSpecs.size()) {
+                    break;
+                }
+                specToRemove = sortedSpecs[index];
+                if (attemptedSpecs.find(specToRemove) != attemptedSpecs.end()) {
+                    index++;
+                    continue;
+                }
+                break;
+            }
+
+            // Attempt to remove the spec.
+            Workload tempWl = wl;
+            tempWl.rm_spec(specToRemove);
+
+            if (search.check(tempWl)) {
+                //            cout << "Workload is valid after removing spec" << endl;
+                wl = tempWl;            // Update the original workload if the temp one is valid.
+                lastValidWl = wl;       // Update the last valid state.
+                attemptedSpecs.clear(); // Reset attempted specs since the workload has changed.
+            } else {
+                //            cout << "Workload is invalid after removing spec" << endl;
+                attemptedSpecs.insert(specToRemove); // Mark this spec as attempted.
+                essentialSpecs.insert(specToRemove); // Confirm this spec as essential.
+            }
         }
 
-        // Attempt to remove the spec.
-        Workload tempWl = wl;
-        tempWl.rm_spec(specToRemove);
+        cout << "Last valid workload: " << endl << lastValidWl << endl;
 
-        if (search.check(tempWl)) {
-            //            cout << "Workload is valid after removing spec" << endl;
-            wl = tempWl;            // Update the original workload if the temp one is valid.
-            lastValidWl = wl;       // Update the last valid state.
-            attemptedSpecs.clear(); // Reset attempted specs since the workload has changed.
+        if (!search.check(lastValidWl)) {
+            throw std::runtime_error("ERROR: Last valid workload is invalid");
         } else {
-            //            cout << "Workload is invalid after removing spec" << endl;
-            attemptedSpecs.insert(specToRemove); // Mark this spec as attempted.
-            essentialSpecs.insert(specToRemove); // Confirm this spec as essential.
+            lastValidWl = improve(lastValidWl, search);
+            cout << "Final Workload after improving: " << endl << lastValidWl << endl;
+
+            search.print_stats();
         }
-    }
 
-    cout << "Last valid workload: " << endl << lastValidWl << endl;
+        //    Workload lastValidWlBroad = lastValidWl;
+        //    unsigned int broad_cost = search.cost(lastValidWlBroad);
+        //    cout << "Random Approach Cost: " << random_cost << endl;
+        //    cout << "Approach Cost: " << broad_cost << endl;
 
-    if (!search.check(lastValidWl)) {
-        throw std::runtime_error("ERROR: Last valid workload is invalid");
-    } else {
-        lastValidWl = improve(lastValidWl, search);
-        cout << "Final Workload after improving: " << endl << lastValidWl << endl;
-    }
+        // Try another approach: start from the original workload and remove specs one by one
+        // by doing the following procedure:
+        // For each queue q:
+        // For t from 1 to total_time:
+        // Remove the spec that specifies cenq(q, t) = sum from 0 to t of enqs[q][t] until the
+        // workload becomes invalid (then put the last removed spec back and move on to the next
+        // queue)
 
-    //    Workload lastValidWlBroad = lastValidWl;
-    //    unsigned int broad_cost = search.cost(lastValidWlBroad);
-    //    cout << "Random Approach Cost: " << random_cost << endl;
-    //    cout << "Approach Cost: " << broad_cost << endl;
+        //    if(searchMode == "front_back") {
+        //        Workload wl2 = wl;
+        //        for (unsigned int q = 0; q < enqs.size(); q++) {
+        //            for (unsigned int t = 0; t < enqs[q].size(); t++) {
+        //                TimedSpec specToRemove(Comp(Indiv(metric_t::CENQ, q), op_t::EQ,
+        //                sums[q][t]),
+        //                                       time_range_t(t, t),
+        //                                       total_time);
+        //                wl2.rm_spec(specToRemove);
+        //                //            cout << "Removing spec: " << specToRemove << endl;
+        //                if (!search.check(wl2)) {
+        //                    //                cout << "Workload is invalid" << endl;
+        //                    wl2.add_spec(specToRemove);
+        //                    break;
+        //                }
+        //            }
+        //        }
+        //
+        //        cout << "Last valid workload: " << endl << wl2 << endl;
+        //        wl2 = search.setup_refinement(wl2);
+        //        wl2 = search.remove_specs(wl2);
+        //        cout << "Workload after removing specs: " << endl << wl2 << endl;
+        //        wl2 = combine(wl2, search);
+        //        cout << "Workload after combining: " << endl << wl2 << endl;
+        //        wl2 = search.aggregate_indivs_to_sums(wl2);
+        //        cout << "Workload after aggregating indivs to sums: " << endl << wl2 << endl;
+        //        wl2 = search.tighten_constant_bounds(wl2);
+        //        cout << "Workload after tightening constant bounds: " << endl << wl2 << endl;
+        //        wl2 = broaden_operations(wl2, search);
+        //        cout << "Final Workload after broadening operations (Front-to-Back Iterative
+        //        Approach): "
+        //             << endl
+        //             << wl2 << endl;
+        //    }
 
-    // Try another approach: start from the original workload and remove specs one by one
-    // by doing the following procedure:
-    // For each queue q:
-    // For t from 1 to total_time:
-    // Remove the spec that specifies cenq(q, t) = sum from 0 to t of enqs[q][t] until the workload becomes invalid (then put the last removed spec back and move on to the next queue)
-
-//    if(searchMode == "front_back") {
-//        Workload wl2 = wl;
-//        for (unsigned int q = 0; q < enqs.size(); q++) {
-//            for (unsigned int t = 0; t < enqs[q].size(); t++) {
-//                TimedSpec specToRemove(Comp(Indiv(metric_t::CENQ, q), op_t::EQ, sums[q][t]),
-//                                       time_range_t(t, t),
-//                                       total_time);
-//                wl2.rm_spec(specToRemove);
-//                //            cout << "Removing spec: " << specToRemove << endl;
-//                if (!search.check(wl2)) {
-//                    //                cout << "Workload is invalid" << endl;
-//                    wl2.add_spec(specToRemove);
-//                    break;
-//                }
-//            }
-//        }
-//
-//        cout << "Last valid workload: " << endl << wl2 << endl;
-//        wl2 = search.setup_refinement(wl2);
-//        wl2 = search.remove_specs(wl2);
-//        cout << "Workload after removing specs: " << endl << wl2 << endl;
-//        wl2 = combine(wl2, search);
-//        cout << "Workload after combining: " << endl << wl2 << endl;
-//        wl2 = search.aggregate_indivs_to_sums(wl2);
-//        cout << "Workload after aggregating indivs to sums: " << endl << wl2 << endl;
-//        wl2 = search.tighten_constant_bounds(wl2);
-//        cout << "Workload after tightening constant bounds: " << endl << wl2 << endl;
-//        wl2 = broaden_operations(wl2, search);
-//        cout << "Final Workload after broadening operations (Front-to-Back Iterative Approach): "
-//             << endl
-//             << wl2 << endl;
-//    }
-
-    // Back-to-Front approach: same as above, except we iterate on t from total_time to 1
-    // WARNING: time starts at 1, can never equal 0
-//    if(searchMode == "back_front") {
-//        Workload wl3 = wl;
-//
-//        for (unsigned int q = 0; q < enqs.size(); q++) {
-//    //        cout << "Number of timesteps for queue " << q << ": " << enqs[q].size() << endl;
-//            if (!enqs[q].empty()) {
-//                for (int t = static_cast<int>(enqs[q].size()) - 1; t >= 0; t--) {
-//                    TimedSpec specToRemove(Comp(Indiv(metric_t::CENQ, q), op_t::EQ, sums[q][t]),
-//                    time_range_t(static_cast<unsigned int>(t), static_cast<unsigned int>(t)),
-//                            total_time);
-//                    // Check if spec is in the workload
-//                    if (wl3.get_all_specs().find(specToRemove) == wl3.get_all_specs().end()) {
-//    //                    cout << "Spec " << specToRemove << " not in workload" << endl;
-//                        continue;
-//                    }
-//    //                cout << "Removing spec: " << specToRemove << endl;
-//                    wl3.rm_spec(specToRemove);
-//                    if (!search.check(wl3)) {
-//    //                    cout << "Workload is invalid" << endl;
-//                        wl3.add_spec(specToRemove);
-//                        break;
-//                    } else {
-//    //                    cout << "Workload is valid" << endl;
-//                    }
-//                }
-//            }
-//        }
-//
-//
-//        cout << "Last valid workload: " << endl << wl3 << endl;
-//        wl3 = search.setup_refinement(wl3);
-//        wl3 = search.remove_specs(wl3);
-//        cout << "Workload after removing specs: " << endl << wl3 << endl;
-//        wl3 = combine(wl3, search);
-//        cout << "Workload after combining: " << endl << wl3 << endl;
-//        wl3 = search.aggregate_indivs_to_sums(wl3);
-//        cout << "Workload after aggregating indivs to sums: " << endl << wl3 << endl;
-//        wl3 = search.tighten_constant_bounds(wl3);
-//        cout << "Workload after tightening constant bounds: " << endl << wl3 << endl;
-//        wl3 = broaden_operations(wl3, search);
-//        cout << "Final Workload after broadening operations (Back-to-Front Iterative Approach): " << endl << wl3 << endl;
-//
-//    }
-
-    if(searchMode=="default"){
+        // Back-to-Front approach: same as above, except we iterate on t from total_time to 1
+        // WARNING: time starts at 1, can never equal 0
+        //    if(searchMode == "back_front") {
+        //        Workload wl3 = wl;
+        //
+        //        for (unsigned int q = 0; q < enqs.size(); q++) {
+        //    //        cout << "Number of timesteps for queue " << q << ": " << enqs[q].size() <<
+        //    endl;
+        //            if (!enqs[q].empty()) {
+        //                for (int t = static_cast<int>(enqs[q].size()) - 1; t >= 0; t--) {
+        //                    TimedSpec specToRemove(Comp(Indiv(metric_t::CENQ, q), op_t::EQ,
+        //                    sums[q][t]), time_range_t(static_cast<unsigned int>(t),
+        //                    static_cast<unsigned int>(t)),
+        //                            total_time);
+        //                    // Check if spec is in the workload
+        //                    if (wl3.get_all_specs().find(specToRemove) ==
+        //                    wl3.get_all_specs().end()) {
+        //    //                    cout << "Spec " << specToRemove << " not in workload" << endl;
+        //                        continue;
+        //                    }
+        //    //                cout << "Removing spec: " << specToRemove << endl;
+        //                    wl3.rm_spec(specToRemove);
+        //                    if (!search.check(wl3)) {
+        //    //                    cout << "Workload is invalid" << endl;
+        //                        wl3.add_spec(specToRemove);
+        //                        break;
+        //                    } else {
+        //    //                    cout << "Workload is valid" << endl;
+        //                    }
+        //                }
+        //            }
+        //        }
+        //
+        //
+        //        cout << "Last valid workload: " << endl << wl3 << endl;
+        //        wl3 = search.setup_refinement(wl3);
+        //        wl3 = search.remove_specs(wl3);
+        //        cout << "Workload after removing specs: " << endl << wl3 << endl;
+        //        wl3 = combine(wl3, search);
+        //        cout << "Workload after combining: " << endl << wl3 << endl;
+        //        wl3 = search.aggregate_indivs_to_sums(wl3);
+        //        cout << "Workload after aggregating indivs to sums: " << endl << wl3 << endl;
+        //        wl3 = search.tighten_constant_bounds(wl3);
+        //        cout << "Workload after tightening constant bounds: " << endl << wl3 << endl;
+        //        wl3 = broaden_operations(wl3, search);
+        //        cout << "Final Workload after broadening operations (Back-to-Front Iterative
+        //        Approach): " << endl << wl3 << endl;
+        //
+        //    }
+    } else if (searchMode == "default") {
         run(cp,
             base_eg,
             good_example_cnt,

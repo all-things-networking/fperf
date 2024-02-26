@@ -1,0 +1,218 @@
+loom
+cp setup: 1.432 s
+base example generation: 192.361 s
+seed is: 13388
+Base example: 
+total time: 10
+EndDemux.sink.1
+enqs:
+0 0 0 0 0 0 0 0 0 0 0 
+1 1 1 1 1 1 1 1 1 1 1 
+2 0 0 0 0 0 0 0 0 0 0 
+3 0 0 0 0 0 0 0 0 0 0 
+4 0 0 0 0 0 0 0 0 0 0 
+5 0 0 0 0 0 0 0 0 0 0 
+6 1 1 1 1 1 1 1 1 1 1 
+7 1 1 1 1 1 1 1 1 1 1 
+8 0 0 0 0 0 0 0 0 0 0 
+9 0 0 0 0 0 0 0 0 0 0 
+10 1 1 1 1 1 1 1 1 1 1 
+11 0 0 0 0 0 0 0 0 0 0 
+deqs:
+0 0 0 0 0 0 0 0 0 0 0 
+1 1 1 1 1 1 1 1 1 1 1 
+2 0 0 0 0 0 0 0 0 0 0 
+3 0 0 0 0 0 0 0 0 0 0 
+4 0 0 0 0 0 0 0 0 0 0 
+5 0 0 0 0 0 0 0 0 0 0 
+6 1 1 1 1 1 1 1 1 1 1 
+7 1 1 1 1 1 1 1 1 1 1 
+8 0 0 0 0 0 0 0 0 0 0 
+9 0 0 0 0 0 0 0 0 0 0 
+10 1 1 1 1 1 1 1 1 1 1 
+11 0 0 0 0 0 0 0 0 0 0 
+pkts metadata: 
+0  |  |  |  |  |  |  |  |  |  | 
+1 [2, 136]  | [2, 136]  | [2, 136]  | [2, 136]  | [2, 136]  | [2, 136]  | [2, 136]  | [2, 136]  | [2, 136]  | [2, 136]  | 
+2  |  |  |  |  |  |  |  |  |  | 
+3  |  |  |  |  |  |  |  |  |  | 
+4  |  |  |  |  |  |  |  |  |  | 
+5  |  |  |  |  |  |  |  |  |  | 
+6 [1, 0]  | [1, 0]  | [1, 0]  | [1, 0]  | [1, 0]  | [1, 0]  | [1, 0]  | [1, 0]  | [1, 0]  | [1, 0]  | 
+7 [2, 136]  | [2, 136]  | [2, 136]  | [2, 136]  | [2, 136]  | [2, 136]  | [2, 136]  | [2, 136]  | [2, 136]  | [2, 136]  | 
+8  |  |  |  |  |  |  |  |  |  | 
+9  |  |  |  |  |  |  |  |  |  | 
+10 [2, 136]  | [2, 136]  | [2, 136]  | [2, 136]  | [2, 136]  | [2, 136]  | [2, 136]  | [2, 136]  | [2, 136]  | [2, 136]  | 
+11  |  |  |  |  |  |  |  |  |  | 
+
+Original Workload: 
+[1, 1]: cenq(1, t) = 1
+[1, 1]: cenq(6, t) = 1
+[1, 1]: cenq(7, t) = 1
+[1, 1]: cenq(10, t) = 1
+[1, 10]: cenq(0, t) = 0
+[1, 10]: cenq(2, t) = 0
+[1, 10]: cenq(3, t) = 0
+[1, 10]: cenq(4, t) = 0
+[1, 10]: cenq(5, t) = 0
+[1, 10]: cenq(8, t) = 0
+[1, 10]: cenq(9, t) = 0
+[1, 10]: cenq(11, t) = 0
+[1, 10]: dst(1, t) = 2
+[1, 10]: dst(6, t) = 1
+[1, 10]: dst(7, t) = 2
+[1, 10]: dst(10, t) = 2
+[1, 10]: ecmp(1, t) = 136
+[1, 10]: ecmp(6, t) = 0
+[1, 10]: ecmp(7, t) = 136
+[1, 10]: ecmp(10, t) = 136
+[2, 2]: cenq(1, t) = 2
+[2, 2]: cenq(6, t) = 2
+[2, 2]: cenq(7, t) = 2
+[2, 2]: cenq(10, t) = 2
+[3, 3]: cenq(1, t) = 3
+[3, 3]: cenq(6, t) = 3
+[3, 3]: cenq(7, t) = 3
+[3, 3]: cenq(10, t) = 3
+[4, 4]: cenq(1, t) = 4
+[4, 4]: cenq(6, t) = 4
+[4, 4]: cenq(7, t) = 4
+[4, 4]: cenq(10, t) = 4
+[5, 5]: cenq(1, t) = 5
+[5, 5]: cenq(6, t) = 5
+[5, 5]: cenq(7, t) = 5
+[5, 5]: cenq(10, t) = 5
+[6, 6]: cenq(1, t) = 6
+[6, 6]: cenq(6, t) = 6
+[6, 6]: cenq(7, t) = 6
+[6, 6]: cenq(10, t) = 6
+[7, 7]: cenq(1, t) = 7
+[7, 7]: cenq(6, t) = 7
+[7, 7]: cenq(7, t) = 7
+[7, 7]: cenq(10, t) = 7
+[8, 8]: cenq(1, t) = 8
+[8, 8]: cenq(6, t) = 8
+[8, 8]: cenq(7, t) = 8
+[8, 8]: cenq(10, t) = 8
+[9, 9]: cenq(1, t) = 9
+[9, 9]: cenq(6, t) = 9
+[9, 9]: cenq(7, t) = 9
+[9, 9]: cenq(10, t) = 9
+[10, 10]: cenq(1, t) = 10
+[10, 10]: cenq(6, t) = 10
+[10, 10]: cenq(7, t) = 10
+[10, 10]: cenq(10, t) = 10
+
+Cannot open file: 
+Cannot open file: 
+Last valid workload: 
+[1, 1]: cenq(1, t) = 1
+[1, 1]: cenq(7, t) = 1
+[1, 1]: cenq(10, t) = 1
+[1, 10]: cenq(0, t) = 0
+[1, 10]: cenq(3, t) = 0
+[1, 10]: cenq(9, t) = 0
+[2, 2]: cenq(1, t) = 2
+[2, 2]: cenq(10, t) = 2
+[3, 3]: cenq(1, t) = 3
+[4, 4]: cenq(7, t) = 4
+
+Workload after removing specs: 
+[1, 1]: cenq(1, t) = 1
+[1, 1]: cenq(7, t) = 1
+[1, 1]: cenq(10, t) = 1
+[1, 10]: cenq(0, t) <= 0
+[1, 10]: cenq(3, t) <= 0
+[1, 10]: cenq(9, t) <= 0
+[2, 2]: cenq(1, t) = 2
+[2, 2]: cenq(10, t) = 2
+[3, 3]: cenq(1, t) = 3
+[4, 4]: cenq(7, t) = 4
+
+Workload after combining: 
+[1, 1]: cenq(7, t) = 1
+[1, 2]: cenq(10, t) = t
+[1, 3]: cenq(1, t) = t
+[1, 10]: SUM_[q in {0, 3, 9, }] cenq(q ,t) <= 0
+[4, 4]: cenq(7, t) = 4
+
+Workload after aggregating indivs to sums: 
+[1, 1]: cenq(7, t) = 1
+[1, 2]: SUM_[q in {4, 10, }] cenq(q ,t) = t
+[1, 3]: cenq(1, t) = t
+[1, 10]: SUM_[q in {0, 3, 9, }] cenq(q ,t) <= 0
+[4, 4]: SUM_[q in {4, 7, }] cenq(q ,t) = 4
+
+Workload after broadening operations: 
+[1, 2]: SUM_[q in {4, 10, }] cenq(q ,t) >= t
+[1, 3]: cenq(1, t) >= t
+[1, 10]: SUM_[q in {0, 3, 9, }] cenq(q ,t) <= 0
+[1, 10]: cenq(7, t) >= 1
+[4, 10]: SUM_[q in {4, 7, }] cenq(q ,t) >= 4
+
+Workload after tightening constant bounds: 
+[1, 2]: SUM_[q in {4, 10, }] cenq(q ,t) >= t
+[1, 3]: cenq(1, t) >= t
+[1, 10]: SUM_[q in {0, 3, 9, }] cenq(q ,t) <= 0
+[1, 10]: cenq(7, t) >= 1
+[4, 10]: SUM_[q in {4, 7, }] cenq(q ,t) >= 4
+
+Final Workload after restricting time ranges (Random Approach): 
+[1, 2]: SUM_[q in {4, 10, }] cenq(q ,t) >= t
+[1, 3]: cenq(1, t) >= t
+[1, 9]: SUM_[q in {0, 3, 9, }] cenq(q ,t) <= 0
+[1, 10]: cenq(7, t) >= 1
+[4, 10]: SUM_[q in {4, 7, }] cenq(q ,t) >= 4
+
+Last valid workload: 
+[1, 10]: cenq(0, t) = 0
+[1, 10]: cenq(3, t) = 0
+[1, 10]: cenq(9, t) = 0
+[2, 10]: aipg(1, t) = 1
+[2, 10]: aipg(7, t) = 1
+[2, 10]: aipg(10, t) = 1
+[5, 5]: cenq(10, t) = 5
+[6, 6]: cenq(1, t) = 6
+
+Workload after removing specs: 
+[1, 10]: cenq(0, t) <= 0
+[1, 10]: cenq(3, t) <= 0
+[1, 10]: cenq(9, t) <= 0
+[2, 10]: aipg(1, t) = 1
+[2, 10]: aipg(7, t) = 1
+[2, 10]: aipg(10, t) = 1
+[5, 5]: cenq(10, t) = 5
+[6, 6]: cenq(1, t) = 6
+
+Workload after combining: 
+[1, 10]: SUM_[q in {0, 3, 9, }] cenq(q ,t) <= 0
+[2, 10]: aipg(1, t) = 1
+[2, 10]: aipg(7, t) = 1
+[2, 10]: aipg(10, t) = 1
+[5, 5]: cenq(10, t) = 5
+[6, 6]: cenq(1, t) = 6
+
+Workload after aggregating indivs to sums: 
+[1, 10]: SUM_[q in {0, 3, 9, }] cenq(q ,t) <= 0
+[2, 10]: aipg(1, t) = 1
+[2, 10]: aipg(7, t) = 1
+[2, 10]: aipg(10, t) = 1
+[5, 5]: cenq(10, t) = 5
+[6, 6]: cenq(1, t) = 6
+
+Workload after broadening operations: 
+[1, 10]: SUM_[q in {0, 3, 9, }] cenq(q ,t) <= 0
+[2, 10]: aipg(1, t) >= 1
+[2, 10]: aipg(7, t) >= 1
+[2, 10]: aipg(10, t) >= 1
+[5, 10]: cenq(10, t) >= 5
+[6, 10]: cenq(1, t) >= 6
+
+Workload after tightening constant bounds: 
+[1, 10]: SUM_[q in {0, 3, 9, }] cenq(q ,t) <= 0
+[2, 10]: aipg(1, t) >= 1
+[2, 10]: aipg(7, t) >= 1
+[2, 10]: aipg(10, t) >= 1
+[5, 10]: cenq(10, t) >= 5
+[6, 10]: cenq(1, t) >= 6
+

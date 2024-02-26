@@ -1,0 +1,174 @@
+fq_codel
+cp setup: 0.556 s
+base example generation: 11.674 s
+seed is: 4854
+Base example: 
+total time: 14
+2LRR.4
+enqs:
+0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+3 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+4 0 0 0 0 1 0 1 0 1 0 1 0 1 1 
+deqs:
+0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 
+1 0 0 1 0 0 0 0 0 1 0 0 0 0 0 
+2 0 0 0 1 0 0 0 0 0 0 1 0 0 0 
+3 0 0 0 0 1 0 0 0 0 0 0 0 1 0 
+4 0 0 0 0 0 1 0 1 0 1 0 1 0 1 
+pkts metadata: 
+0 [30, 31]  | [30, 31]  | [30, 31]  | [30, 31]  | [30, 31]  | [30, 31]  | [30, 31]  | [30, 31]  | [30, 31]  | [30, 31]  | [30, 31]  | [30, 31]  | [30, 31]  | [30, 31]  | 
+1 [0, 0]  | [0, 0]  | [0, 0]  | [0, 0]  | [0, 0]  | [0, 0]  | [0, 0]  | [0, 0]  | [0, 0]  | [0, 0]  | [0, 0]  | [0, 0]  | [0, 0]  | [0, 0]  | 
+2 [0, 83]  | [0, 83]  | [0, 83]  | [0, 83]  | [0, 83]  | [0, 83]  | [0, 83]  | [0, 83]  | [0, 83]  | [0, 83]  | [0, 83]  | [0, 83]  | [0, 83]  | [0, 83]  | 
+3 [0, 0]  | [0, 0]  | [0, 0]  | [0, 0]  | [0, 0]  | [0, 0]  | [0, 0]  | [0, 0]  | [0, 0]  | [0, 0]  | [0, 0]  | [0, 0]  | [0, 0]  | [0, 0]  | 
+4  |  |  |  | [0, 0]  |  | [0, 0]  |  | [0, 0]  |  | [0, 0]  |  | [0, 0]  | [0, 0]  | 
+
+Original Workload: 
+[1, 1]: cenq(0, t) = 1
+[1, 1]: cenq(1, t) = 1
+[1, 1]: cenq(2, t) = 1
+[1, 1]: cenq(3, t) = 1
+[1, 4]: cenq(4, t) = 0
+[2, 2]: cenq(0, t) = 2
+[2, 2]: cenq(1, t) = 2
+[2, 2]: cenq(2, t) = 2
+[2, 2]: cenq(3, t) = 2
+[1, 14]: dst(0, t) = 30
+[1, 14]: dst(1, t) = 0
+[1, 14]: dst(2, t) = 0
+[1, 14]: dst(3, t) = 0
+[1, 14]: ecmp(0, t) = 31
+[1, 14]: ecmp(1, t) = 0
+[1, 14]: ecmp(2, t) = 83
+[1, 14]: ecmp(3, t) = 0
+[3, 3]: cenq(0, t) = 3
+[3, 3]: cenq(1, t) = 3
+[3, 3]: cenq(2, t) = 3
+[3, 3]: cenq(3, t) = 3
+[4, 4]: cenq(0, t) = 4
+[4, 4]: cenq(1, t) = 4
+[4, 4]: cenq(2, t) = 4
+[4, 4]: cenq(3, t) = 4
+[5, 5]: cenq(0, t) = 5
+[5, 5]: cenq(1, t) = 5
+[5, 5]: cenq(2, t) = 5
+[5, 5]: cenq(3, t) = 5
+[5, 5]: dst(4, t) = 0
+[5, 5]: ecmp(4, t) = 0
+[5, 6]: cenq(4, t) = 1
+[6, 6]: cenq(0, t) = 6
+[6, 6]: cenq(1, t) = 6
+[6, 6]: cenq(2, t) = 6
+[6, 6]: cenq(3, t) = 6
+[7, 7]: cenq(0, t) = 7
+[7, 7]: cenq(1, t) = 7
+[7, 7]: cenq(2, t) = 7
+[7, 7]: cenq(3, t) = 7
+[7, 7]: dst(4, t) = 0
+[7, 7]: ecmp(4, t) = 0
+[7, 8]: cenq(4, t) = 2
+[8, 8]: cenq(0, t) = 8
+[8, 8]: cenq(1, t) = 8
+[8, 8]: cenq(2, t) = 8
+[8, 8]: cenq(3, t) = 8
+[9, 9]: cenq(0, t) = 9
+[9, 9]: cenq(1, t) = 9
+[9, 9]: cenq(2, t) = 9
+[9, 9]: cenq(3, t) = 9
+[9, 9]: dst(4, t) = 0
+[9, 9]: ecmp(4, t) = 0
+[9, 10]: cenq(4, t) = 3
+[10, 10]: cenq(0, t) = 10
+[10, 10]: cenq(1, t) = 10
+[10, 10]: cenq(2, t) = 10
+[10, 10]: cenq(3, t) = 10
+[11, 11]: cenq(0, t) = 11
+[11, 11]: cenq(1, t) = 11
+[11, 11]: cenq(2, t) = 11
+[11, 11]: cenq(3, t) = 11
+[11, 11]: dst(4, t) = 0
+[11, 11]: ecmp(4, t) = 0
+[11, 12]: cenq(4, t) = 4
+[12, 12]: cenq(0, t) = 12
+[12, 12]: cenq(1, t) = 12
+[12, 12]: cenq(2, t) = 12
+[12, 12]: cenq(3, t) = 12
+[13, 13]: cenq(0, t) = 13
+[13, 13]: cenq(1, t) = 13
+[13, 13]: cenq(2, t) = 13
+[13, 13]: cenq(3, t) = 13
+[13, 13]: cenq(4, t) = 5
+[13, 14]: dst(4, t) = 0
+[13, 14]: ecmp(4, t) = 0
+[14, 14]: cenq(0, t) = 14
+[14, 14]: cenq(1, t) = 14
+[14, 14]: cenq(2, t) = 14
+[14, 14]: cenq(3, t) = 14
+[14, 14]: cenq(4, t) = 6
+
+Cannot open file: 
+Cannot open file: 
+Removing meta-data specs...
+Finished removing meta-data specs
+Starting random approach...
+Last valid workload: 
+[1, 4]: cenq(4, t) = 0
+[5, 13]: aipg(4, t) = 2
+[13, 13]: cenq(4, t) = 5
+
+Starting improvement process
+Transforming aipg to cenq
+Done transforming aipg to cenq
+Number of possible workloads: 1
+Refining 1th workload
+Workload after removing specs: 
+[1, 4]: cenq(4, t) = 0
+[5, 13]: aipg(4, t) = 2
+[13, 13]: cenq(4, t) = 5
+
+Workload after combining: 
+[1, 4]: cenq(4, t) = 0
+[5, 13]: aipg(4, t) = 2
+[13, 13]: cenq(4, t) = 5
+
+Workload after aggregating indivs to sums: 
+[1, 4]: cenq(4, t) = 0
+[5, 13]: aipg(4, t) = 2
+[13, 13]: cenq(4, t) = 5
+
+Workload after broadening operations: 
+[1, 4]: cenq(4, t) <= 0
+[5, 13]: aipg(4, t) >= 2
+[13, 14]: cenq(4, t) >= 5
+
+Workload after tightening constant bounds: 
+[1, 4]: cenq(4, t) <= 0
+[5, 13]: aipg(4, t) >= 2
+[13, 14]: cenq(4, t) >= 5
+
+Final Workload after restricting time ranges: 
+[1, 4]: cenq(4, t) <= 0
+[6, 13]: aipg(4, t) >= 2
+[13, 14]: cenq(4, t) >= 5
+
+Final Workload after improving: 
+[1, 4]: cenq(4, t) <= 0
+[6, 13]: aipg(4, t) >= 2
+[13, 14]: cenq(4, t) >= 5
+
+-------------------- STATS -----------------------
+number of rounds: 0
+rounds in local search: 0
+number of resets: 0
+no_solver_call: 52
+input_only_solver_call: 0
+query_only_solver_call: 0
+full_solver_call: 121
+infeasible_input_cnt: 8
+full solver stats:
+   w/o query: 0.471 1.444
+   w/ query: 0.63 2.019
+0	0	0	52	121	471 (1444)	113	630 (2019)	
+--------------------------------------------------
+Test execution time: 147 seconds.

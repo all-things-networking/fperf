@@ -52,6 +52,9 @@ public:
 
     ContentionPoint* cp;
 
+
+    void print_stats();
+
 private:
     InputOnlySolver* input_only_solver;
     Query query;
@@ -84,8 +87,6 @@ private:
     void populate_good_examples(string fname);
     unsigned int bad_example_match_count(Workload wl);
     unsigned int good_example_match_count(Workload wl);
-
-    void print_stats();
 
     /* ********** stats ********** */
     unsigned int round_no = 0;

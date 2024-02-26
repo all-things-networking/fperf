@@ -134,8 +134,3 @@ Final Workload after broadening operations:
 [1, 4]: SUM_[q in {0, 1, 3, 4, }] cenq(q ,t) <= 0
 [1, 4]: cenq(2, t) >= t
 
-[1, 4]: cenq(0, t) = 0
-[1, 4]: cenq(1, t) = 0
-[1, 4]: cenq(3, t) = 0
-[1, 4]: cenq(4, t) = 0
-

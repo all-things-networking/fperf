@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <set>
 #include <sstream>
+#include <random>
 
 #include "util.hpp"
 
@@ -20,6 +21,8 @@ dists(shared_config->get_dists()) {
     total_time = shared_config->get_total_time();
     in_queue_cnt = shared_config->get_in_queue_cnt();
     target_queues = shared_config->get_target_queues();
+
+    initializeSpecs();
 }
 
 RandomSpecGenerationParameters SpecFactory::get_metric_params(metric_t metric_type) {
@@ -28,6 +31,13 @@ RandomSpecGenerationParameters SpecFactory::get_metric_params(metric_t metric_ty
         case metric_t::ECMP: return {false, dists->get_pkt_meta2_val_dist()};
         default: return {true, dists->get_rhs_const_dist()};
     }
+}
+
+void SpecFactory::initializeSpecs() {
+    SpecFactory::spec_generators.clear();
+
+    SpecGeneratorFuncPtr comp_ptr = &SpecFactory::random_comp;
+    SpecFactory::spec_generators.push_back(comp_ptr);
 }
 
 //************************************* TimedSpec *************************************//
@@ -88,7 +98,10 @@ void SpecFactory::pick_neighbors(TimedSpec& spec, vector<TimedSpec>& neighbors) 
 //************************************* WlSpec *************************************//
 
 WlSpec* SpecFactory::random_wl_spec() {
-    return new Comp(random_comp());
+    mt19937& gen = dists->get_gen();
+    uniform_int_distribution<> dist(0, spec_generators.size() - 1);
+    int index = dist(gen);
+    return (this->*spec_generators[index])();
 }
 
 void SpecFactory::pick_neighbors(WlSpec* spec, std::vector<WlSpec*>& neighbors) {
@@ -104,7 +117,7 @@ void SpecFactory::pick_neighbors(WlSpec* spec, std::vector<WlSpec*>& neighbors) 
 
 //************************************* COMP *************************************//
 
-Comp SpecFactory::random_comp() {
+WlSpec* SpecFactory::random_comp() {
     Comp* res;
 
     do {
@@ -118,7 +131,7 @@ Comp SpecFactory::random_comp() {
         res = new Comp(lhs, op, rhs);
     } while (res->spec_is_empty() || res->spec_is_all());
 
-    return *res;
+    return res;
 }
 
 void SpecFactory::pick_neighbors(Comp& spec, vector<Comp>& neighbors) {

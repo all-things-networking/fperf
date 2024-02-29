@@ -670,10 +670,6 @@ unsigned int Comp::ast_size() const {
     return lhs_ast_size(lhs) + rhs_ast_size(rhs);
 }
 
-bool Comp::is_available_for_search() const {
-    return true;
-}
-
 pair<metric_t, qset_t> Comp::get_zero_queues() const {
     qset_t qset;
     metric_t metric;
@@ -740,10 +736,6 @@ std::string Comp::to_string() const {
 }
 
 //************************************* WlSpec *************************************//
-bool WlSpec::is_available_for_search() const {
-    return false;
-}
-
 bool WlSpec::spec_is_empty() const {
     return false;
 }

@@ -134,7 +134,6 @@ bool operator<(const rhs_t& rhs1, const rhs_t& rhs2);
 class WlSpec {
 public:
     virtual bool applies_to_queue(unsigned int queue) const = 0;
-    virtual bool is_available_for_search() const;
 
     virtual bool spec_is_empty() const;
     virtual bool spec_is_all() const;
@@ -253,7 +252,6 @@ public:
     bool applies_to_queue(unsigned int queue) const override;
     pair<metric_t, qset_t> get_zero_queues() const;
 
-    bool is_available_for_search() const override;
 
     lhs_t get_lhs() const;
     op_t get_op() const;

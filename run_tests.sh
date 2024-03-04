@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Capture the start time
+# Capture the overall start time
 startTime=$(date +%s)
 
 # Define the arrays of arguments
@@ -24,10 +24,22 @@ run_test() {
 
     echo "Running ./build/fperf $test $mode..."
 
+    # Capture the start time for this test
+    local testStartTime=$(date +%s)
+
     # Execute the command and save the output
     ./build/fperf "$test" "$mode" > "$outputFile"
 
+    # Capture the end time for this test
+    local testEndTime=$(date +%s)
+
+    # Calculate the duration for this test
+    local testDuration=$((testEndTime - testStartTime))
+
     echo "Output saved to $outputFile"
+
+    # Append the execution time to the output file
+    echo "Test execution time: $testDuration seconds." >> "$outputFile"
 }
 
 export -f run_test # Export the function for parallel to use
@@ -41,7 +53,7 @@ echo "All tests completed."
 # Capture the end time
 endTime=$(date +%s)
 
-# Calculate the duration
+# Calculate the overall duration
 duration=$((endTime - startTime))
 
 echo "Total execution time: $duration seconds."

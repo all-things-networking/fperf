@@ -371,7 +371,7 @@ bool Incr::operator==(const WlSpec& other) const {
     return (this->metric == other_incr->metric && this->queue == other_incr->queue);
 }
 
-bool Incr::less_than(const WlSpec &other) const {
+bool Incr::less_than(const WlSpec& other) const {
     const Incr* other_incr = dynamic_cast<const Incr*>(&other);
     return (this->metric < other_incr->metric ||
             (this->metric == other_incr->metric && this->queue < other_incr->queue));
@@ -411,7 +411,7 @@ bool Decr::operator==(const WlSpec& other) const {
     return (this->metric == other_decr->metric && this->queue == other_decr->queue);
 }
 
-bool Decr::less_than(const WlSpec &other) const {
+bool Decr::less_than(const WlSpec& other) const {
     const Decr* other_decr = dynamic_cast<const Decr*>(&other);
     return (this->metric < other_decr->metric ||
             (this->metric == other_decr->metric && this->queue < other_decr->queue));
@@ -710,14 +710,16 @@ rhs_t Comp::get_rhs() const {
 bool Comp::operator==(const WlSpec& other) const {
     if (dynamic_cast<const Comp*>(&other) == NULL) return false;
     const Comp* other_comp = dynamic_cast<const Comp*>(&other);
-    return (this->lhs == other_comp->lhs && this->op == other_comp->op && this->rhs == other_comp->rhs);
+    return (this->lhs == other_comp->lhs && this->op == other_comp->op &&
+            this->rhs == other_comp->rhs);
 }
 
 bool Comp::less_than(const WlSpec& other) const {
     const Comp* other_comp = dynamic_cast<const Comp*>(&other);
     return (this->lhs < other_comp->lhs ||
             (this->lhs == other_comp->lhs && this->op < other_comp->op) ||
-            (this->lhs == other_comp->lhs && this->op == other_comp->op && this->rhs < other_comp->rhs));
+            (this->lhs == other_comp->lhs && this->op == other_comp->op &&
+             this->rhs < other_comp->rhs));
 }
 
 int Comp::type_id() const {
@@ -1073,7 +1075,9 @@ void Workload::normalize(time_range_t time_range) {
     for (set<WlSpec*>::iterator it = specs.begin(); it != specs.end(); it++) {
 
         // Check if all
-        if ((*it)->spec_is_all()) { continue; }
+        if ((*it)->spec_is_all()) {
+            continue;
+        }
 
         filtered_specs.insert(*it);
     }
@@ -1298,8 +1302,7 @@ void Workload::regenerate_spec_set() {
         time_range_t time_range = it->first;
         set<WlSpec*> specs = it->second;
 
-        for (set<WlSpec*>::iterator s_it = specs.begin(); s_it != specs.end();
-             s_it++) {
+        for (set<WlSpec*>::iterator s_it = specs.begin(); s_it != specs.end(); s_it++) {
 
             bool already_exists = false;
             for (unsigned int i = 0; i < new_all_specs.size(); i++) {
@@ -1404,8 +1407,7 @@ string Workload::get_timeline_str() {
             }
 
             bool is_first = true;
-            for (set<WlSpec*>::iterator it2 = specs.begin(); it2 != specs.end();
-                 it2++) {
+            for (set<WlSpec*>::iterator it2 = specs.begin(); it2 != specs.end(); it2++) {
                 if (!is_first) {
                     ss << "        ";
                 }

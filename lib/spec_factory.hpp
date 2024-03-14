@@ -79,7 +79,7 @@ public:
     op_t random_op();
 
     typedef WlSpec* (SpecFactory::*SpecGeneratorFuncPtr)();
-   vector<SpecGeneratorFuncPtr> spec_generators;
+    vector<SpecGeneratorFuncPtr> spec_generators;
 
 private:
     void initializeSpecs();

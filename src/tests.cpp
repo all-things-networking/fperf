@@ -33,6 +33,7 @@
 #include <random>
 #include <set>
 #include <vector>
+#include <chrono>
 
 void run(ContentionPoint* cp,
          IndexedExample* base_eg,
@@ -447,6 +448,8 @@ Workload broaden_operations(Workload wl, Search& search) {
 }
 
 Workload restrict_time_ranges(Workload wl, Search& search) {
+    auto start_time = std::chrono::high_resolution_clock::now();
+
     // For each spec, try to restrict the time range and see if it's still valid
     // If so, replace the spec with the new spec
     // If not, keep the old spec
@@ -495,6 +498,150 @@ Workload restrict_time_ranges(Workload wl, Search& search) {
             }
         }
     }
+
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+    cout << "restrict_time_ranges took " << duration.count() << " milliseconds" << endl;
+
+    return wl;
+}
+
+Workload restrict_time_ranges_z3(Workload wl, Search& search, ContentionPoint* cp) { // TEST: same as above, but using Z3 expressions
+    auto start_time = std::chrono::high_resolution_clock::now();
+
+    set<TimedSpec> specs = wl.get_all_specs();
+    auto& ctx = cp->net_ctx.z3_ctx();
+    auto& constraint_map = cp->constr_map;;
+
+    for(const TimedSpec& spec : specs){
+        cout << "Optimizing spec " << spec << endl;
+        auto opt = new optimize(ctx);
+        // FORALL enq, internal queue: !X || query
+        // X = model && base_wl && workload_minus_current_spec && current_spec
+
+        wl_spec_t wl_spec = spec.get_wl_spec();
+        time_range_t time_range = spec.get_time_range();
+
+        expr_vector enqs_and_internals(ctx);
+        unsigned int total_time = wl.get_total_time();
+
+        unsigned int bool_vars{0};
+        unsigned int int_vars{0};
+
+        // TODO: Add variables enq, elem, enq_cnt, deq_cnt, tmp_val
+        vector<string> pkt_names = {"enq", "elem"};
+
+        for (unsigned int q = 0; q < cp->in_queues.size(); q++) {
+            for(unsigned int i = 0; i < cp->in_queues[q]->max_enq(); i++){
+                for (unsigned int t = 0; t < total_time - 1; t++) {
+                    expr pkt1 = cp->in_queues[q]->enqs(i)[t + 1];
+                    //                expr val1 = cp->net_ctx.pkt2val(pkt1);
+                    //                expr meta11 = cp->net_ctx.pkt2meta1(pkt1);
+                    //                expr meta12 = cp->net_ctx.pkt2meta2(pkt1);
+                    // Format Prio.2_enq[0][3]_val
+                    string val_name = "Prio." + to_string(q) + "_enqs[" + to_string(i) + "][" + to_string(t + 1) + "]_val";
+                    expr val1 = ctx.int_const(val_name.c_str());
+                    bool_vars++;
+                    // Format Prio.2_enq[0][3]_meta1
+                    string meta11_name = "Prio." + to_string(q) + "_enqs[" + to_string(i) + "][" + to_string(t + 1) + "]_meta1";
+                    expr meta11 = ctx.int_const(meta11_name.c_str());
+                    int_vars++;
+                    // Format Prio.2_enq[0][3]_meta2
+                    string meta12_name = "Prio." + to_string(q) + "_enqs[" + to_string(i) + "][" + to_string(t + 1) + "]_meta2";
+                    expr meta12 = ctx.int_const(meta12_name.c_str());
+                    int_vars++;
+                    //                enqs_and_internals.push_back(pkt1);
+                    enqs_and_internals.push_back(val1);
+                    enqs_and_internals.push_back(meta11);
+                    enqs_and_internals.push_back(meta12);
+                }
+            }
+        }
+
+        // Print number of variables
+        cout << "bool_vars: " << bool_vars << ", int_vars: " << int_vars << endl;
+
+        // Add internal queue variables
+        // None for prio
+
+        expr start_time = ctx.int_const("start_time");
+        expr end_time = ctx.int_const("end_time");
+
+        // Model Constraints
+        expr net_model = ctx.bool_val(true);
+        for(auto const& [name, expr] : constraint_map){
+            net_model = net_model && expr;
+        }
+
+        // Base Workload constraints
+        expr base_wl = cp->base_wl_expr;
+
+        // Workload constraints: add constraints for all specs except the current one (the one we're trying to restrict)
+        expr workload_minus_current_spec = ctx.bool_val(true);
+        for(const TimedSpec& other_spec : specs){
+            if(other_spec != spec){
+                expr other_spec_expr = cp->get_expr(other_spec);
+                workload_minus_current_spec = workload_minus_current_spec && other_spec_expr;
+            }
+        }
+
+        // Spec constraints
+        // 1. Get expression for current spec
+        Comp comp = get<Comp>(wl_spec);
+
+        // 2. Add constraints dependent on time range
+        expr current_spec = ctx.bool_val(true);
+        current_spec = current_spec && (start_time <= end_time);
+        current_spec = current_spec && (start_time >= ctx.int_val(0));
+        current_spec = current_spec && (end_time < ctx.int_val(wl.get_total_time()));
+        for(int i = 0; i < wl.get_total_time(); i++){
+            expr i_expr = implies(start_time <= i && i <= end_time, cp->get_expr(comp, i));
+            current_spec = current_spec && i_expr;
+        }
+
+        // Query constraints
+        // !(current_constraints && !query)
+        // i.e. it should not be possible to satisfy the current constraints and not satisfy the query
+        expr query_expr = cp->query_expr;
+
+        expr X = net_model && base_wl && workload_minus_current_spec && current_spec;
+        expr not_X_or_query = !X || query_expr;
+        expr forall_not_X_or_query = forall(enqs_and_internals, not_X_or_query);
+        opt->add(forall_not_X_or_query);
+
+        auto objective = opt->minimize(end_time - start_time);
+
+        check_result z3_result = opt->check();
+
+        if(z3_result == check_result::sat){
+            model m = opt->get_model();
+            int new_start_time = m.eval(start_time).get_numeral_int();
+            int new_end_time = m.eval(end_time).get_numeral_int();
+            time_range_t new_time_range = time_range_t(new_start_time, new_end_time);
+            TimedSpec spec_to_try = TimedSpec(wl_spec, new_time_range, wl.get_total_time());
+            // Create temp workload
+            Workload temp_wl = wl;
+            temp_wl.rm_spec(spec);
+            temp_wl.add_spec(spec_to_try);
+            if (search.check(temp_wl)) {
+                // It's valid, replace the spec
+                wl.rm_spec(spec);
+                wl.add_spec(spec_to_try);
+                continue;
+            } else {
+                // Error: the solver should return a valid Workload
+                cout << "Error: the solver should return a valid Workload" << endl;
+            }
+        }else{
+            cout << "Error: the solver could not find a valid Workload" << endl;
+        }
+
+        delete opt;
+    }
+
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+    cout << "restrict_time_ranges_z3 took " << duration.count() << " milliseconds" << endl;
 
     return wl;
 }
@@ -672,8 +819,11 @@ Workload refine(Workload wl, Search& search) {
     cout << "Workload after broadening operations: " << endl << lastValidWl << endl;
     lastValidWl = search.tighten_constant_bounds(lastValidWl);
     cout << "Workload after tightening constant bounds: " << endl << lastValidWl << endl;
+    lastValidWl = restrict_time_ranges_z3(lastValidWl, search, search.cp);
+    cout << "Final Workload after restricting time ranges using Z3: " << endl << lastValidWl << endl;
     lastValidWl = restrict_time_ranges(lastValidWl, search);
     cout << "Final Workload after restricting time ranges: " << endl << lastValidWl << endl;
+
 
     return lastValidWl;
 }
@@ -1153,6 +1303,56 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
             query,
             8,
             config);
+    } else if (searchMode == "test"){
+        Search search(cp, query, max_spec, config, good_examples_file, bad_examples_file);
+
+        // Create Workload:
+//        [1, 6]: SUM_[q in {0, 1, }] cenq(q ,t) >= t
+//        [1, 7]: cenq(2, t) >= 1
+        Workload wl(100, cp->in_queue_cnt(), total_time);
+        wl.clear();
+        time_range_t time_range1 = time_range_t(0, 5);
+        time_range_t time_range2 = time_range_t(0, 6);
+        qset_t queues = {0, 1};
+        wl.add_spec(TimedSpec(Comp(QSum(queues, metric_t::CENQ), op_t::GE, Time(1)), time_range1, total_time));
+        wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, 2), op_t::GE, 1u), time_range2, total_time));
+        cout << "Original Workload: " << endl << wl << endl;
+        if(!search.check(wl)){
+            cout << "ERROR: Original workload is invalid" << endl;
+        }
+
+        // Test restrict_time_ranges_z3
+        wl = restrict_time_ranges_z3(wl, search, cp);
+        cout << "Workload after restrict_time_ranges_z3: " << endl << wl << endl;
+    } else if (searchMode == "z3_test"){
+        std::cout << "quantifier example\n";
+        context c;
+
+        expr x = c.int_const("x");
+        expr y = c.int_const("y");
+        z3::sort I = c.int_sort();
+        func_decl f = z3::function("f", I, I, I);
+
+        solver s(c);
+
+        // making sure model based quantifier instantiation is enabled.
+        params p(c);
+        p.set("mbqi", true);
+        s.set(p);
+
+        expr_vector vars(c);
+        vars.push_back(x);
+        vars.push_back(y);
+        s.add(forall(vars, f(x, y) >= 0));
+        expr a = c.int_const("a");
+        s.add(f(a, a) < a);
+        std::cout << s << "\n";
+        std::cout << s.check() << "\n";
+        std::cout << s.get_model() << "\n";
+        s.add(a < 0);
+        std::cout << s.check() << "\n";
+    } else {
+        throw std::runtime_error("Invalid search mode");
     }
 
 }

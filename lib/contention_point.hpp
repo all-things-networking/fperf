@@ -82,11 +82,41 @@ public:
     friend ostream& operator<<(ostream& os, const ContentionPoint& p);
 
     NetContext net_ctx;
+
+    // generate expressions from workloads and queries - MADE PUBLIC FOR TEST PURPOSES
+    expr get_expr(Query& query);
+    expr get_expr(IndexedExample* eg, vector<metric_t>& metrics);
+    expr get_expr(IndexedExample* eg);
+    expr get_expr(Workload wl);
+    expr get_expr(TimedSpec tspec);
+    expr get_expr(Unique uniq, time_range_t time_range);
+    expr get_expr(Same same, time_range_t time_range);
+    expr get_expr(Incr incr, time_range_t time_range);
+    expr get_expr(Decr decr, time_range_t time_range);
+    expr get_expr(Comp comp, time_range_t time_range);
+    expr get_expr(Comp comp, unsigned int t);
+    m_val_expr_t get_expr(rhs_t rhs, unsigned int t);
+    m_val_expr_t get_expr(lhs_t lhs, unsigned int t);
+    m_val_expr_t get_expr(unsigned int c, unsigned int t);
+    m_val_expr_t get_expr(Time time, unsigned int t);
+    m_val_expr_t get_expr(Indiv indiv, unsigned int t);
+    m_val_expr_t get_expr(QSum qsum, unsigned int t);
+
+    Workload base_wl;
+    expr base_wl_expr;
+
+    Query query;
+    expr query_expr;
+
+    map<string, expr> constr_map;
+
+    vector<Queue*> in_queues;
+    vector<Queue*> out_queues;
+
 protected:
 
     solver* z3_solver;
     optimize* z3_optimizer;
-    map<string, expr> constr_map;
 
     unsigned int total_time;
 
@@ -96,18 +126,12 @@ protected:
     map<cid_t, QueuingModule*> id_to_qm;
     map<cid_t, Queue*> id_to_ioq;
 
-    vector<Queue*> in_queues;
-    vector<Queue*> out_queues;
     map<metric_t, map<cid_t, Metric*>> metrics;
 
     void init();
 
 private:
-    Workload base_wl;
-    expr base_wl_expr;
 
-    Query query;
-    expr query_expr;
     bool query_is_set = false;
 
     Dists* dists = NULL;
@@ -139,26 +163,6 @@ private:
 
     expr get_random_eg_mod(IndexedExample* eg, unsigned int mod_cnt, qset_t queue_set);
     solver_res_t get_solver_res_t(check_result z3_res);
-
-
-    // generate expressions from workloads and queries
-    expr get_expr(Query& query);
-    expr get_expr(IndexedExample* eg, vector<metric_t>& metrics);
-    expr get_expr(IndexedExample* eg);
-    expr get_expr(Workload wl);
-    expr get_expr(TimedSpec tspec);
-    expr get_expr(Unique uniq, time_range_t time_range);
-    expr get_expr(Same same, time_range_t time_range);
-    expr get_expr(Incr incr, time_range_t time_range);
-    expr get_expr(Decr decr, time_range_t time_range);
-    expr get_expr(Comp comp, time_range_t time_range);
-    expr get_expr(Comp comp, unsigned int t);
-    m_val_expr_t get_expr(rhs_t rhs, unsigned int t);
-    m_val_expr_t get_expr(lhs_t lhs, unsigned int t);
-    m_val_expr_t get_expr(unsigned int c, unsigned int t);
-    m_val_expr_t get_expr(Time time, unsigned int t);
-    m_val_expr_t get_expr(Indiv indiv, unsigned int t);
-    m_val_expr_t get_expr(QSum qsum, unsigned int t);
 
     expr mk_op(expr lhs, op_t op, expr rhs);
 

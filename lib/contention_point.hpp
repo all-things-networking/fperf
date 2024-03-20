@@ -152,9 +152,9 @@ private:
     expr get_expr(Decr decr, time_range_t time_range);
     expr get_expr(Comp comp, time_range_t time_range);
     expr get_expr(Comp comp, unsigned int t);
-    m_val_expr_t get_expr(rhs_t rhs, unsigned int t);
-    m_val_expr_t get_expr(lhs_t lhs, unsigned int t);
-    m_val_expr_t get_expr(unsigned int c, unsigned int t);
+    m_val_expr_t get_expr(Rhs* rhs, unsigned int t);
+    m_val_expr_t get_expr(Lhs* lhs, unsigned int t);
+    m_val_expr_t get_expr(Constant c, unsigned int t);
     m_val_expr_t get_expr(Time time, unsigned int t);
     m_val_expr_t get_expr(Indiv indiv, unsigned int t);
     m_val_expr_t get_expr(QSum qsum, unsigned int t);
@@ -168,9 +168,9 @@ private:
     bool eval_spec(Incr incr, IndexedExample* eg, time_range_t time_range) const;
     bool eval_spec(Decr decr, IndexedExample* eg, time_range_t time_range) const;
     bool eval_spec(Comp comp, IndexedExample* eg, time_range_t time_range) const;
-    void eval_rhs(rhs_t rhs, IndexedExample* eg, unsigned int time, metric_val& res) const;
-    void eval_lhs(lhs_t lhs, IndexedExample* eg, unsigned int time, metric_val& res) const;
-    void eval_m_expr(m_expr_t m_expr, IndexedExample* eg, unsigned int time, metric_val& res) const;
+    void eval_rhs(Rhs* rhs, IndexedExample* eg, unsigned int time, metric_val& res) const;
+    void eval_lhs(Lhs* lhs, IndexedExample* eg, unsigned int time, metric_val& res) const;
+    void eval_m_expr(MExpr* m_expr, IndexedExample* eg, unsigned int time, metric_val& res) const;
     void eval_m_expr(QSum tsum, IndexedExample* eg, unsigned int time, metric_val& res) const;
     void eval_m_expr(Indiv tone, IndexedExample* eg, unsigned int time, metric_val& res) const;
     void eval_Time(Time time, IndexedExample* eg, unsigned int t, metric_val& res) const;

@@ -18,10 +18,10 @@ bool test_unsat_query() {
   Workload wl(100, in_queue_cnt, total_time);
 
   for (unsigned int q = 0; q < in_queue_cnt; q++) {
-      wl.add_spec(TimedSpec(new Comp(Indiv(metric_t::CENQ, q), op_t::GE, Time(1)), time_range_t(0, total_time - 1), total_time));
+      wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, q), op_t::GE, new Time(1)), time_range_t(0, total_time - 1), total_time));
   }
 
-  wl.add_spec(TimedSpec(new Comp(Indiv(metric_t::CENQ, queue1), op_t::GT, Indiv(metric_t::CENQ, queue2)), time_range_t(total_time - 1, total_time - 1), total_time));
+  wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, queue1), op_t::GT, new Indiv(metric_t::CENQ, queue2)), time_range_t(total_time - 1, total_time - 1), total_time));
 
   cout << "base workload: " << endl << wl << endl;
 
@@ -61,11 +61,11 @@ bool test_sat_query() {
 
   for (unsigned int i = 1; i <= recur; i++) {
       for (unsigned int q = 0; q < in_queue_cnt; q++) {
-          wl.add_spec(TimedSpec(new Comp(Indiv(metric_t::CENQ, q), op_t::GE, i * rate), time_range_t(i * period - 1, i * period - 1), total_time));
+          wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, q), op_t::GE, new Constant(i * rate)), time_range_t(i * period - 1, i * period - 1), total_time));
       }
   }
 
-  wl.add_spec(TimedSpec(new Comp(Indiv(metric_t::CENQ, queue1), op_t::GT, Indiv(metric_t::CENQ, queue2)), time_range_t(total_time - 1, total_time - 1), total_time));
+  wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, queue1), op_t::GT, new Indiv(metric_t::CENQ, queue2)), time_range_t(total_time - 1, total_time - 1), total_time));
 
   cout << "base workload: " << endl << wl << endl;
 

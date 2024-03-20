@@ -48,29 +48,29 @@ public:
     WlSpec* random_comp();
     void pick_neighbors(Comp& spec, vector<Comp>& neighbors);
 
-    //**** rhs_t ****//
-    rhs_t random_rhs();
-    rhs_t random_rhs(RandomSpecGenerationParameters params);
-    void pick_rhs_neighbors(rhs_t rhs, vector<rhs_t>& neighbors);
+    //**** Rhs* ****//
+    Rhs* random_rhs();
+    Rhs* random_rhs(RandomSpecGenerationParameters params);
+    void pick_rhs_neighbors(Rhs* rhs, vector<Rhs*>& neighbors);
     void
-    pick_rhs_neighbors(rhs_t rhs, vector<rhs_t>& neighbors, RandomSpecGenerationParameters params);
+    pick_rhs_neighbors(Rhs* rhs, vector<Rhs*>& neighbors, RandomSpecGenerationParameters params);
 
-    //**** lhs_t ****//
-    lhs_t random_lhs();
-    void pick_lhs_neighbors(lhs_t lhs, vector<lhs_t>& neighbors);
+    //**** Lhs* ****//
+    Lhs* random_lhs();
+    void pick_lhs_neighbors(Lhs* lhs, vector<Lhs*>& neighbors);
 
-    //**** m_expr_t ****//
-    m_expr_t random_m_expr();
-    void pick_m_expr_neighbors(m_expr_t trf, vector<m_expr_t>& neighbors);
+    //**** MExpr* ****//
+    MExpr* random_m_expr();
+    void pick_m_expr_neighbors(MExpr* trf, vector<MExpr*>& neighbors);
 
     //**** QSUM ****//
     qset_t random_qsum_qset();
     QSum random_qsum();
-    void pick_neighbors(QSum& qsum, vector<m_expr_t>& neighbors);
+    void pick_neighbors(QSum& qsum, vector<MExpr*>& neighbors);
 
     //**** INDIV ****//
     Indiv random_indiv();
-    void pick_neighbors(Indiv& indiv, vector<m_expr_t>& neighbors);
+    void pick_neighbors(Indiv& indiv, vector<MExpr*>& neighbors);
 
     //**** TIME ****//
     Time random_time();

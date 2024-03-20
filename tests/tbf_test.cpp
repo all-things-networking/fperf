@@ -24,7 +24,7 @@ bool test_deq_avg() {
 
   Workload wl(100, 1, total_time);
 
-  wl.add_spec(TimedSpec(new Comp(Indiv(metric_t::CENQ, 0), op_t::GE, Time(4)), time_range_t(0, last_t), total_time));
+  wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, 0), op_t::GE, new Time(4)), time_range_t(0, last_t), total_time));
 
   tbf->set_base_workload(wl);
 
@@ -68,7 +68,7 @@ bool test_max_burst() {
 
   Workload wl(100, 1, total_time);
 
-  wl.add_spec(TimedSpec(new Comp(Indiv(metric_t::CENQ, 0), op_t::GT, (unsigned int)total_time * max_tokens), time_range_t(last_t, last_t), total_time));
+  wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, 0), op_t::GT, new Constant((unsigned int)total_time * max_tokens)), time_range_t(last_t, last_t), total_time));
 
   tbf->set_base_workload(wl);
 

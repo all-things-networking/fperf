@@ -121,10 +121,11 @@ WlSpec* SpecFactory::random_comp() {
     Comp* res;
 
     do {
-        lhs_t lhs = random_lhs();
-        rhs_t rhs = random_rhs();
-        if (holds_alternative<Indiv>(lhs)) {
-            metric_t metric = get<Indiv>(lhs).get_metric();
+        Lhs* lhs = random_lhs();
+        Rhs* rhs = random_rhs();
+        const Indiv* indiv = dynamic_cast<Indiv*>(lhs);
+        if (indiv) {
+            metric_t metric = indiv->get_metric();
             rhs = random_rhs(get_metric_params(metric));
         }
         op_t op = random_op();
@@ -135,12 +136,12 @@ WlSpec* SpecFactory::random_comp() {
 }
 
 void SpecFactory::pick_neighbors(Comp& spec, vector<Comp>& neighbors) {
-    lhs_t lhs = spec.get_lhs();
+    Lhs* lhs = spec.get_lhs();
     op_t op = spec.get_op();
-    rhs_t rhs = spec.get_rhs();
+    Rhs* rhs = spec.get_rhs();
 
     // Changing lhs
-    vector<lhs_t> lhs_neighbors;
+    vector<Lhs*> lhs_neighbors;
     pick_lhs_neighbors(lhs, lhs_neighbors);
     for (unsigned int i = 0; i < lhs_neighbors.size(); i++) {
         Comp nei = Comp(lhs_neighbors[i], op, rhs);
@@ -160,9 +161,10 @@ void SpecFactory::pick_neighbors(Comp& spec, vector<Comp>& neighbors) {
     }
 
     // Changing rhs
-    vector<rhs_t> rhs_neighbors;
-    if (holds_alternative<Indiv>(lhs)) {
-        metric_t metric = get<Indiv>(lhs).get_metric();
+    vector<Rhs*> rhs_neighbors;
+    const Indiv* indiv = dynamic_cast<Indiv*>(lhs);
+    if (indiv) {
+        metric_t metric = indiv->get_metric();
         pick_rhs_neighbors(rhs, rhs_neighbors, get_metric_params(metric));
     } else {
         pick_rhs_neighbors(rhs, rhs_neighbors);
@@ -177,109 +179,107 @@ void SpecFactory::pick_neighbors(Comp& spec, vector<Comp>& neighbors) {
 
 //************************************* RHS *************************************//
 
-rhs_t SpecFactory::random_rhs() {
+Rhs* SpecFactory::random_rhs() {
     return random_rhs({true, dists->get_rhs_const_dist()});
 }
 
-rhs_t SpecFactory::random_rhs(RandomSpecGenerationParameters params) {
+Rhs* SpecFactory::random_rhs(RandomSpecGenerationParameters params) {
     unsigned int rhs_type = dists->rhs();
     while (rhs_type == 0) {
         rhs_type = dists->rhs();
     }
 
-    if (params.time_valid && rhs_type == 1) return random_time();
+    if (params.time_valid && rhs_type == 1){
+        Time time = random_time();
+        return dynamic_cast<Rhs*>(new Time(time));
+    }
 
     mt19937& gen = dists->get_gen();
-    return params.const_dist(gen);
+    unsigned int c = params.const_dist(gen);
+    return new Constant(c);
 }
 
-void SpecFactory::pick_rhs_neighbors(rhs_t rhs, vector<rhs_t>& neighbors) {
+void SpecFactory::pick_rhs_neighbors(Rhs* rhs, vector<Rhs*>& neighbors) {
     pick_rhs_neighbors(rhs, neighbors, {true, dists->get_rhs_const_dist(), false});
 }
 
-void SpecFactory::pick_rhs_neighbors(rhs_t rhs,
-                                     vector<rhs_t>& neighbors,
+void SpecFactory::pick_rhs_neighbors(Rhs* rhs,
+                                     vector<Rhs*>& neighbors,
                                      RandomSpecGenerationParameters params) {
-    switch (rhs.index()) {
-        // trf
-        case 0: {
-            m_expr_t trf = get<m_expr_t>(rhs);
-            vector<m_expr_t> trf_neighbors;
-            pick_m_expr_neighbors(trf, trf_neighbors);
-            neighbors.insert(neighbors.end(), trf_neighbors.begin(), trf_neighbors.end());
-            break;
+    MExpr* trf = dynamic_cast<MExpr*>(rhs);
+    if (trf) {
+        vector<MExpr*> trf_neighbors;
+        pick_m_expr_neighbors(trf, trf_neighbors);
+        for (const MExpr* neighbor : trf_neighbors) {
+            neighbors.push_back(new MExpr(*neighbor));
         }
-        // TIME
-        case 1: {
-            Time time = get<Time>(rhs);
-            Time time_neighbor = random_time();
-            while (time_neighbor == time) {
-                time_neighbor = random_time();
-            }
-            neighbors.push_back(time_neighbor);
-
-            unsigned int c = time.get_coeff();
-            if (params.bound_with_dist) {
-                if (c > params.const_dist.max()) c = params.const_dist.max();
-                if (c < params.const_dist.min()) c = params.const_dist.min();
-            }
-            neighbors.push_back(c);
-            break;
+    }
+    Time* time = dynamic_cast<Time*>(rhs);
+    if (time) {
+        Time time_neighbor = random_time();
+        while (time_neighbor == *time) {
+            time_neighbor = random_time();
         }
-        // C
-        case 2: {
-            mt19937& gen = dists->get_gen();
-            unsigned int c = get<unsigned int>(rhs);
-            unsigned int c_neighbor = params.const_dist(gen);
-            while (c_neighbor == c) {
-                c_neighbor = params.const_dist(gen);
-            }
-            neighbors.push_back(c_neighbor);
+        neighbors.push_back(new Time(time_neighbor));
 
-            if (params.time_valid) {
-                neighbors.push_back(Time(1u));
-            }
-
-            break;
+        unsigned int c = time->get_coeff();
+        if (params.bound_with_dist) {
+            if (c > params.const_dist.max()) c = params.const_dist.max();
+            if (c < params.const_dist.min()) c = params.const_dist.min();
         }
-        default: break;
+        neighbors.push_back(new Constant(c));
+    }
+    Constant* c = dynamic_cast<Constant*>(rhs);
+    if (c) {
+        mt19937& gen = dists->get_gen();
+        unsigned int c_val = c->get_coeff();
+        unsigned int c_neighbor = params.const_dist(gen);
+        while (c_neighbor == c_val) {
+            c_neighbor = params.const_dist(gen);
+        }
+        neighbors.push_back(new Constant(c_neighbor));
+
+        if (params.time_valid) {
+            neighbors.push_back(new Time(1u));
+        }
     }
 }
 
 //************************************* LHS *************************************//
 
-lhs_t SpecFactory::random_lhs() {
+Lhs* SpecFactory::random_lhs() {
     return random_m_expr();
 }
 
-void SpecFactory::pick_lhs_neighbors(lhs_t lhs, vector<lhs_t>& neighbors) {
-    pick_m_expr_neighbors(lhs, neighbors);
+void SpecFactory::pick_lhs_neighbors(Lhs* lhs, vector<Lhs*>& neighbors) {
+    MExpr* trf = dynamic_cast<MExpr*>(lhs);
+    // Turn neighbors into vector<MExpr*>
+    vector<MExpr*> m_expr_neighbors;
+    for(Lhs* neighbor : neighbors) {
+        m_expr_neighbors.push_back(dynamic_cast<MExpr*>(neighbor));
+    }
+    pick_m_expr_neighbors(trf, m_expr_neighbors);
 }
 
 //************************************* TRF *************************************//
 
-m_expr_t SpecFactory::random_m_expr() {
+MExpr* SpecFactory::random_m_expr() {
     unsigned int trf_type = dists->trf();
     if (target_queues.size() < 2) trf_type = 1;
     switch (trf_type) {
-        case 0: return random_qsum();
-        default: return random_indiv();
+        case 0: return new QSum(random_qsum());
+        default: return new Indiv(random_indiv());
     }
 }
 
-void SpecFactory::pick_m_expr_neighbors(m_expr_t m_expr, vector<m_expr_t>& neighbors) {
-    switch (m_expr.index()) {
-        // QSUM
-        case 0: {
-            pick_neighbors(get<QSum>(m_expr), neighbors);
-            break;
-        }
-        // INDIV
-        case 1: {
-            pick_neighbors(get<Indiv>(m_expr), neighbors);
-            break;
-        }
-        default: break;
+void SpecFactory::pick_m_expr_neighbors(MExpr* m_expr, vector<MExpr*>& neighbors) {
+    QSum* qsum = dynamic_cast<QSum*>(m_expr);
+    if (qsum) {
+        pick_neighbors(*qsum, neighbors);
+    }
+    Indiv* indiv = dynamic_cast<Indiv*>(m_expr);
+    if (indiv) {
+        pick_neighbors(*indiv, neighbors);
     }
 }
 
@@ -312,7 +312,7 @@ QSum SpecFactory::random_qsum() {
 }
 
 
-void SpecFactory::pick_neighbors(QSum& qsum, vector<m_expr_t>& neighbors) {
+void SpecFactory::pick_neighbors(QSum& qsum, vector<MExpr*>& neighbors) {
     // TODO: change metric, when there is more than one aggregatable metric
 
     // changing qset
@@ -330,7 +330,7 @@ void SpecFactory::pick_neighbors(QSum& qsum, vector<m_expr_t>& neighbors) {
 
             qset_neighbor.insert(q);
         }
-        neighbors.push_back(QSum(qset_neighbor, qsum.metric));
+        neighbors.push_back(new QSum(qset_neighbor, qsum.metric));
     }
 
     // remove one from qset
@@ -339,11 +339,11 @@ void SpecFactory::pick_neighbors(QSum& qsum, vector<m_expr_t>& neighbors) {
     mt19937& gen = dists->get_gen();
     advance(it, dist(gen));
     if (qset.size() == 2) {
-        neighbors.push_back(Indiv(qsum.metric, *it));
+        neighbors.push_back(new Indiv(qsum.metric, *it));
     } else {
         qset_t qset_neighbor = qset;
         qset_neighbor.erase(*it);
-        neighbors.push_back(QSum(qset_neighbor, qsum.metric));
+        neighbors.push_back(new QSum(qset_neighbor, qsum.metric));
     }
 }
 
@@ -359,7 +359,7 @@ Indiv SpecFactory::random_indiv() {
     return Indiv(metric, queue);
 }
 
-void SpecFactory::pick_neighbors(Indiv& indiv, vector<m_expr_t>& neighbors) {
+void SpecFactory::pick_neighbors(Indiv& indiv, vector<MExpr*>& neighbors) {
     // TODO: change metric?
 
     // changing queue
@@ -368,7 +368,7 @@ void SpecFactory::pick_neighbors(Indiv& indiv, vector<m_expr_t>& neighbors) {
            target_queues.find(queue_neighbor) == target_queues.end()) {
         queue_neighbor = dists->input_queue();
     }
-    neighbors.push_back(Indiv(indiv.get_metric(), queue_neighbor));
+    neighbors.push_back(new Indiv(indiv.get_metric(), queue_neighbor));
 }
 
 //************************************* TIME *************************************//

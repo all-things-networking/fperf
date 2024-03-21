@@ -76,7 +76,7 @@ public:
     Time random_time();
 
     //**** COMP ****/
-    op_t random_op();
+    Op random_op();
 
     typedef WlSpec* (SpecFactory::*SpecGeneratorFuncPtr)();
    vector<SpecGeneratorFuncPtr> spec_generators;

@@ -42,39 +42,52 @@ cid_t get_unique_id(cid_t module_id, cid_t queue_id) {
 
 //************************************* COMP *************************************//
 
-ostream& operator<<(ostream& os, const op_t& comp) {
-    switch (comp) {
-        case (op_t::GT): os << ">"; break;
-        case (op_t::GE): os << ">="; break;
-        case (op_t::LT): os << "<"; break;
-        case (op_t::LE): os << "<="; break;
-        case (op_t::EQ): os << "="; break;
+Op::Op() {}
+Op::Op(Op::Type op) : op(op) {}
+
+Op::Type Op::get() const {
+    return op;
+}
+
+ostream& operator<<(ostream& os, const Op& op) {
+    switch (op.get()) {
+        case Op::Type::GT: os << ">"; break;
+        case Op::Type::GE: os << ">="; break;
+        case Op::Type::LT: os << "<"; break;
+        case Op::Type::LE: os << "<="; break;
+        case Op::Type::EQ: os << "=="; break;
     }
     return os;
 }
 
-bool eval_op(unsigned int lhs_val, op_t op, unsigned int rhs_val) {
-    switch (op) {
-        case (op_t::GT): return lhs_val > rhs_val;
-        case (op_t::GE): return lhs_val >= rhs_val;
-        case (op_t::LT): return lhs_val < rhs_val;
-        case (op_t::LE): return lhs_val <= rhs_val;
-        case (op_t::EQ): return lhs_val == rhs_val;
+bool Op::eval(unsigned int lhs_val, const Op& op, unsigned int rhs_val) {
+    switch (op.get()) {
+        case Type::GT: return lhs_val > rhs_val;
+        case Type::GE: return lhs_val >= rhs_val;
+        case Type::LT: return lhs_val < rhs_val;
+        case Type::LE: return lhs_val <= rhs_val;
+        case Type::EQ: return lhs_val == rhs_val;
+        default: throw std::invalid_argument("Unknown operation");
     }
-    cout << "eval_comp: should not reach here" << endl;
-    return false;
 }
 
-op_t neg_op(op_t op) {
+void Op::neg() {
     switch (op) {
-        case (op_t::GT): return op_t::LT;
-        case (op_t::GE): return op_t::LE;
-        case (op_t::LT): return op_t::GT;
-        case (op_t::LE): return op_t::GE;
-        case (op_t::EQ): return op_t::EQ;
+        case Type::GT: op = Type::LE; break;
+        case Type::GE: op = Type::LT; break;
+        case Type::LT: op = Type::GE; break;
+        case Type::LE: op = Type::GT; break;
+        case Type::EQ: break;
+        default: throw std::invalid_argument("Unknown operation");
     }
-    cout << "neg_comp: should not reach here" << endl;
-    return op;
+}
+
+bool Op::operator==(const Op& other) const {
+    return op == other.op;
+}
+
+bool Op::operator<(const Op& other) const {
+    return op < other.op;
 }
 
 //************************************* TIME RANGE *************************************//

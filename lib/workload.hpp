@@ -272,8 +272,8 @@ private:
 
 class Comp : public WlSpec {
 public:
-    Comp(Lhs* lhs, op_t op, Rhs* rhs);
-    Comp(unsigned int, op_t, unsigned int) = delete; // This is not allowed
+    Comp(Lhs* lhs, Op op, Rhs* rhs);
+    Comp(unsigned int, Op, unsigned int) = delete; // This is not allowed
 
     virtual bool spec_is_empty() const override;
     bool spec_is_all() const override;
@@ -283,14 +283,14 @@ public:
 
 
     Lhs* get_lhs() const;
-    op_t get_op() const;
+    Op get_op() const;
     Rhs* get_rhs() const;
 
     bool operator==(const WlSpec& other) const override;
 
 private:
     Lhs* lhs;
-    op_t op;
+    Op op;
     Rhs* rhs;
 
     bool is_empty = false;

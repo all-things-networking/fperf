@@ -15,7 +15,7 @@ Query::Query(query_quant_t quant,
              time_range_t time_range,
              query_lhs_t query_lhs,
              metric_t metric,
-             op_t op,
+             Op op,
              unsigned int thresh):
 quant(quant),
 time_range(time_range),
@@ -41,7 +41,7 @@ query_lhs_t Query::get_lhs() {
     return lhs;
 }
 
-op_t Query::get_op() {
+Op Query::get_op() {
     return op;
 }
 

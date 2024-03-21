@@ -47,11 +47,29 @@ typedef pair<cid_t, cid_t> cid_pair;
 cid_t get_unique_id(cid_t module_id, cid_t queue_id);
 
 //************************************* OP *************************************//
-enum class op_t { GT = 0, GE, LT, LE, EQ };
-ostream& operator<<(ostream& os, const op_t& op);
-bool eval_op(unsigned int lhs_val, op_t op, unsigned int rhs_val);
-op_t random_op();
-op_t neg_op(op_t op);
+class Op {
+public:
+    enum class Type { GT = 0, GE, LT, LE, EQ };
+
+    Op();
+    Op(Op::Type op);
+
+    Type get() const;
+
+    friend ostream& operator<<(ostream& os, const Op& op);
+
+    static bool eval(unsigned int lhs_val, const Op& op, unsigned int rhs_val);
+
+    static Op random_op();
+
+    void neg();
+
+    bool operator==(const Op& other) const;
+    bool operator<(const Op& other) const;
+
+private:
+    Type op;
+};
 
 //************************************* TIME RANGE *************************************//
 typedef pair<unsigned int, unsigned int> time_range_t;

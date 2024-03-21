@@ -61,7 +61,7 @@ public:
     unsigned int input_queue();
     unsigned int input_queue_cnt();
 
-    op_t op();
+    Op op();
 
     unsigned int timestep();
     unsigned int enq();

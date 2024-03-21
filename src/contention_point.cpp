@@ -1722,13 +1722,13 @@ ostream& operator<<(ostream& os, const ContentionPoint& p) {
     return os;
 }
 
-expr ContentionPoint::mk_op(expr lhs, op_t op, expr rhs) {
-    switch (op) {
-        case (op_t::GT): return lhs > rhs;
-        case (op_t::GE): return lhs >= rhs;
-        case (op_t::LT): return lhs < rhs;
-        case (op_t::LE): return lhs <= rhs;
-        case (op_t::EQ): return lhs == rhs;
+expr ContentionPoint::mk_op(expr lhs, Op op, expr rhs) {
+    switch(op.get()) {
+        case Op::Type::GT: return lhs > rhs;
+        case Op::Type::GE: return lhs >= rhs;
+        case Op::Type::LT: return lhs < rhs;
+        case Op::Type::LE: return lhs <= rhs;
+        case Op::Type::EQ: return lhs == rhs;
     }
     cout << "FPerfModel::mk_op: should not reach here" << endl;
     return lhs >= rhs;
@@ -2312,7 +2312,7 @@ bool ContentionPoint::eval_spec(Comp comp, IndexedExample* eg, time_range_t time
 
         unsigned int lhs_val = lhs_m_val.value;
         unsigned int rhs_val = rhs_m_val.value;
-        bool res = eval_op(lhs_val, comp.get_op(), rhs_val);
+        bool res = Op::eval(lhs_val, comp.get_op(), rhs_val);
         if (!res) return false;
     }
 

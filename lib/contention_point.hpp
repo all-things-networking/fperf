@@ -159,7 +159,7 @@ private:
     m_val_expr_t get_expr(Indiv indiv, unsigned int t);
     m_val_expr_t get_expr(QSum qsum, unsigned int t);
 
-    expr mk_op(expr lhs, op_t op, expr rhs);
+    expr mk_op(expr lhs, Op op, expr rhs);
 
     /* *********** Workload Satisifes Example ************ */
     bool timedspec_satisfies_example(TimedSpec spec, IndexedExample* eg);

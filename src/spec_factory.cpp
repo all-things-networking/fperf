@@ -128,7 +128,7 @@ WlSpec* SpecFactory::random_comp() {
             metric_t metric = indiv->get_metric();
             rhs = random_rhs(get_metric_params(metric));
         }
-        op_t op = random_op();
+        Op op = random_op();
         res = new Comp(lhs, op, rhs);
     } while (res->spec_is_empty() || res->spec_is_all());
 
@@ -137,7 +137,7 @@ WlSpec* SpecFactory::random_comp() {
 
 void SpecFactory::pick_neighbors(Comp& spec, vector<Comp>& neighbors) {
     Lhs* lhs = spec.get_lhs();
-    op_t op = spec.get_op();
+    Op op = spec.get_op();
     Rhs* rhs = spec.get_rhs();
 
     // Changing lhs
@@ -151,7 +151,7 @@ void SpecFactory::pick_neighbors(Comp& spec, vector<Comp>& neighbors) {
     }
 
     // Changing op
-    op_t new_op = random_op();
+    Op new_op = random_op();
     while (new_op == op) {
         new_op = random_op();
     }
@@ -379,6 +379,7 @@ Time SpecFactory::random_time() {
 }
 
 //************************************* COMP *************************************//
-op_t SpecFactory::random_op() {
+Op SpecFactory::random_op() {
     return dists->op();
 }
+

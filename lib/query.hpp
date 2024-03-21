@@ -26,14 +26,14 @@ public:
           time_range_t time_range,
           query_lhs_t query_lhs,
           metric_t metric,
-          op_t op,
+          Op op,
           unsigned int thresh);
 
     query_quant_t get_quant();
     time_range_t get_time_range();
     metric_t get_metric();
     query_lhs_t get_lhs();
-    op_t get_op();
+    Op get_op();
     cid_t get_qid();
     unsigned int get_thresh();
 
@@ -42,7 +42,7 @@ private:
     time_range_t time_range;
     metric_t metric;
     query_lhs_t lhs;
-    op_t op;
+    Op op;
     unsigned int thresh;
 };
 

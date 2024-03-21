@@ -80,8 +80,18 @@ unsigned int Dists::input_queue_cnt() {
     return input_queue_cnt_dist(gen);
 }
 
-op_t Dists::op() {
-    return (op_t) op_dist(gen);
+Op Dists::op() {
+    auto value = op_dist(gen);
+    Op::Type type;
+    switch (value) {
+        case 0: type = Op::Type::GT; break;
+        case 1: type = Op::Type::GE; break;
+        case 2: type = Op::Type::LT; break;
+        case 3: type = Op::Type::LE; break;
+        case 4: type = Op::Type::EQ; break;
+        default: throw std::invalid_argument("Unknown operation");
+    }
+    return Op(type);
 }
 
 unsigned int Dists::timestep() {

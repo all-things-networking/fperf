@@ -261,7 +261,7 @@ void Search::search(Workload wl) {
         for (unsigned int q = 0; q < cp->in_queue_cnt(); q++) {
             if (target_queues.find(q) == target_queues.end()) {
                 Indiv* n_indiv = new Indiv(metric_t::CENQ, q);
-                WlSpec* n_wl_spec = new Comp(n_indiv, op_t::LE, 0u);
+                WlSpec* n_wl_spec = new Comp(n_indiv, Op(Op::Type::LE), 0u);
                 TimedSpec n_spec = TimedSpec(n_wl_spec, total_time, total_time);
                 to_check.add_spec(n_spec);
             }
@@ -397,7 +397,7 @@ Workload Search::refine(Workload wl) {
     for (unsigned int q = 0; q < cp->in_queue_cnt(); q++) {
         if (target_queues.find(q) == target_queues.end()) {
             Indiv* n_indiv = new Indiv(metric_t::CENQ, q);
-            WlSpec* n_wl_spec = new Comp(n_indiv, op_t::LE, 0u);
+            WlSpec* n_wl_spec = new Comp(n_indiv, Op(Op::Type::LE), 0u);
             wl.add_spec(TimedSpec(n_wl_spec, total_time, total_time));
         }
     }
@@ -457,7 +457,7 @@ Workload Search::refine(Workload wl) {
 
                 candidate = wl;
                 Indiv* n_indiv = new Indiv(metric_t::CENQ, q);
-                WlSpec* n_comp = new Comp(n_indiv, op_t::GE, new Time(c));
+                WlSpec* n_comp = new Comp(n_indiv, Op(Op::Type::GE), new Time(c));
                 TimedSpec new_spec = TimedSpec(n_comp, tspec.get_time_range(), total_time);
                 candidate.mod_spec(*it, new_spec);
 
@@ -484,8 +484,8 @@ Workload Search::refine(Workload wl) {
         Comp* compSpec = dynamic_cast<Comp*>(wspec);
         if (!compSpec) continue;
         Rhs* rhs = compSpec->get_rhs();
-        op_t op = compSpec->get_op();
-        if (op == op_t::GT || op == op_t::GE) {
+        Op op = compSpec->get_op();
+        if (op.get() == Op::Type::GT || op.get() == Op::Type::GE) {
             Time* time = dynamic_cast<Time*>(rhs);
             Constant* constant = dynamic_cast<Constant*>(rhs);
             if (time) {
@@ -582,7 +582,7 @@ Workload Search::refine(Workload wl) {
         Constant* constant = dynamic_cast<Constant*>(rhs);
         if (it->get_time_range() == time_range_t(0, cp->get_total_time() - 1) &&
             constant && constant->get_coeff() == 0 &&
-            compSpec->get_op() == op_t::LE) {
+            compSpec->get_op().get() == Op::Type::LE) {
             Indiv* indiv = dynamic_cast<Indiv*>(lhs);
             if (indiv) {
                 zero_in_base.insert(indiv->get_queue());
@@ -613,7 +613,7 @@ Workload Search::refine(Workload wl) {
             Rhs* rhs = compSpec->get_rhs();
             Constant* constant = dynamic_cast<Constant*>(rhs);
             if (constant && constant->get_coeff() == 0 &&
-                compSpec->get_op() == op_t::LE)
+                compSpec->get_op() == Op::Type::LE)
                 continue;
 
             Lhs* lhs = compSpec->get_lhs();

@@ -233,7 +233,7 @@ bool operator<(const Time& t1, const Time& t2) {
 
 //************************************* Constant *************************************//
 
-Constant::Constant(unsigned int value): coeff(coeff) {}
+Constant::Constant(unsigned int coeff): coeff(coeff) {}
 
 unsigned int Constant::get_coeff() const {
     return coeff;

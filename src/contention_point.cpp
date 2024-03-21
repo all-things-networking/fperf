@@ -2350,9 +2350,17 @@ void ContentionPoint::eval_m_expr(MExpr* m_expr,
                                   IndexedExample* eg,
                                   unsigned int time,
                                   metric_val& res) const {
-    if(m_expr){
-        return eval_m_expr(m_expr, eg, time, res);
+    Indiv* indiv = dynamic_cast<Indiv*>(m_expr);
+    if(indiv) {
+        eval_m_expr(*indiv, eg, time, res);
+        return;
     }
+    QSum* qsum = dynamic_cast<QSum*>(m_expr);
+    if(qsum) {
+        eval_m_expr(*qsum, eg, time, res);
+        return;
+    }
+    throw std::runtime_error("ContentionPoint::eval_m_expr: Invalid MExpr");
 }
 
 void ContentionPoint::eval_m_expr(QSum qsum,

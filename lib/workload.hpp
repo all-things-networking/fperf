@@ -52,6 +52,7 @@ public:
     virtual bool operator<(const Rhs& other) const;
 };
 
+ostream& operator<<(ostream& os, const Rhs* rhs);
 ostream& operator<<(ostream& os, const Rhs& rhs);
 
 //************************************* LHS / MExpr *************************************//
@@ -73,6 +74,7 @@ public:
     virtual bool operator<(const MExpr& other) const;
 };
 
+ostream& operator<<(ostream& os, const MExpr* m_expr);
 ostream& operator<<(ostream& os, const MExpr& m_expr);
 
 //************************************* TIME *************************************//
@@ -86,6 +88,7 @@ public:
 private:
     unsigned int coeff;
 
+    friend ostream& operator<<(ostream& os, const Time* time);
     friend ostream& operator<<(ostream& os, const Time& time);
     friend bool operator==(const Time& t1, const Time& t2);
     friend bool operator<(const Time& t1, const Time& t2);
@@ -102,6 +105,7 @@ public:
 private:
     unsigned int coeff;
 
+    friend ostream& operator<<(ostream& os, const Constant* c);
     friend ostream& operator<<(ostream& os, const Constant& c);
     friend bool operator==(const Constant& c1, const Constant& c2);
     friend bool operator<(const Constant& c1, const Constant& c2);
@@ -124,6 +128,7 @@ private:
     qset_t qset;
     metric_t metric;
 
+    friend ostream& operator<<(ostream& os, const QSum* tsum);
     friend ostream& operator<<(ostream& os, const QSum& tsum);
     friend bool operator==(const QSum& s1, const QSum& s2);
     friend bool operator<(const QSum& s1, const QSum& s2);
@@ -146,6 +151,7 @@ private:
     metric_t metric;
     unsigned int queue;
 
+    friend ostream& operator<<(ostream& os, const Indiv* tone);
     friend ostream& operator<<(ostream& os, const Indiv& tone);
     friend bool operator==(const Indiv& s1, const Indiv& s2);
     friend bool operator<(const Indiv& s1, const Indiv& s2);

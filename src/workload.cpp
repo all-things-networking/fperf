@@ -33,6 +33,22 @@ unsigned int Rhs::ast_size() const {
     return 0u;
 }
 
+ostream& operator<<(ostream& os, const Rhs* rhs) {
+    const MExpr* m_expr = dynamic_cast<const MExpr*>(rhs);
+    if (m_expr) {
+        os << *m_expr;
+    }
+    const Time* time = dynamic_cast<const Time*>(rhs);
+    if (time) {
+        os << *time;
+    }
+    const Constant* c = dynamic_cast<const Constant*>(rhs);
+    if (c) {
+        os << *c;
+    }
+    return os;
+}
+
 ostream& operator<<(ostream& os, const Rhs& rhs) {
     const MExpr* m_expr = dynamic_cast<const MExpr*>(&rhs);
     if (m_expr) {
@@ -142,6 +158,18 @@ unsigned int MExpr::ast_size() const {
     return 1u;
 }
 
+ostream& operator<<(ostream& os, const MExpr* m_expr) {
+    const QSum* qsum = dynamic_cast<const QSum*>(m_expr);
+    if (qsum) {
+        os << *qsum;
+    }
+    const Indiv* indiv = dynamic_cast<const Indiv*>(m_expr);
+    if (indiv) {
+        os << *indiv;
+    }
+    return os;
+}
+
 ostream& operator<<(ostream& os, const MExpr& m_expr) {
     const QSum* qsum = dynamic_cast<const QSum*>(&m_expr);
     if (qsum) {
@@ -183,6 +211,12 @@ unsigned int Time::get_coeff() const {
     return coeff;
 }
 
+ostream& operator<<(ostream& os, const Time* time) {
+    if (time->coeff != 1) os << time->coeff;
+    os << "t";
+    return os;
+}
+
 ostream& operator<<(ostream& os, const Time& time) {
     if (time.coeff != 1) os << time.coeff;
     os << "t";
@@ -203,6 +237,11 @@ Constant::Constant(unsigned int value): coeff(coeff) {}
 
 unsigned int Constant::get_coeff() const {
     return coeff;
+}
+
+ostream& operator<<(ostream& os, const Constant* c) {
+    os << c->coeff;
+    return os;
 }
 
 ostream& operator<<(ostream& os, const Constant& c) {
@@ -239,6 +278,11 @@ metric_t QSum::get_metric() const {
     return metric;
 }
 
+ostream& operator<<(ostream& os, const QSum* qsum) {
+    os << "SUM_[q in " << qsum->qset << "] " << qsum->metric << "(q ,t)";
+    return os;
+}
+
 ostream& operator<<(ostream& os, const QSum& qsum) {
     os << "SUM_[q in " << qsum.qset << "] " << qsum.metric << "(q ,t)";
     return os;
@@ -268,6 +312,11 @@ unsigned int Indiv::get_queue() const {
 
 metric_t Indiv::get_metric() const {
     return metric;
+}
+
+ostream& operator<<(ostream& os, const Indiv* indiv) {
+    os << indiv->metric << "(" << indiv->queue << ", t)";
+    return os;
 }
 
 ostream& operator<<(ostream& os, const Indiv& indiv) {

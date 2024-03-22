@@ -819,8 +819,8 @@ Workload refine(Workload wl, Search& search) {
     cout << "Workload after broadening operations: " << endl << lastValidWl << endl;
     lastValidWl = search.tighten_constant_bounds(lastValidWl);
     cout << "Workload after tightening constant bounds: " << endl << lastValidWl << endl;
-    lastValidWl = restrict_time_ranges_z3(lastValidWl, search, search.cp);
-    cout << "Final Workload after restricting time ranges using Z3: " << endl << lastValidWl << endl;
+//    lastValidWl = restrict_time_ranges_z3(lastValidWl, search, search.cp);
+//    cout << "Final Workload after restricting time ranges using Z3: " << endl << lastValidWl << endl;
     lastValidWl = restrict_time_ranges(lastValidWl, search);
     cout << "Final Workload after restricting time ranges: " << endl << lastValidWl << endl;
 

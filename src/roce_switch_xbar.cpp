@@ -143,20 +143,6 @@ void RoceSwitchXBarQM::add_constrs(NetContext& net_ctx,
     const int NONE = port_cnt;
     for (unsigned int t = 0; t < total_time; t++) {
 
-        // Idea: pause output when that port is paused
-        // If current output port is paused, then out_from_in_ for that port should not match to anything
-        // and the vice versa should be true
-
- /*       for (unsigned int q_out = 0; q_out < port_cnt; q_out++) {
-            std::sprintf(vname, "%s_%d_pause_state_[%d]", sid.c_str(), q_out, t+1);
-            for (unsigned int i = 1; i < port_cnt; i++) {
-                std::sprintf(constr_name, "%s_pause_state_same[%d][%d][%d]", id.c_str(), 0, i, t);
-                std::sprintf(vname1, "%s_in_to_out[%d][%d][%d]", id.c_str(), i, q_out, t);
-                expr constr_expr = !net_ctx.bool_const(vname) == net_ctx.bool_const(vname1);
-                constr_map.insert(named_constr(constr_name, constr_expr));
-            }
-        }*/
-
         // DATA
         /*
         for (unsigned int q = 0; q < port_cnt; q++){

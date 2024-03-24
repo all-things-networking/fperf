@@ -37,12 +37,12 @@ void roce(std::string good_examples_file,
 
     unsigned int good_example_cnt = 30;
     unsigned int bad_example_cnt = 30 ;
-    unsigned int total_time = 18;
+    unsigned int total_time = 10;
 
     RoceScheduler* roce = new RoceScheduler(total_time);
 
-    unsigned int in_queue_cnt = 2;
-    unsigned int period = 4;
+    unsigned int in_queue_cnt = 3;
+    unsigned int period = 2;
     unsigned int recur = 2;
     unsigned int rate = 1;
     // Base workload 
@@ -67,11 +67,11 @@ void roce(std::string good_examples_file,
     // goba
     //return;
     
-    cid_t query_qid = "roce_xBar0.0";
+    cid_t query_qid = "roce_xBar3.1";
     Query query(query_quant_t::EXISTS,
         time_range_t(16, roce->get_total_time() - 1),
         query_qid,
-        metric_t::CBLOCKED, comp_t::GT, 3);
+        metric_t::CBLOCKED, comp_t::GT, 3u);
 
     roce->set_query(query);
 
@@ -96,7 +96,7 @@ void roce(std::string good_examples_file,
     DistsParams dists_params;
     dists_params.in_queue_cnt = roce->in_queue_cnt();
     dists_params.total_time = total_time;
-    dists_params.pkt_meta1_val_max = 4;
+    dists_params.pkt_meta1_val_max = 3;
     dists_params.pkt_meta2_val_max = 1;
 
     Dists* dists = new Dists(dists_params);

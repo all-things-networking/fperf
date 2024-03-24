@@ -23,7 +23,8 @@ public:
 
 private:
     unsigned const int switch_cnt = 4;
-    unsigned int threshold = 3;
+    unsigned int threshold = 1;
+    unsigned int prio_voq_start = 3;
     std::vector<CEnq*> cenq;
     std::vector<CDeq*> cdeq;
     std::vector<AIPG*> aipg;

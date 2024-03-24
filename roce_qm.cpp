@@ -14,6 +14,7 @@ RoCEQM::RoCEQM(cid_t id,
     unsigned int total_time,
     unsigned int buffer_size,
     unsigned int threshold,
+    unsigned int prio_voq_start,
     unsigned int return_to_sender,
     std::vector<QueueInfo> in_queue_info,
     std::vector<QueueInfo> out_queue_info,
@@ -24,6 +25,7 @@ RoCEQM::RoCEQM(cid_t id,
     sid(sid),
     buffer_size(buffer_size),
     threshold(threshold),
+    prio_voq_start(prio_voq_start),
     return_to_sender(return_to_sender),
     control_flow(control_flow),
     pause_state(expr_vector(net_ctx.z3_ctx())),
@@ -59,32 +61,20 @@ void RoCEQM::add_constrs(NetContext& net_ctx,
     char constr_name[100];
     char vname[100];
 
-    // Set starting value of pause state to !paused
+    // Set starting value of pause state to false
     // Note this is pausing the corresponding output port from [return_to_sender]
-    //std::sprintf(vname, "%s_%d_pause_state_[%d]", id.c_str(), return_to_sender, 0);
-    //expr constr_expr = net_ctx.bool_const(vname) == net_ctx.bool_val(false);
     std::sprintf(constr_name, "%s_%d_pause_state_init_[%d]", sid.c_str(), return_to_sender, 0);
 
     expr constr_expr = pause_state[0] == net_ctx.bool_val(false);
-    if (strcmp(id.c_str(), "roce0_1") == 0) {
-        constr_expr = pause_state[0] == net_ctx.bool_val(false);
-    }
     
     constr_map.insert(named_constr(constr_name, constr_expr));
 
-    //std::sprintf(vname, "%s_sent_pause_[%d]", id.c_str(), 0);
-    //constr_expr = net_ctx.bool_const(vname) == net_ctx.bool_val(false);
+    // Set starting value of 
     std::sprintf(constr_name, "%s_%d_sent_pause_init_[%d]", sid.c_str(), return_to_sender, 0);
-    //constr_expr = net_ctx.bool_const(vname) == net_ctx.bool_val(false);
     constr_expr = sent_pause[0] == net_ctx.bool_val(false);
-
-    if (strcmp(id.c_str(), "roce1_0") == 0) { 
-        constr_expr = sent_pause[0] == net_ctx.bool_val(false);
-    }
     constr_map.insert(named_constr(constr_name, constr_expr));
 
-    expr thresh = net_ctx.int_val(1);
-    //if (sid == "s")
+    expr thresh = net_ctx.int_val(threshold);
     for (unsigned int t = 0; t < total_time; t++) {
 
         // set to dummy variable
@@ -92,18 +82,6 @@ void RoCEQM::add_constrs(NetContext& net_ctx,
         // TOCHANGE
         // bounds on meta size
         if (return_to_sender == 2) {
-            // goba
-            constr_expr = in_queues[0]->get_metric(metric_t::CENQ)->val(t) > net_ctx.int_val(t);
-            if (sid == "s3")
-                constr_expr = in_queues[0]->get_metric(metric_t::CENQ)->val(t) == net_ctx.int_val(0);
-            /*else if (t <= 10)
-                constr_expr = in_queues[0]->get_metric(metric_t::CENQ)->val(t) > net_ctx.int_val(t);
-            else
-                constr_expr = in_queues[0]->get_metric(metric_t::CENQ)->val(t) <= net_ctx.int_val(11);*/
-
-            //sprintf(constr_name, "%s_Min_Packet_Num_at_%d", id.c_str(), t);
-            //if (t < 4)
-                constr_map.insert(named_constr(constr_name, constr_expr));
 
             for (unsigned int p = 0; p < in_queues[0]->size(); p++) {
                 expr in_pkt = in_queues[0]->elem(p)[t];
@@ -116,11 +94,11 @@ void RoCEQM::add_constrs(NetContext& net_ctx,
                 if (sid == "s0")
                     // goba, 1 => 4
                     //constr_expr = implies(pkt_val, net_ctx.int_val(4) == pkt_dst || net_ctx.int_val(1) == pkt_dst);
-                    constr_expr = implies(pkt_val, net_ctx.int_val(4) == pkt_dst);
+                    constr_expr = implies(pkt_val, net_ctx.int_val(1) == pkt_dst);
                 else if (sid == "s1")
                     // goba 3 => 4
                     //constr_expr = implies(pkt_val, net_ctx.int_val(4) == pkt_dst || net_ctx.int_val(3) == pkt_dst);
-                    constr_expr = implies(pkt_val, net_ctx.int_val(4) == pkt_dst);
+                    constr_expr = implies(pkt_val, net_ctx.int_val(3) == pkt_dst);
                 else if (sid == "s2")
                     constr_expr = implies(pkt_val, net_ctx.int_val(2) == pkt_dst);
                 else if (sid == "s3")
@@ -155,6 +133,7 @@ void RoCEQM::add_constrs(NetContext& net_ctx,
 
         // HANDLE PAUSE/UNPAUSE HERE
         if (return_to_sender != 2) {
+            // For non-source QMs
             for (unsigned int i = 0; i < in_queues.size(); i++) {
                 Queue* in_queue = in_queues[i];
 
@@ -188,8 +167,7 @@ void RoCEQM::add_constrs(NetContext& net_ctx,
 
             expr detected_pause_unpause = pkt_val && (pkt_tag == net_ctx.int_val(10) || pkt_tag == net_ctx.int_val(11));
 
-            // goba
-            for (int i = 0; i < out_queues.size() - 2; i++) {
+            for (int i = 0; i < prio_voq_start; i++) {
                 sprintf(constr_name, "%s_consume_pause/unpause_%d_at_%d", id.c_str(), i, t);
                 constr_expr = implies(detected_pause_unpause,
                     out_queues[i]->enqs(0)[t] == net_ctx.null_pkt());
@@ -223,23 +201,8 @@ void RoCEQM::add_constrs(NetContext& net_ctx,
                 constr_expr = implies(send_unpause, !sent_pause[t]);
                 constr_map.insert(named_constr(constr_name, constr_expr));
             }
-            // TOCHANGE
-            // unsigned int dst_port = control_flow[pkt_dst];
-            // Calculate source routing based off of pkt_dst
-            unsigned int ternary_index = 1;
-            if (sid == "s1") {
-                ternary_index = 2;
-            }
-            else if (sid == "s2") {
-                ternary_index = 3;
-            }
-            else if (sid == "s3") {
-                ternary_index = 4;
-            }    
 
-            unsigned int dst_port = (pkt_dst * 3 / (net_ctx.int_val(ternary_index * 3))) % 3;
-            
-
+            unsigned int dst_port; 
             if (return_to_sender == 2) {
                 for (int i = 1; i <= control_flow.size(); i++) {
                     dst_port = control_flow[i];
@@ -271,13 +234,7 @@ void RoCEQM::add_constrs(NetContext& net_ctx,
                 sprintf(constr_name, "%s_forward!_dst_%d_to_port%d_at_%d", id.c_str(), i, dst_port, t);
                 constr_expr = implies(pkt_val && pkt_dst == net_ctx.int_val(i),
                     out_queues[dst_port]->enqs(0)[t] == in_pkt);
-                if ( true || !(t == 5 && (strcmp(id.c_str(), "roce1_0") == 0 || strcmp(id.c_str(), "roce0_0") == 0)))
-                    constr_map.insert(named_constr(constr_name, constr_expr));
-                else {
-                    constr_expr = implies(pkt_val && pkt_dst == net_ctx.int_val(i),
-                        out_queues[dst_port]->enqs(0)[t] == net_ctx.pkt_val(true, 12, 11));
-                    //constr_map.insert(named_constr(constr_name, constr_expr));
-                }
+                constr_map.insert(named_constr(constr_name, constr_expr));
 
 
                 for (int j = 0; j < out_queues.size() - 2; j++) {
@@ -288,28 +245,27 @@ void RoCEQM::add_constrs(NetContext& net_ctx,
                     constr_map.insert(named_constr(constr_name, constr_expr));
                 }
             }
-            // goba
-            int temp = 3;
+
             // Forward pause packets
-            sprintf(constr_name, "%s_forward_pause_%d_to_port%d_at_%d", id.c_str(), i, return_to_sender+temp, t);
+            sprintf(constr_name, "%s_forward_pause_%d_to_port%d_at_%d", id.c_str(), i, return_to_sender + prio_voq_start, t);
             constr_expr = implies(pkt_val && send_pause,
-                out_queues[return_to_sender+temp]->enqs(0)[t] == net_ctx.pkt_val(true, 0, 10));
+                out_queues[return_to_sender + prio_voq_start]->enqs(0)[t] == net_ctx.pkt_val(true, 0, 10));
             constr_map.insert(named_constr(constr_name, constr_expr));
 
             // Forward unpause packets
 
-            sprintf(constr_name, "%s_forward_unpause_%d_to_port%d_at_%d", id.c_str(), i, return_to_sender+temp, t);
+            sprintf(constr_name, "%s_forward_unpause_%d_to_port%d_at_%d", id.c_str(), i, return_to_sender + prio_voq_start, t);
             constr_expr = implies(send_unpause,
-                out_queues[return_to_sender+ temp]->enqs(0)[t] == net_ctx.pkt_val(true, 0, 11));
+                out_queues[return_to_sender + prio_voq_start]->enqs(0)[t] == net_ctx.pkt_val(true, 0, 11));
             constr_map.insert(named_constr(constr_name, constr_expr));
 
-            for (int i = 3; i < 5; i++) {
+            for (int i = prio_voq_start; i < out_queues.size(); i++) {
                 sprintf(constr_name, "%s_dont_forward_when_no_pause/unpause_%d_at_%d", id.c_str(), i, t);
                 constr_expr = implies(!send_pause && !send_unpause,
                     out_queues[i]->enqs(0)[t] == net_ctx.null_pkt());
                 constr_map.insert(named_constr(constr_name, constr_expr));
 
-                if (i == return_to_sender+ temp) continue;
+                if (i == return_to_sender + prio_voq_start) continue;
                 sprintf(constr_name, "%s_dont_forward_when_pause/unpause_%d_at_%d", id.c_str(), i, t);
                 constr_expr = implies((pkt_val && send_pause) || send_unpause,
                     out_queues[i]->enqs(0)[t] == net_ctx.null_pkt());
@@ -317,8 +273,7 @@ void RoCEQM::add_constrs(NetContext& net_ctx,
                 
             }
 
-            sprintf(vname, "%s_read_var_pkt_val_at_%d", id.c_str(), t);
-                
+           // debugging   
             sprintf(constr_name, "%s_read_var_pktval_at_%d", id.c_str(), t);
             constr_expr = implies(pkt_val, net_ctx.get_bool_const(vname))
                 && implies(!pkt_val, !net_ctx.get_bool_const(vname));

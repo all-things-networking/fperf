@@ -99,13 +99,6 @@ void Queue::add_vars(NetContext& net_ctx){
         std::sprintf(vname, "%s_curr_size_[%d]", id.c_str(), t);
         curr_size_.push_back(net_ctx.int_const(vname));
     }
-
-    // Whether this queue is paused or not
-    for (unsigned int t = 0; t < total_time; t++) {
-        char vname[100];
-        std::sprintf(vname, "%s_pause_status_[%d]", id.c_str(), t);
-        paused_.push_back(net_ctx.int_const(vname));
-    }
     
     sliding_window_vars(net_ctx);
 }

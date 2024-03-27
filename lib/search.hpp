@@ -39,7 +39,7 @@ public:
            deque<IndexedExample*>& bad_ex);
 
     void run();
-    bool check(Workload wl);
+    bool check(Workload wl, string function_name="");
     Workload refine(Workload wl);
 
     // Research project
@@ -48,7 +48,7 @@ public:
     Workload tighten_constant_bounds(Workload wl);
     Workload aggregate_indivs_to_sums(Workload wl);
 
-    unsigned int cost(Workload wl);
+    unsigned int cost(Workload wl, string function_name="");
 
     ContentionPoint* cp;
 
@@ -89,21 +89,21 @@ private:
     unsigned int good_example_match_count(Workload wl);
 
     /* ********** stats ********** */
-    unsigned int round_no = 0;
-    unsigned long long int sum_check_time = 0;
-    unsigned long long int max_check_time = 0;
+    unsigned int round_no;
+    std::map<string, unsigned long long int> sum_check_time;
+    std::map<string, unsigned long long int> max_check_time;
 
-    unsigned int rounds_in_local_search = 0;
-    unsigned int reset_cnt = 0;
-    unsigned int no_solver_call = 0;
-    unsigned int input_only_solver_call = 0;
-    unsigned int query_only_solver_call = 0;
-    unsigned int full_solver_call = 0;
-    unsigned int infeasible_input_cnt = 0;
+    unsigned int rounds_in_local_search;
+    unsigned int reset_cnt;
+    std::map<string, unsigned int> no_solver_call;
+    std::map<string, unsigned int> input_only_solver_call;
+    std::map<string, unsigned int> query_only_solver_call;
+    std::map<string, unsigned int> full_solver_call;
+    unsigned int infeasible_input_cnt;
 
     /* ********** stats ********** */
-    unsigned long long int sum_call_time = 0;
-    unsigned int call_cnt = 0;
+    std::map<string, unsigned long long int> sum_call_time;
+    unsigned int call_cnt;
 };
 
 #endif /* search_hpp */

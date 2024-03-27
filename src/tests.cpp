@@ -295,7 +295,7 @@ Workload broaden_operations(Workload wl, Search& search) {
                     Workload temp_wl = wl;
                     temp_wl.rm_spec(spec);
                     temp_wl.add_spec(spec_to_try);
-                    if (search.check(temp_wl)) {
+                    if (search.check(temp_wl, "broaden_operations")) {
                         // It's valid, replace the spec
                         wl.rm_spec(spec);
                         wl.add_spec(spec_to_try);
@@ -312,7 +312,7 @@ Workload broaden_operations(Workload wl, Search& search) {
                     temp_wl = wl;
                     temp_wl.rm_spec(spec);
                     temp_wl.add_spec(spec_to_try);
-                    if (search.check(temp_wl)) {
+                    if (search.check(temp_wl, "broaden_operations")) {
                         // It's valid, replace the spec
                         wl.rm_spec(spec);
                         wl.add_spec(spec_to_try);
@@ -328,7 +328,7 @@ Workload broaden_operations(Workload wl, Search& search) {
                     Workload temp_wl = wl;
                     temp_wl.rm_spec(spec);
                     temp_wl.add_spec(spec_to_try);
-                    if (search.check(temp_wl)) {
+                    if (search.check(temp_wl, "broaden_operations")) {
                         // It's valid, replace the spec
                         wl.rm_spec(spec);
                         wl.add_spec(spec_to_try);
@@ -344,7 +344,7 @@ Workload broaden_operations(Workload wl, Search& search) {
                     Workload temp_wl = wl;
                     temp_wl.rm_spec(spec);
                     temp_wl.add_spec(spec_to_try);
-                    if (search.check(temp_wl)) {
+                    if (search.check(temp_wl, "broaden_operations")) {
                         // It's valid, replace the spec
                         wl.rm_spec(spec);
                         wl.add_spec(spec_to_try);
@@ -373,7 +373,7 @@ Workload broaden_operations(Workload wl, Search& search) {
                     Workload temp_wl = wl;
                     temp_wl.rm_spec(spec);
                     temp_wl.add_spec(spec_to_try);
-                    if (search.check(temp_wl)) {
+                    if (search.check(temp_wl, "broaden_operations")) {
                         // It's valid, replace the spec
                         wl.rm_spec(spec);
                         wl.add_spec(spec_to_try);
@@ -392,7 +392,7 @@ Workload broaden_operations(Workload wl, Search& search) {
                     temp_wl = wl;
                     temp_wl.rm_spec(spec);
                     temp_wl.add_spec(spec_to_try);
-                    if (search.check(temp_wl)) {
+                    if (search.check(temp_wl, "broaden_operations")) {
                         // It's valid, replace the spec
                         wl.rm_spec(spec);
                         wl.add_spec(spec_to_try);
@@ -411,7 +411,7 @@ Workload broaden_operations(Workload wl, Search& search) {
                     Workload temp_wl = wl;
                     temp_wl.rm_spec(spec);
                     temp_wl.add_spec(spec_to_try);
-                    if (search.check(temp_wl)) {
+                    if (search.check(temp_wl, "broaden_operations")) {
                         // It's valid, replace the spec
                         wl.rm_spec(spec);
                         wl.add_spec(spec_to_try);
@@ -431,7 +431,7 @@ Workload broaden_operations(Workload wl, Search& search) {
                     Workload temp_wl = wl;
                     temp_wl.rm_spec(spec);
                     temp_wl.add_spec(spec_to_try);
-                    if (search.check(temp_wl)) {
+                    if (search.check(temp_wl, "broaden_operations")) {
                         // It's valid, replace the spec
                         wl.rm_spec(spec);
                         wl.add_spec(spec_to_try);
@@ -466,7 +466,7 @@ Workload restrict_time_ranges(Workload wl, Search& search) {
             Workload temp_wl = wl;
             temp_wl.rm_spec(spec);
             temp_wl.add_spec(spec_to_try);
-            if (search.check(temp_wl)) {
+            if (search.check(temp_wl, "restrict_time_ranges")) {
                 // It's valid, replace the spec
                 wl.rm_spec(spec);
                 wl.add_spec(spec_to_try);
@@ -486,7 +486,7 @@ Workload restrict_time_ranges(Workload wl, Search& search) {
             Workload temp_wl = wl;
             temp_wl.rm_spec(spec);
             temp_wl.add_spec(spec_to_try);
-            if (search.check(temp_wl)) {
+            if (search.check(temp_wl, "restrict_time_ranges")) {
                 // It's valid, replace the spec
                 wl.rm_spec(spec);
                 wl.add_spec(spec_to_try);
@@ -734,7 +734,7 @@ vector<Workload> transform_aipg_to_cenq(Workload wl, Search& search) {
                                            // cenq specs which are overlapping with the aipg
                                 temp_wl = remove_cenq_in_time_range(temp_wl, new_time_range, q);
                                 temp_wl.add_spec(spec_to_try);
-                                if (search.check(temp_wl)) {
+                                if (search.check(temp_wl, "transform_aipg_to_cenq")) {
                                     // Add to queue
                                     workloadQueue.push(temp_wl);
                                 } else {
@@ -752,7 +752,7 @@ vector<Workload> transform_aipg_to_cenq(Workload wl, Search& search) {
                                     // Remove all cenq specs which are overlapping with the aipg
                                     temp_wl = remove_cenq_in_time_range(temp_wl, new_time_range, q);
                                     temp_wl.add_spec(spec_to_try);
-                                    if (search.check(temp_wl)) {
+                                    if (search.check(temp_wl, "transform_aipg_to_cenq")) {
                                         // Add to queue
                                         workloadQueue.push(temp_wl);
                                     } else {
@@ -774,7 +774,7 @@ vector<Workload> transform_aipg_to_cenq(Workload wl, Search& search) {
                                                                             q);
                                         temp_wl.add_spec(spec_to_try);
 
-                                        if (search.check(temp_wl)) {
+                                        if (search.check(temp_wl, "transform_aipg_to_cenq")) {
                                             // Add to queue
                                             workloadQueue.push(temp_wl);
                                         } else {
@@ -804,12 +804,12 @@ vector<Workload> transform_aipg_to_cenq(Workload wl, Search& search) {
 Workload refine(Workload wl, Search& search) {
     Workload lastValidWl = wl;
 
-    if (!search.check(wl)) {
+    if (!search.check(wl, "refine")) {
         throw std::runtime_error("REFINEMENT ERROR: Original workload is invalid");
     }
 
     lastValidWl = search.setup_refinement(lastValidWl);
-    lastValidWl = search.remove_specs(lastValidWl);
+//    lastValidWl = search.remove_specs(lastValidWl);  # Unnecessary (should never happen, since we've already removed all unnecessary specs)
     cout << "Workload after removing specs: " << endl << lastValidWl << endl;
     lastValidWl = combine(lastValidWl, search);
     cout << "Workload after combining: " << endl << lastValidWl << endl;
@@ -830,7 +830,7 @@ Workload refine(Workload wl, Search& search) {
 
 Workload improve(Workload wl, Search& search) {
     cout << "Starting improvement process" << endl;
-    if (!search.check(wl)) {
+    if (!search.check(wl, "improve")) {
         throw std::runtime_error("IMPROVEMENT ERROR: Original workload is invalid");
     }
 
@@ -850,7 +850,7 @@ Workload improve(Workload wl, Search& search) {
         cout << "Refining " << numWorkloads << "th workload" << endl;
         numWorkloads++;
         Workload refinedWorkload = refine(workload, search);
-        unsigned int currentCost = search.cost(refinedWorkload);
+        unsigned int currentCost = search.cost(refinedWorkload, "improve");
 
         if (currentCost < lowestCost) {
             lowestCost = currentCost;
@@ -953,7 +953,7 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
         cout << "Original Workload: " << endl << wl << endl;
 
         Search search(cp, query, max_spec, config, good_examples_file, bad_examples_file);
-        if (!search.check(wl)) {
+        if (!search.check(wl, "research")) {
             cout << "ERROR: Original workload is invalid" << endl;
 
             solver_res_t workload_feasible = search.cp->check_workload_without_query(wl);
@@ -1124,7 +1124,7 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
             auto it = std::next(meta_data_specs.begin(), dis(gen));
             TimedSpec const& specToRemove = *it;
             wl.rm_spec(specToRemove);
-            if (search.check(wl)) {
+            if (search.check(wl, "remove_meta_data")) {
                 lastValidWl = wl; // Update the last valid state.
                 meta_data_specs.erase(
                     it); // Remove the spec from the set of potential meta-data specs.
@@ -1173,7 +1173,7 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
             Workload tempWl = wl;
             tempWl.rm_spec(specToRemove);
 
-            if (search.check(tempWl)) {
+            if (search.check(tempWl, "random_approach")) {
                 //            cout << "Workload is valid after removing spec" << endl;
                 wl = tempWl;            // Update the original workload if the temp one is valid.
                 lastValidWl = wl;       // Update the last valid state.
@@ -1187,7 +1187,7 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
 
         cout << "Last valid workload: " << endl << lastValidWl << endl;
 
-        if (!search.check(lastValidWl)) {
+        if (!search.check(lastValidWl, "random_approach")) {
             throw std::runtime_error("ERROR: Last valid workload is invalid");
         } else {
             lastValidWl = improve(lastValidWl, search);

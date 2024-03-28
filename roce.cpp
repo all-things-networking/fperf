@@ -77,6 +77,7 @@ void RoceScheduler::add_nodes() {
                 buffer_size,
                 threshold,
                 j,
+                prio_voq_start,
                 vector<QueueInfo>(1, info),
                 vector<QueueInfo>(cengress[i], info),
                 control_flows[i],

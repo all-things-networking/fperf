@@ -19,6 +19,7 @@ public:
         unsigned int buffer_size,
         unsigned int threshold,
         unsigned int return_to_sender,
+        unsigned int prio_voq_start,
         std::vector<QueueInfo> in_queue_info,
         std::vector<QueueInfo> out_queue_info,
         std::map<unsigned int, unsigned int> control_flow,
@@ -36,6 +37,7 @@ protected:
     unsigned int port_cnt;
     // Index of egress port connected to this switch's ingress port (in_queues.size() == 1)
     unsigned int return_to_sender;
+    unsigned int prio_voq_start;
 
     expr_vector pause_state;
     expr_vector sent_pause;

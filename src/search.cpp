@@ -444,7 +444,7 @@ Workload Search::refine(Workload wl) {
         // TODO: Generalize to other constructs?
         Comp* compSpec = dynamic_cast<Comp*>(wspec);
         if (!compSpec) continue;
-        Lhs* lhs = compSpec->get_lhs();
+        MExpr* lhs = compSpec->get_lhs();
         Indiv* indiv = dynamic_cast<Indiv*>(lhs);
         if (indiv) {
             metric_t m = indiv->get_metric();
@@ -498,7 +498,7 @@ Workload Search::refine(Workload wl) {
                     candidate = wl;
                     unsigned int n_coeff = (unsigned int) new_coeff;
                     Time* n_time = new Time(n_coeff);
-                    Lhs* lhs = compSpec->get_lhs();
+                    MExpr* lhs = compSpec->get_lhs();
                     WlSpec* n_comp = new Comp(lhs, compSpec->get_op(), n_time);
                     TimedSpec new_spec = TimedSpec(n_comp, tspec.get_time_range(), total_time);
                     candidate.mod_spec(*it, new_spec);
@@ -556,7 +556,7 @@ Workload Search::refine(Workload wl) {
         WlSpec* spec = it->get_wl_spec();
         Comp* compSpec = dynamic_cast<Comp*>(spec);
         if (!compSpec) continue;
-        Lhs* lhs = compSpec->get_lhs();
+        MExpr* lhs = compSpec->get_lhs();
 
         Indiv* indiv = dynamic_cast<Indiv*>(lhs);
         QSum* qsum = dynamic_cast<QSum*>(lhs);
@@ -576,7 +576,7 @@ Workload Search::refine(Workload wl) {
         WlSpec* spec = it->get_wl_spec();
         Comp* compSpec = dynamic_cast<Comp*>(spec);
         if (!compSpec) continue;
-        Lhs* lhs = compSpec->get_lhs();
+        MExpr* lhs = compSpec->get_lhs();
         Rhs* rhs = compSpec->get_rhs();
 
         Constant* constant = dynamic_cast<Constant*>(rhs);
@@ -616,8 +616,8 @@ Workload Search::refine(Workload wl) {
                 compSpec->get_op() == Op::Type::LE)
                 continue;
 
-            Lhs* lhs = compSpec->get_lhs();
-            Lhs* new_lhs = lhs;
+            MExpr* lhs = compSpec->get_lhs();
+            MExpr* new_lhs = lhs;
 
             Indiv* tone = dynamic_cast<Indiv*>(lhs);
             QSum* tsum = dynamic_cast<QSum*>(lhs);

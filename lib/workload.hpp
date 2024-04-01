@@ -57,14 +57,7 @@ ostream& operator<<(ostream& os, const Rhs& rhs);
 
 //************************************* LHS / MExpr *************************************//
 
-class Lhs : public Rhs {
-public:
-    virtual ~Lhs() = default;
-    virtual unsigned int ast_size() const override;
-    virtual bool applies_to_queue(unsigned int queue) const override;
-};
-
-class MExpr : public Lhs {
+class MExpr : public Rhs {
 public:
     virtual ~MExpr() = default;
     unsigned int ast_size() const override;
@@ -272,7 +265,7 @@ private:
 
 class Comp : public WlSpec {
 public:
-    Comp(Lhs* lhs, Op op, Rhs* rhs);
+    Comp(MExpr* lhs, Op op, Rhs* rhs);
     Comp(unsigned int, Op, unsigned int) = delete; // This is not allowed
 
     virtual bool spec_is_empty() const override;
@@ -282,14 +275,14 @@ public:
     pair<metric_t, qset_t> get_zero_queues() const;
 
 
-    Lhs* get_lhs() const;
+    MExpr* get_lhs() const;
     Op get_op() const;
     Rhs* get_rhs() const;
 
     bool operator==(const WlSpec& other) const override;
 
 private:
-    Lhs* lhs;
+    MExpr* lhs;
     Op op;
     Rhs* rhs;
 

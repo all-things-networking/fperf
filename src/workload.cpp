@@ -117,24 +117,6 @@ bool Rhs::operator<(const Rhs& other) const {
     return false;
 }
 
-//************************************* LHS *************************************//
-
-bool Lhs::applies_to_queue(unsigned int queue) const {
-    const MExpr* m_expr = dynamic_cast<const MExpr*>(this);
-    if (m_expr) {
-        return m_expr->applies_to_queue(queue);
-    }
-    return false;
-}
-
-unsigned int Lhs::ast_size() const {
-    const MExpr* m_expr = dynamic_cast<const MExpr*>(this);
-    if (m_expr) {
-        return m_expr->ast_size();
-    }
-    return 0u;
-}
-
 //************************************* MExpr *************************************//
 
 bool MExpr::applies_to_queue(unsigned int queue) const {
@@ -498,7 +480,7 @@ std::string Decr::to_string() const {
 //            is always normalized independent of the operation
 //            running on it.
 
-Comp::Comp(Lhs* lhs, Op op, Rhs* rhs): lhs(lhs), op(op), rhs(rhs) {
+Comp::Comp(MExpr* lhs, Op op, Rhs* rhs): lhs(lhs), op(op), rhs(rhs) {
     if(lhs==nullptr || rhs==nullptr) {
         throw std::invalid_argument("lhs and rhs cannot be null");
     }
@@ -766,7 +748,7 @@ pair<metric_t, qset_t> Comp::get_zero_queues() const {
     return make_pair(metric, qset);
 }
 
-Lhs* Comp::get_lhs() const {
+MExpr* Comp::get_lhs() const {
     return lhs;
 }
 
@@ -869,7 +851,7 @@ void TimedSpec::normalize() {
     } else {
         auto compSpec = dynamic_cast<Comp*>(wl_spec);
         if (compSpec) {
-            Lhs* lhs = compSpec->get_lhs();
+            MExpr* lhs = compSpec->get_lhs();
             Op op = compSpec->get_op();
             Rhs* rhs = compSpec->get_rhs();
 
@@ -1214,7 +1196,7 @@ void Workload::normalize(time_range_t time_range) {
 
             Comp comp = non_zero_comps[i];
 
-            Lhs* lhs = comp.get_lhs();
+            MExpr* lhs = comp.get_lhs();
             Op op = comp.get_op();
             Rhs* rhs = comp.get_rhs();
 
@@ -1297,7 +1279,7 @@ void Workload::normalize(time_range_t time_range) {
                         // If not, this spec is all and will not
                         // be added
                     } else {
-                        lhs = dynamic_cast<Lhs*>(rhs);
+                        lhs = dynamic_cast<MExpr*>(rhs);
                         rhs = 0u;
                         op.neg();
 

@@ -55,10 +55,6 @@ public:
     void
     pick_rhs_neighbors(Rhs* rhs, vector<Rhs*>& neighbors, RandomSpecGenerationParameters params);
 
-    //**** Lhs* ****//
-    Lhs* random_lhs();
-    void pick_lhs_neighbors(Lhs* lhs, vector<Lhs*>& neighbors);
-
     //**** MExpr* ****//
     MExpr* random_m_expr();
     void pick_m_expr_neighbors(MExpr* trf, vector<MExpr*>& neighbors);

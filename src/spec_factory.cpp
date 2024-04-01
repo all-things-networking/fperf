@@ -121,7 +121,7 @@ WlSpec* SpecFactory::random_comp() {
     Comp* res;
 
     do {
-        Lhs* lhs = random_lhs();
+        MExpr* lhs = random_m_expr();
         Rhs* rhs = random_rhs();
         const Indiv* indiv = dynamic_cast<Indiv*>(lhs);
         if (indiv) {
@@ -136,13 +136,13 @@ WlSpec* SpecFactory::random_comp() {
 }
 
 void SpecFactory::pick_neighbors(Comp& spec, vector<Comp>& neighbors) {
-    Lhs* lhs = spec.get_lhs();
+    MExpr* lhs = spec.get_lhs();
     Op op = spec.get_op();
     Rhs* rhs = spec.get_rhs();
 
     // Changing lhs
-    vector<Lhs*> lhs_neighbors;
-    pick_lhs_neighbors(lhs, lhs_neighbors);
+    vector<MExpr*> lhs_neighbors;
+    pick_m_expr_neighbors(lhs, lhs_neighbors);
     for (unsigned int i = 0; i < lhs_neighbors.size(); i++) {
         Comp nei = Comp(lhs_neighbors[i], op, rhs);
         if (!nei.spec_is_empty() && !nei.spec_is_all()) {
@@ -243,22 +243,6 @@ void SpecFactory::pick_rhs_neighbors(Rhs* rhs,
             neighbors.push_back(new Time(1u));
         }
     }
-}
-
-//************************************* LHS *************************************//
-
-Lhs* SpecFactory::random_lhs() {
-    return random_m_expr();
-}
-
-void SpecFactory::pick_lhs_neighbors(Lhs* lhs, vector<Lhs*>& neighbors) {
-    MExpr* trf = dynamic_cast<MExpr*>(lhs);
-    // Turn neighbors into vector<MExpr*>
-    vector<MExpr*> m_expr_neighbors;
-    for(Lhs* neighbor : neighbors) {
-        m_expr_neighbors.push_back(dynamic_cast<MExpr*>(neighbor));
-    }
-    pick_m_expr_neighbors(trf, m_expr_neighbors);
 }
 
 //************************************* TRF *************************************//

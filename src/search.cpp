@@ -707,6 +707,7 @@ Workload Search::remove_specs(Workload wl) { // Randomly remove specs and check 
 
              bool is_ans = check(candidate);
              if (is_ans) {
+//                 throw std::runtime_error("This should never happen");
                  wl = candidate;
                  changed = true;
                  break;

@@ -809,7 +809,7 @@ Workload refine(Workload wl, Search& search) {
     }
 
     lastValidWl = search.setup_refinement(lastValidWl);
-//    lastValidWl = search.remove_specs(lastValidWl);  # Unnecessary (should never happen, since we've already removed all unnecessary specs)
+    lastValidWl = search.remove_specs(lastValidWl);  // Unnecessary (should never happen, since we've already removed all unnecessary specs)
     cout << "Workload after removing specs: " << endl << lastValidWl << endl;
     lastValidWl = combine(lastValidWl, search);
     cout << "Workload after combining: " << endl << lastValidWl << endl;

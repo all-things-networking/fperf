@@ -25,6 +25,7 @@
 #include "metric.hpp"
 
 #include "global_vars.h"
+std::map<std::string, unsigned int> opt_count;
 
 #include <iterator>
 #include <limits>
@@ -162,10 +163,12 @@ Workload combine(Workload wl, Search& search) { // Need to pass in search so we 
                 TimedSpec spec_to_add = TimedSpec(Comp(Indiv(metric_t::CENQ, *qset.begin()), op_t::EQ, Time(1)), time_range_t(*contiguous_tset.begin() - 1, *contiguous_tset.rbegin() - 1), wl.get_total_time());
                 //                cout << "BROADEN: Adding spec: " << spec_to_add << endl;
                 wl.add_spec(spec_to_add);
+                opt_count["combine"]++;
             } else {
                 TimedSpec spec_to_add = TimedSpec(Comp(QSum(qset, metric_t::CENQ), op_t::EQ, Time(1)), time_range_t(*contiguous_tset.begin() - 1, *contiguous_tset.rbegin() - 1), wl.get_total_time());
                 //                cout << "BROADEN: Adding spec: " << spec_to_add << endl;
                 wl.add_spec(spec_to_add);
+                opt_count["combine"]++;
             }
 
             // Step 2: Remove all the old specs
@@ -261,6 +264,7 @@ Workload combine(Workload wl, Search& search) { // Need to pass in search so we 
             TimedSpec spec_to_add = TimedSpec(Comp(QSum(qset, metric_t::CENQ), op_t::LE, Time(0)), time_range, wl.get_total_time());
             //            cout << "BROADEN: Adding spec: " << spec_to_add << endl;
             wl.add_spec(spec_to_add);
+            opt_count["combine"]++;
         }
     }
 
@@ -299,6 +303,7 @@ Workload broaden_operations(Workload wl, Search& search) {
                         // It's valid, replace the spec
                         wl.rm_spec(spec);
                         wl.add_spec(spec_to_try);
+                        opt_count["broaden_operations"]++;
                         continue;
                     } else {
                         // It's not valid, keep the old spec
@@ -316,6 +321,7 @@ Workload broaden_operations(Workload wl, Search& search) {
                         // It's valid, replace the spec
                         wl.rm_spec(spec);
                         wl.add_spec(spec_to_try);
+                        opt_count["broaden_operations"]++;
                         continue;
                     } else {
                         // It's not valid, keep the old spec
@@ -332,6 +338,7 @@ Workload broaden_operations(Workload wl, Search& search) {
                         // It's valid, replace the spec
                         wl.rm_spec(spec);
                         wl.add_spec(spec_to_try);
+                        opt_count["broaden_operations"]++;
                         continue;
                     } else {
                         // It's not valid, keep the old spec
@@ -348,6 +355,7 @@ Workload broaden_operations(Workload wl, Search& search) {
                         // It's valid, replace the spec
                         wl.rm_spec(spec);
                         wl.add_spec(spec_to_try);
+                        opt_count["broaden_operations"]++;
                         continue;
                     } else {
                         // It's not valid, keep the old spec
@@ -377,6 +385,7 @@ Workload broaden_operations(Workload wl, Search& search) {
                         // It's valid, replace the spec
                         wl.rm_spec(spec);
                         wl.add_spec(spec_to_try);
+                        opt_count["broaden_operations"]++;
                         continue;
                     } else {
                         // It's not valid, keep the old spec
@@ -396,6 +405,7 @@ Workload broaden_operations(Workload wl, Search& search) {
                         // It's valid, replace the spec
                         wl.rm_spec(spec);
                         wl.add_spec(spec_to_try);
+                        opt_count["broaden_operations"]++;
                         continue;
                     } else {
                         // It's not valid, keep the old spec
@@ -415,6 +425,7 @@ Workload broaden_operations(Workload wl, Search& search) {
                         // It's valid, replace the spec
                         wl.rm_spec(spec);
                         wl.add_spec(spec_to_try);
+                        opt_count["broaden_operations"]++;
                         continue;
                     } else {
                         // It's not
@@ -435,6 +446,7 @@ Workload broaden_operations(Workload wl, Search& search) {
                         // It's valid, replace the spec
                         wl.rm_spec(spec);
                         wl.add_spec(spec_to_try);
+                        opt_count["broaden_operations"]++;
                         continue;
                     } else {
                         // It's not valid, keep the old spec
@@ -458,18 +470,27 @@ Workload restrict_time_ranges(Workload wl, Search& search) {
         wl_spec_t wl_spec = spec.get_wl_spec();
         time_range_t time_range = spec.get_time_range();
 
+        // Get set of all specs except the current one
+        set<TimedSpec> other_specs = wl.get_all_specs();
+        other_specs.erase(spec);
+
         // Try to restrict right side of time range
         while(time_range.second > time_range.first){
             time_range.second--;
             TimedSpec spec_to_try = TimedSpec(wl_spec, time_range, wl.get_total_time());
             // Create temp workload
             Workload temp_wl = wl;
-            temp_wl.rm_spec(spec);
+            temp_wl.clear();
+            for(const TimedSpec& other_spec : other_specs){
+                temp_wl.add_spec(other_spec);
+            }
             temp_wl.add_spec(spec_to_try);
             if (search.check(temp_wl, "restrict_time_ranges")) {
                 // It's valid, replace the spec
-                wl.rm_spec(spec);
-                wl.add_spec(spec_to_try);
+                wl = temp_wl;
+                opt_count["restrict_time_ranges"]++;
+                cout << "spec before restricting second time range: " << spec << endl;
+                cout << "spec after restricting second time range: " << spec_to_try << endl;
                 continue;
             } else {
                 // It's not valid, keep the old spec
@@ -484,12 +505,17 @@ Workload restrict_time_ranges(Workload wl, Search& search) {
             TimedSpec spec_to_try = TimedSpec(wl_spec, time_range, wl.get_total_time());
             // Create temp workload
             Workload temp_wl = wl;
-            temp_wl.rm_spec(spec);
+            temp_wl.clear();
+            for(const TimedSpec& other_spec : other_specs){
+                temp_wl.add_spec(other_spec);
+            }
             temp_wl.add_spec(spec_to_try);
             if (search.check(temp_wl, "restrict_time_ranges")) {
                 // It's valid, replace the spec
-                wl.rm_spec(spec);
-                wl.add_spec(spec_to_try);
+                wl = temp_wl;
+                opt_count["restrict_time_ranges"]++;
+                cout << "spec before restricting second time range: " << spec << endl;
+                cout << "spec after restricting second time range: " << spec_to_try << endl;
                 continue;
             } else {
                 // It's not valid, keep the old spec
@@ -737,6 +763,7 @@ vector<Workload> transform_aipg_to_cenq(Workload wl, Search& search) {
                                 if (search.check(temp_wl, "transform_aipg_to_cenq")) {
                                     // Add to queue
                                     workloadQueue.push(temp_wl);
+                                    opt_count["transform_aipg_to_cenq"]++;
                                 } else {
                                     // It's not valid, try another option
 
@@ -755,6 +782,7 @@ vector<Workload> transform_aipg_to_cenq(Workload wl, Search& search) {
                                     if (search.check(temp_wl, "transform_aipg_to_cenq")) {
                                         // Add to queue
                                         workloadQueue.push(temp_wl);
+                                        opt_count["transform_aipg_to_cenq"]++;
                                     } else {
                                         // It's not valid, try another option
 
@@ -777,6 +805,7 @@ vector<Workload> transform_aipg_to_cenq(Workload wl, Search& search) {
                                         if (search.check(temp_wl, "transform_aipg_to_cenq")) {
                                             // Add to queue
                                             workloadQueue.push(temp_wl);
+                                            opt_count["transform_aipg_to_cenq"]++;
                                         } else {
                                             // It's not valid, don't add any new workloads to the
                                             // queue At this point, we just keep aipg
@@ -919,6 +948,14 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
             }
         }
 
+        // Get set of queues with no traffic (cenq at last timestep is 0)
+        std::set<unsigned int> empty_queues;
+        for (unsigned int q = 0; q < cp->in_queue_cnt(); q++) {
+            if (sums[q][total_time - 1] == 0) {
+                empty_queues.insert(q);
+            }
+        }
+
         // Add aipg specs
         Queue* q0 = cp->get_out_queue(0);
 
@@ -930,6 +967,10 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
         // Add ecmp and dst specs to the workload
 
         for (unsigned int q = 0; q < enqs.size(); q++) {
+            // If empty queue, skip (in theory this is actually unnecessary, since all meta-data specs should be invalid anyway)
+            if (empty_queues.find(q) != empty_queues.end()) {
+                continue;
+            }
             for (unsigned int t = 0; t < enqs[q].size(); t++) {
                 metric_val metric_value;
                 ecmp.eval(base_eg, t, q, metric_value);
@@ -949,26 +990,6 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
             }
         }
 
-
-        cout << "Original Workload: " << endl << wl << endl;
-
-        Search search(cp, query, max_spec, config, good_examples_file, bad_examples_file);
-        if (!search.check(wl, "research")) {
-            cout << "ERROR: Original workload is invalid" << endl;
-
-            solver_res_t workload_feasible = search.cp->check_workload_without_query(wl);
-            if (workload_feasible == solver_res_t::UNSAT) {
-                cout << "Workload is infeasible" << endl;
-            }
-
-            IndexedExample* counter_eg = new IndexedExample();
-            solver_res_t query_only_res = search.cp->check_workload_with_query(wl, counter_eg);
-            if (query_only_res == solver_res_t::UNKNOWN) {
-                cout << "Counter-example: " << endl << *counter_eg << endl;
-            }
-            return;
-        }
-
         // Keep randomly removing specs until we hit 'minimum' workload
         // (i.e. the workload that is valid but removing any spec makes it invalid)
 
@@ -976,20 +997,7 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
         // types
         auto all_specs = wl.get_all_specs();
         auto meta_data_specs = std::vector<TimedSpec>();
-        //    for(auto const& timed_spec : all_specs){
-        //        wl_spec_t spec = timed_spec.get_wl_spec();
-        //        if(holds_alternative<Comp>(spec)){
-        //            Comp comp = get<Comp>(spec);
-        //            if(holds_alternative<Indiv>(comp.lhs)){
-        //                Indiv indiv = get<Indiv>(comp.lhs);
-        //                if(indiv.get_metric() == metric_t::ECMP || indiv.get_metric() ==
-        //                metric_t::DST){
-        //                    meta_data_specs.push_back(timed_spec);
-        //                }
-        //            }
-        //        }
-        //    }
-        //
+
         Workload originalWorkload = wl;
 
         std::random_device rd;
@@ -1084,14 +1092,41 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
         AIPG aipg = AIPG(q0, total_time, cp->net_ctx);
         // Add aipg specs to the workload
         for (unsigned int q = 0; q < enqs.size(); q++) {
+            // If empty queue, skip (aipg conveys no information)
+            if (empty_queues.find(q) != empty_queues.end()) {
+                continue;
+            }
             for (unsigned int t = 0; t < enqs[q].size(); t++) {
                 metric_val metric_value;
                 aipg.eval(base_eg, t, q, metric_value);
                 unsigned int value = metric_value.value;
-                wl.add_spec(TimedSpec(Comp(Indiv(metric_t::AIPG, q), op_t::EQ, value),
-                                      time_range_t(t, t),
-                                      total_time));
+                // Don't add if aipg=0 (this conveys no information)
+                if (metric_value.valid && value != 0) { // OPTIMIZATION: Don't add if aipg=0
+                    wl.add_spec(TimedSpec(Comp(Indiv(metric_t::AIPG, q), op_t::EQ, value),
+                                          time_range_t(t, t),
+                                          total_time));
+                }
             }
+        }
+
+
+        cout << "Original Workload: " << endl << wl << endl;
+
+        Search search(cp, query, max_spec, config, good_examples_file, bad_examples_file);
+        if (!search.check(wl, "research")) {
+            cout << "ERROR: Original workload is invalid" << endl;
+
+            solver_res_t workload_feasible = search.cp->check_workload_without_query(wl);
+            if (workload_feasible == solver_res_t::UNSAT) {
+                cout << "Workload is infeasible" << endl;
+            }
+
+            IndexedExample* counter_eg = new IndexedExample();
+            solver_res_t query_only_res = search.cp->check_workload_with_query(wl, counter_eg);
+            if (query_only_res == solver_res_t::UNKNOWN) {
+                cout << "Counter-example: " << endl << *counter_eg << endl;
+            }
+            throw std::runtime_error("ERROR: Original workload is invalid");
         }
 
         lastValidWl = wl; // Store the initial workload state.
@@ -1128,6 +1163,7 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
                 lastValidWl = wl; // Update the last valid state.
                 meta_data_specs.erase(
                     it); // Remove the spec from the set of potential meta-data specs.
+                opt_count["remove_meta_data"]++;
             } else {
                 wl.add_spec(specToRemove); // Put the last removed spec back.
                 meta_data_specs.erase(
@@ -1178,6 +1214,7 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
                 wl = tempWl;            // Update the original workload if the temp one is valid.
                 lastValidWl = wl;       // Update the last valid state.
                 attemptedSpecs.clear(); // Reset attempted specs since the workload has changed.
+                opt_count["random_approach"]++;
             } else {
                 //            cout << "Workload is invalid after removing spec" << endl;
                 attemptedSpecs.insert(specToRemove); // Mark this spec as attempted.

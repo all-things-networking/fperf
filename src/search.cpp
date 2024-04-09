@@ -9,6 +9,9 @@
 #include <cmath>
 
 #include "search.hpp"
+#include "global_vars.h"
+
+#include <filesystem>
 
 unsigned long MAX_COST;
 
@@ -122,14 +125,15 @@ bool Search::check(Workload wl, string function_name) {
     last_input_infeasible = false;
 
     // check if it matches one of the bad examples
-    if (satisfies_bad_example(wl)) {
-        DEBUG_MSG("matched bad example" << endl);
-        if(no_solver_call.find(function_name) == no_solver_call.end())
-            no_solver_call[function_name] = 1;
-        else
-            no_solver_call[function_name]++;
-        return false;
-    }
+    // Removed for benchmarking purposes
+//    if (satisfies_bad_example(wl)) {
+//        DEBUG_MSG("matched bad example" << endl);
+//        if(no_solver_call.find(function_name) == no_solver_call.end())
+//            no_solver_call[function_name] = 1;
+//        else
+//            no_solver_call[function_name]++;
+//        return false;
+//    }
 
     // TODO: Make use of a real input_only_solver
     solver_res_t input_only_res = input_only_solver->check_workload_without_query(wl);
@@ -756,6 +760,7 @@ Workload Search::tighten_constant_bounds(Workload wl){ // Tighten constant bound
                     if (is_ans) {
                         coeff_changed = true;
                         last_working_candidate = candidate;
+                        opt_count["tighten_constant_bounds"]++;
                     } else {
                         break;
                     }
@@ -785,6 +790,7 @@ Workload Search::tighten_constant_bounds(Workload wl){ // Tighten constant bound
                     if (is_ans) {
                         c_changed = true;
                         last_working_candidate = candidate;
+                        opt_count["tighten_constant_bounds"]++;
                     } else {
                         break;
                     }
@@ -899,6 +905,7 @@ Workload Search::aggregate_indivs_to_sums(Workload wl){
             bool is_ans = check(candidate, "aggregate_indivs_to_sums");
             if (is_ans) {
                 wl = candidate;
+                opt_count["aggregate_indivs_to_sums"]++;
             }
         }
     }
@@ -1147,7 +1154,7 @@ Workload Search::random_neighbor(Workload wl, unsigned int hops) {
 
 void Search::print_stats() {
     cout << "-------------------- STATS -----------------------" << endl;
-    cout << "infeasible_input_cnt: " << infeasible_input_cnt << endl;
+//    cout << "infeasible_input_cnt: " << infeasible_input_cnt << endl;
 
     // Get collection of all keys
     set<string> all_keys;
@@ -1180,6 +1187,9 @@ void Search::print_stats() {
         all_keys.insert(it->first);
     }
 
+    std::map<string, double> avg_check_time;
+    std::map<string, double> avg_call_time;
+
     // For every key-value pair
     for(auto it = all_keys.begin(); it != all_keys.end(); ++it){
         cout << "Function: " << *it << endl;
@@ -1194,16 +1204,20 @@ void Search::print_stats() {
         cout << "query_only_solver_call: " << query_only_solver_call[*it] << endl;
         if(full_solver_call.find(*it) == full_solver_call.end()) full_solver_call[*it] = 0;
         cout << "full_solver_call: " << full_solver_call[*it] << endl;
+        cout << "opt_count: " << opt_count[*it] << endl;
+
+        if(full_solver_call[*it] == 0) full_solver_call[*it] = 1; // For average calculations
         cout << "Timing Stats: " << endl;
         if(sum_check_time.find(*it) == sum_check_time.end()) sum_check_time[*it] = 0;
         cout << "sum_check_time: " << sum_check_time[*it] << "ms" << endl;
         if(max_check_time.find(*it) == max_check_time.end()) max_check_time[*it] = 0;
+        avg_check_time[*it] = sum_check_time[*it] / (double) full_solver_call[*it];
+        cout << "avg_check_time: " << avg_check_time[*it] << "ms" << endl;
         cout << "max_check_time: " << max_check_time[*it] << "ms" << endl;
         if(sum_call_time.find(*it) == sum_call_time.end()) sum_call_time[*it] = 0;
         cout << "sum_call_time: " << sum_call_time[*it] << "ms" << endl;
-        if(full_solver_call[*it] == 0) full_solver_call[*it] = 1;
-        double avg_call_time = sum_call_time[*it] / (double) full_solver_call[*it];
-        cout << "avg_call_time: " << avg_call_time << "ms" << endl;
+        avg_call_time[*it] = sum_call_time[*it] / (double) full_solver_call[*it];
+        cout << "avg_call_time: " << avg_call_time[*it] << "ms" << endl;
 
 //        cout << "full solver stats:\n";
 //        cout << "   w/o query: " << (cp->get_check_workload_without_query_avg_time() / 1000.0) << " "
@@ -1222,6 +1236,35 @@ void Search::print_stats() {
         cout << "--------------------------------------------------" << endl;
     }
 
+    // Save output to CSV
+    string example_name = globalArgs[0];
 
+    // Define the file and directory paths using filesystem
+    namespace fs = std::filesystem;
+    fs::path dirPath = "benchmarks/csv";
+    fs::path filePath = dirPath / (example_name + ".csv");
 
+    // Output the current working directory for debugging
+    cout << "Current working directory: " << fs::current_path() << endl;
+
+    // Check if the directory exists, create if not
+    if (!fs::exists(dirPath)) {
+        cout << "Creating directory: " << dirPath << endl;
+        fs::create_directories(dirPath); // This creates all directories in the path if they don't exist
+    }
+
+    // Open the file
+    ofstream myfile(filePath, ios::out); // Open for appending
+    if (myfile.fail()) {
+        cerr << "Failed to open file: " << filePath << endl;
+        exit(1); // Exit if fail to open
+    }
+    cout << "Saving to " << filePath << endl;
+
+    // Write data to file
+    myfile << "Function, no_solver_call, input_only_solver_call, query_only_solver_call, full_solver_call, opt_count, sum_check_time, avg_check_time, max_check_time, sum_call_time, avg_call_time" << endl;
+    for(auto it = all_keys.begin(); it != all_keys.end(); ++it){
+        myfile << *it << ", " << no_solver_call[*it] << ", " << input_only_solver_call[*it] << ", " << query_only_solver_call[*it] << ", " << full_solver_call[*it] << ", " << opt_count[*it] << ", " << sum_check_time[*it] << ", " << avg_check_time[*it] << ", " << max_check_time[*it] << ", " << sum_call_time[*it] << ", " << avg_call_time[*it] << endl;
+    }
+    myfile.close();
 }

@@ -43,10 +43,10 @@ cid_t get_unique_id(cid_t module_id, cid_t queue_id) {
 //************************************* COMP *************************************//
 
 Op::Op() {}
-Op::Op(Op::Type op) : op(op) {}
+Op::Op(Op::Type op) : type(op) {}
 
 Op::Type Op::get() const {
-    return op;
+    return type;
 }
 
 ostream& operator<<(ostream& os, const Op& op) {
@@ -72,22 +72,22 @@ bool Op::eval(unsigned int lhs_val, const Op& op, unsigned int rhs_val) {
 }
 
 void Op::neg() {
-    switch (op) {
-        case Type::GT: op = Type::LE; break;
-        case Type::GE: op = Type::LT; break;
-        case Type::LT: op = Type::GE; break;
-        case Type::LE: op = Type::GT; break;
+    switch (type) {
+        case Type::GT: type = Type::LE; break;
+        case Type::GE: type = Type::LT; break;
+        case Type::LT: type = Type::GE; break;
+        case Type::LE: type = Type::GT; break;
         case Type::EQ: break;
         default: throw std::invalid_argument("Unknown operation");
     }
 }
 
 bool Op::operator==(const Op& other) const {
-    return op == other.op;
+    return type == other.type;
 }
 
 bool Op::operator<(const Op& other) const {
-    return op < other.op;
+    return type < other.type;
 }
 
 //************************************* TIME RANGE *************************************//

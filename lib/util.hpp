@@ -68,7 +68,7 @@ public:
     bool operator<(const Op& other) const;
 
 private:
-    Type op;
+    Type type;
 };
 
 //************************************* TIME RANGE *************************************//

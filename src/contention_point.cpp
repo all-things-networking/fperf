@@ -2132,7 +2132,7 @@ expr ContentionPoint::get_expr(Comp comp, unsigned int t) {
     return (lhs.first && rhs.first && mk_op(lhs.second, comp.get_op(), rhs.second));
 }
 
-m_val_expr_t ContentionPoint::get_expr(Rhs* rhs, unsigned int t) {
+m_val_expr_t ContentionPoint::get_expr(Expr* rhs, unsigned int t) {
     MExpr* lhs = dynamic_cast <MExpr*>(rhs);
     if(lhs) {
         return get_expr(lhs, t);
@@ -2319,7 +2319,7 @@ bool ContentionPoint::eval_spec(Comp comp, IndexedExample* eg, time_range_t time
     return true;
 }
 
-void ContentionPoint::eval_rhs(Rhs* rhs,
+void ContentionPoint::eval_rhs(Expr* rhs,
                                IndexedExample* eg,
                                unsigned int time,
                                metric_val& res) const {

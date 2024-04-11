@@ -483,7 +483,7 @@ Workload Search::refine(Workload wl) {
         WlSpec* wspec = tspec.get_wl_spec();
         Comp* compSpec = dynamic_cast<Comp*>(wspec);
         if (!compSpec) continue;
-        Rhs* rhs = compSpec->get_rhs();
+        Expr* rhs = compSpec->get_rhs();
         Op op = compSpec->get_op();
         if (op.get() == Op::Type::GT || op.get() == Op::Type::GE) {
             Time* time = dynamic_cast<Time*>(rhs);
@@ -577,7 +577,7 @@ Workload Search::refine(Workload wl) {
         Comp* compSpec = dynamic_cast<Comp*>(spec);
         if (!compSpec) continue;
         MExpr* lhs = compSpec->get_lhs();
-        Rhs* rhs = compSpec->get_rhs();
+        Expr* rhs = compSpec->get_rhs();
 
         Constant* constant = dynamic_cast<Constant*>(rhs);
         if (it->get_time_range() == time_range_t(0, cp->get_total_time() - 1) &&
@@ -610,7 +610,7 @@ Workload Search::refine(Workload wl) {
             WlSpec* wl_spec = it->get_wl_spec();
             Comp* compSpec = dynamic_cast<Comp*>(wl_spec);
             if (!compSpec) continue;
-            Rhs* rhs = compSpec->get_rhs();
+            Expr* rhs = compSpec->get_rhs();
             Constant* constant = dynamic_cast<Constant*>(rhs);
             if (constant && constant->get_coeff() == 0 &&
                 compSpec->get_op() == Op::Type::LE)

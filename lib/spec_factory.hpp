@@ -49,11 +49,11 @@ public:
     void pick_neighbors(Comp& spec, vector<Comp>& neighbors);
 
     //**** Rhs* ****//
-    Rhs* random_rhs();
-    Rhs* random_rhs(RandomSpecGenerationParameters params);
-    void pick_rhs_neighbors(Rhs* rhs, vector<Rhs*>& neighbors);
+    Expr* random_rhs();
+    Expr* random_rhs(RandomSpecGenerationParameters params);
+    void pick_rhs_neighbors(Expr* rhs, vector<Expr*>& neighbors);
     void
-    pick_rhs_neighbors(Rhs* rhs, vector<Rhs*>& neighbors, RandomSpecGenerationParameters params);
+    pick_rhs_neighbors(Expr* rhs, vector<Expr*>& neighbors, RandomSpecGenerationParameters params);
 
     //**** MExpr* ****//
     MExpr* random_m_expr();

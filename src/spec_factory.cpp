@@ -122,7 +122,7 @@ WlSpec* SpecFactory::random_comp() {
 
     do {
         MExpr* lhs = random_m_expr();
-        Rhs* rhs = random_rhs();
+        Expr* rhs = random_rhs();
         const Indiv* indiv = dynamic_cast<Indiv*>(lhs);
         if (indiv) {
             metric_t metric = indiv->get_metric();
@@ -138,7 +138,7 @@ WlSpec* SpecFactory::random_comp() {
 void SpecFactory::pick_neighbors(Comp& spec, vector<Comp>& neighbors) {
     MExpr* lhs = spec.get_lhs();
     Op op = spec.get_op();
-    Rhs* rhs = spec.get_rhs();
+    Expr* rhs = spec.get_rhs();
 
     // Changing lhs
     vector<MExpr*> lhs_neighbors;
@@ -161,7 +161,7 @@ void SpecFactory::pick_neighbors(Comp& spec, vector<Comp>& neighbors) {
     }
 
     // Changing rhs
-    vector<Rhs*> rhs_neighbors;
+    vector<Expr*> rhs_neighbors;
     const Indiv* indiv = dynamic_cast<Indiv*>(lhs);
     if (indiv) {
         metric_t metric = indiv->get_metric();
@@ -179,11 +179,11 @@ void SpecFactory::pick_neighbors(Comp& spec, vector<Comp>& neighbors) {
 
 //************************************* RHS *************************************//
 
-Rhs* SpecFactory::random_rhs() {
+Expr* SpecFactory::random_rhs() {
     return random_rhs({true, dists->get_rhs_const_dist()});
 }
 
-Rhs* SpecFactory::random_rhs(RandomSpecGenerationParameters params) {
+Expr* SpecFactory::random_rhs(RandomSpecGenerationParameters params) {
     unsigned int rhs_type = dists->rhs();
     while (rhs_type == 0) {
         rhs_type = dists->rhs();
@@ -191,7 +191,7 @@ Rhs* SpecFactory::random_rhs(RandomSpecGenerationParameters params) {
 
     if (params.time_valid && rhs_type == 1){
         Time time = random_time();
-        return dynamic_cast<Rhs*>(new Time(time));
+        return dynamic_cast<Expr*>(new Time(time));
     }
 
     mt19937& gen = dists->get_gen();
@@ -199,12 +199,12 @@ Rhs* SpecFactory::random_rhs(RandomSpecGenerationParameters params) {
     return new Constant(c);
 }
 
-void SpecFactory::pick_rhs_neighbors(Rhs* rhs, vector<Rhs*>& neighbors) {
+void SpecFactory::pick_rhs_neighbors(Expr* rhs, vector<Expr*>& neighbors) {
     pick_rhs_neighbors(rhs, neighbors, {true, dists->get_rhs_const_dist(), false});
 }
 
-void SpecFactory::pick_rhs_neighbors(Rhs* rhs,
-                                     vector<Rhs*>& neighbors,
+void SpecFactory::pick_rhs_neighbors(Expr* rhs,
+                                     vector<Expr*>& neighbors,
                                      RandomSpecGenerationParameters params) {
     MExpr* trf = dynamic_cast<MExpr*>(rhs);
     if (trf) {

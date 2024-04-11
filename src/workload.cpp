@@ -16,7 +16,7 @@
 
 //************************************* RHS *************************************//
 
-bool Rhs::applies_to_queue(unsigned int queue) const {
+bool Expr::applies_to_queue(unsigned int queue) const {
     // If this object is of type MExpr, then check if it applies to the queue
     const MExpr* m_expr = dynamic_cast<const MExpr*>(this);
     if (m_expr) {
@@ -25,7 +25,7 @@ bool Rhs::applies_to_queue(unsigned int queue) const {
     return false;
 }
 
-unsigned int Rhs::ast_size() const {
+unsigned int Expr::ast_size() const {
     const MExpr* m_expr = dynamic_cast<const MExpr*>(this);
     if (m_expr) {
         return m_expr->ast_size();
@@ -33,7 +33,7 @@ unsigned int Rhs::ast_size() const {
     return 0u;
 }
 
-ostream& operator<<(ostream& os, const Rhs* rhs) {
+ostream& operator<<(ostream& os, const Expr* rhs) {
     const MExpr* m_expr = dynamic_cast<const MExpr*>(rhs);
     if (m_expr) {
         os << *m_expr;
@@ -49,7 +49,7 @@ ostream& operator<<(ostream& os, const Rhs* rhs) {
     return os;
 }
 
-ostream& operator<<(ostream& os, const Rhs& rhs) {
+ostream& operator<<(ostream& os, const Expr& rhs) {
     const MExpr* m_expr = dynamic_cast<const MExpr*>(&rhs);
     if (m_expr) {
         os << *m_expr;
@@ -65,7 +65,7 @@ ostream& operator<<(ostream& os, const Rhs& rhs) {
     return os;
 }
 
-bool Rhs::operator==(const Rhs& other) const {
+bool Expr::operator==(const Expr& other) const {
     const MExpr* m_expr = dynamic_cast<const MExpr*>(this);
     if (m_expr) {
         const MExpr* other_m_expr = dynamic_cast<const MExpr*>(&other);
@@ -91,7 +91,7 @@ bool Rhs::operator==(const Rhs& other) const {
     return false;
 }
 
-bool Rhs::operator<(const Rhs& other) const {
+bool Expr::operator<(const Expr& other) const {
     const MExpr* m_expr = dynamic_cast<const MExpr*>(this);
     if (m_expr) {
         const MExpr* other_m_expr = dynamic_cast<const MExpr*>(&other);
@@ -480,7 +480,7 @@ std::string Decr::to_string() const {
 //            is always normalized independent of the operation
 //            running on it.
 
-Comp::Comp(MExpr* lhs, Op op, Rhs* rhs): lhs(lhs), op(op), rhs(rhs) {
+Comp::Comp(MExpr* lhs, Op op, Expr* rhs): lhs(lhs), op(op), rhs(rhs) {
     if(lhs==nullptr || rhs==nullptr) {
         throw std::invalid_argument("lhs and rhs cannot be null");
     }
@@ -756,7 +756,7 @@ Op Comp::get_op() const {
     return op;
 }
 
-Rhs* Comp::get_rhs() const {
+Expr* Comp::get_rhs() const {
     return rhs;
 }
 
@@ -853,7 +853,7 @@ void TimedSpec::normalize() {
         if (compSpec) {
             MExpr* lhs = compSpec->get_lhs();
             Op op = compSpec->get_op();
-            Rhs* rhs = compSpec->get_rhs();
+            Expr* rhs = compSpec->get_rhs();
 
             const Constant* c = dynamic_cast<const Constant*>(rhs);
             if (c) {
@@ -1198,7 +1198,7 @@ void Workload::normalize(time_range_t time_range) {
 
             MExpr* lhs = comp.get_lhs();
             Op op = comp.get_op();
-            Rhs* rhs = comp.get_rhs();
+            Expr* rhs = comp.get_rhs();
 
 
             for (unsigned int j = 0; j < zeros.size(); j++) {

@@ -42,22 +42,22 @@ The Grammar:
 ----------------------------------------------------------------- */
 
 //************************************* RHS *************************************//
-class Rhs {
+class Expr {
 public:
-    virtual ~Rhs() = default;
+    virtual ~Expr() = default;
     virtual unsigned int ast_size() const;
     virtual bool applies_to_queue(unsigned int queue) const;
 
-    virtual bool operator==(const Rhs& other) const;
-    virtual bool operator<(const Rhs& other) const;
+    virtual bool operator==(const Expr& other) const;
+    virtual bool operator<(const Expr& other) const;
 };
 
-ostream& operator<<(ostream& os, const Rhs* rhs);
-ostream& operator<<(ostream& os, const Rhs& rhs);
+ostream& operator<<(ostream& os, const Expr* rhs);
+ostream& operator<<(ostream& os, const Expr& rhs);
 
 //************************************* LHS / MExpr *************************************//
 
-class MExpr : public Rhs {
+class MExpr : public Expr {
 public:
     virtual ~MExpr() = default;
     unsigned int ast_size() const override;
@@ -72,7 +72,7 @@ ostream& operator<<(ostream& os, const MExpr& m_expr);
 
 //************************************* TIME *************************************//
 
-class Time : public Rhs {
+class Time : public Expr {
 
 public:
     Time(unsigned int coeff);
@@ -89,7 +89,7 @@ private:
 
 //************************************* Constant *************************************//
 
-class Constant : public Rhs {
+class Constant : public Expr {
 
 public:
     Constant(unsigned int coeff);
@@ -265,7 +265,7 @@ private:
 
 class Comp : public WlSpec {
 public:
-    Comp(MExpr* lhs, Op op, Rhs* rhs);
+    Comp(MExpr* lhs, Op op, Expr* rhs);
     Comp(unsigned int, Op, unsigned int) = delete; // This is not allowed
 
     virtual bool spec_is_empty() const override;
@@ -277,14 +277,14 @@ public:
 
     MExpr* get_lhs() const;
     Op get_op() const;
-    Rhs* get_rhs() const;
+    Expr* get_rhs() const;
 
     bool operator==(const WlSpec& other) const override;
 
 private:
     MExpr* lhs;
     Op op;
-    Rhs* rhs;
+    Expr* rhs;
 
     bool is_empty = false;
     bool is_all = false;

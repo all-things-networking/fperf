@@ -481,9 +481,6 @@ std::string Decr::to_string() const {
 //            running on it.
 
 Comp::Comp(MExpr* lhs, Op op, Expr* rhs): lhs(lhs), op(op), rhs(rhs) {
-    if(lhs==nullptr || rhs==nullptr) {
-        throw std::invalid_argument("lhs and rhs cannot be null");
-    }
     normalize();
 }
 

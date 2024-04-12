@@ -206,10 +206,10 @@ void SpecFactory::pick_rhs_neighbors(Expr* rhs, vector<Expr*>& neighbors) {
 void SpecFactory::pick_rhs_neighbors(Expr* rhs,
                                      vector<Expr*>& neighbors,
                                      RandomSpecGenerationParameters params) {
-    MExpr* trf = dynamic_cast<MExpr*>(rhs);
-    if (trf) {
+    MExpr* mexpr = dynamic_cast<MExpr*>(rhs);
+    if (mexpr) {
         vector<MExpr*> trf_neighbors;
-        pick_m_expr_neighbors(trf, trf_neighbors);
+        pick_m_expr_neighbors(mexpr, trf_neighbors);
         for (const MExpr* neighbor : trf_neighbors) {
             neighbors.push_back(new MExpr(*neighbor));
         }

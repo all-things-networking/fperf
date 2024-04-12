@@ -170,13 +170,19 @@ void rr(string good_examples_file, string bad_examples_file) {
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = 2;
     dists_params.pkt_meta2_val_max = 2;
-    dists_params.random_seed = 29663;
+    dists_params.random_seed = 1000;
 
     Dists* dists = new Dists(dists_params);
     SharedConfig* config = new SharedConfig(total_time, rr->in_queue_cnt(), target_queues, dists);
     bool config_set = rr->set_shared_config(config);
     if (!config_set) return;
 
+//    Workload answer();
+//    IndexedExample* example;
+    //  answer ^ base_wl ^ M ^ !query is UNSAT
+//    rr->check_workload_with_query(answer, example);
+    //  answer ^ base_wl ^ M is SAT
+//    rr->check_workload_without_query(answer);
     run(rr,
         base_eg,
         good_example_cnt,

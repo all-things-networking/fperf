@@ -20,7 +20,7 @@ public:
                NetContext& net_ctx);
 
     void add_constrs(NetContext& net_ctx, map<string, expr>& constr_map);
-
+    Statement* schedule();
 
 private:
     void add_proc_vars(NetContext& net_ctx);

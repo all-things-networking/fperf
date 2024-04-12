@@ -21,10 +21,7 @@ public:
 
     void add_constrs(NetContext& net_ctx, map<string, expr>& constr_map);
 
-    expr last_served_queue(unsigned int q, unsigned int t);
-
 private:
-    vector<expr>* last_served_queue_;
     void add_proc_vars(NetContext& net_ctx);
 };
 

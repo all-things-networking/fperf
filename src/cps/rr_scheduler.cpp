@@ -76,27 +76,27 @@ void RRScheduler::add_metrics() {
 }
 
 string RRScheduler::cp_model_str(model& m, NetContext& net_ctx, unsigned int t) {
-    (void) net_ctx;
-
-    stringstream ss;
-    cid_t rr_id = nodes[0];
-    RRQM* rr_qm = (RRQM*) id_to_qm[rr_id];
-
-    int last_served_queue = -1;
-    for (unsigned int q = 0; q < in_queues.size(); q++) {
-        if (m.eval(rr_qm->last_served_queue(q, t)).is_true()) {
-            last_served_queue = q;
-            break;
-        }
-    }
-    ss << "last serviced queue: " << last_served_queue << endl;
-    ss << "qid: cenq, cdeq, deq_cnt" << endl;
-    for (unsigned int q = 0; q < in_queues.size(); q++) {
-        Queue* queue = in_queues[q];
-        ss << queue->get_id() << ": " << m.eval(cenq[q]->val(t).second).get_numeral_int() << ", "
-           << m.eval(cdeq[q]->val(t).second).get_numeral_int() << ", " <<
-            // m.eval(qsize[q]->val(t)).get_numeral_int() << ", " <<
-            m.eval(queue->deq_cnt(t)).get_numeral_int() << endl;
-    }
-    return ss.str();
+//    (void) net_ctx;
+//
+//    stringstream ss;
+//    cid_t rr_id = nodes[0];
+//    RRQM* rr_qm = (RRQM*) id_to_qm[rr_id];
+//
+//    int last_served_queue = -1;
+//    for (unsigned int q = 0; q < in_queues.size(); q++) {
+//        if (m.eval(rr_qm->last_served_queue(q, t)).is_true()) {
+//            last_served_queue = q;
+//            break;
+//        }
+//    }
+//    ss << "last serviced queue: " << last_served_queue << endl;
+//    ss << "qid: cenq, cdeq, deq_cnt" << endl;
+//    for (unsigned int q = 0; q < in_queues.size(); q++) {
+//        Queue* queue = in_queues[q];
+//        ss << queue->get_id() << ": " << m.eval(cenq[q]->val(t).second).get_numeral_int() << ", "
+//           << m.eval(cdeq[q]->val(t).second).get_numeral_int() << ", " <<
+//            // m.eval(qsize[q]->val(t)).get_numeral_int() << ", " <<
+//            m.eval(queue->deq_cnt(t)).get_numeral_int() << endl;
+//    }
+//    return ss.str();
 }

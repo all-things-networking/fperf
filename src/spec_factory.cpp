@@ -191,7 +191,7 @@ Expr* SpecFactory::random_rhs(RandomSpecGenerationParameters params) {
 
     if (params.time_valid && rhs_type == 1){
         Time time = random_time();
-        return dynamic_cast<Expr*>(new Time(time));
+        return new Time(time);
     }
 
     mt19937& gen = dists->get_gen();

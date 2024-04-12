@@ -54,7 +54,7 @@ public:
     Op();
     Op(Op::Type op);
 
-    Type get() const;
+    Type get_type() const;
 
     friend ostream& operator<<(ostream& os, const Op& op);
 

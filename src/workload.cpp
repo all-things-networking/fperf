@@ -528,8 +528,8 @@ void Comp::normalize() {
                 bool intersect = inters.size() > 0;
 
                 if (lhs_qset == rhs_qset) {
-                    if (op.get() == Op::Type::GE || op.get() == Op::Type::LE) is_all = true;
-                    if (op.get() == Op::Type::GT || op.get() == Op::Type::LT) is_empty = true;
+                    if (op.get_type() == Op::Type::GE || op.get_type() == Op::Type::LE) is_all = true;
+                    if (op.get_type() == Op::Type::GT || op.get_type() == Op::Type::LT) is_empty = true;
                 } else if (is_superset(rhs_qset, lhs_qset)) {
                     set<unsigned int> diff;
                     set_difference(rhs_qset.begin(),
@@ -538,20 +538,20 @@ void Comp::normalize() {
                                    lhs_qset.end(),
                                    inserter(diff, diff.begin()));
 
-                    if (op.get() == Op::Type::LE)
+                    if (op.get_type() == Op::Type::LE)
                         is_all = true;
-                    else if (op.get() == Op::Type::GT)
+                    else if (op.get_type() == Op::Type::GT)
                         is_empty = true;
                     else if (diff.size() == 1) {
                         lhs = new Indiv(rhs_qsum->get_metric(), *(diff.begin()));
-                        if (op.get() == Op::Type::EQ)
+                        if (op.get_type() == Op::Type::EQ)
                             op = Op(Op::Type::LE);
                         else
                             op.neg();
                         rhs = new Constant(0u);
                     } else {
                         lhs = new QSum(qset_t(diff.begin(), diff.end()), rhs_qsum->get_metric());
-                        if (op.get() == Op::Type::EQ)
+                        if (op.get_type() == Op::Type::EQ)
                             op = Op(Op::Type::LE);
                         else
                             op.neg();
@@ -565,9 +565,9 @@ void Comp::normalize() {
                                    rhs_qset.end(),
                                    inserter(diff, diff.begin()));
 
-                    if (op.get() == Op::Type::LT)
+                    if (op.get_type() == Op::Type::LT)
                         is_empty = true;
-                    else if (op.get() == Op::Type::GE)
+                    else if (op.get_type() == Op::Type::GE)
                         is_all = true;
                     else if (diff.size() == 1) {
                         lhs = new Indiv(rhs_qsum->get_metric(), *(diff.begin()));
@@ -610,9 +610,9 @@ void Comp::normalize() {
         // if both are Indiv
         else if (lhs_is_indiv && rhs_is_indiv) {
             if (lhs_indiv == rhs_indiv) {
-                if (op.get() == Op::Type::LE || op.get() == Op::Type::GE)
+                if (op.get_type() == Op::Type::LE || op.get_type() == Op::Type::GE)
                     is_all = true;
-                else if (op.get() == Op::Type::LT || op.get() == Op::Type::GT)
+                else if (op.get_type() == Op::Type::LT || op.get_type() == Op::Type::GT)
                     is_empty = true;
             }
             // TODO: generalize this to oparable metrics
@@ -650,9 +650,9 @@ void Comp::normalize() {
             if (lhs_qsum->get_metric() == rhs_indiv->get_metric()) {
                 qset_t::iterator it = lhs_qset.find(rhs_queue);
                 if (it != lhs_qset.end()) {
-                    if (op.get() == Op::Type::GE)
+                    if (op.get_type() == Op::Type::GE)
                         is_all = true;
-                    else if (op.get() == Op::Type::LT)
+                    else if (op.get_type() == Op::Type::LT)
                         is_empty = true;
                     else {
                         lhs_qset.erase(it);
@@ -672,10 +672,10 @@ void Comp::normalize() {
     // GE or LE
     const Constant* constant = dynamic_cast<const Constant*>(rhs);
     if (constant) {
-        if (op.get() == Op::Type::GT) {
+        if (op.get_type() == Op::Type::GT) {
             op = Op(Op::Type::GE);
             rhs = new Constant(constant->get_coeff() + 1);
-        } else if (op.get() == Op::Type::LT) {
+        } else if (op.get_type() == Op::Type::LT) {
             if (constant == 0)
                 is_empty = true;
             else {
@@ -693,15 +693,15 @@ void Comp::normalize() {
         } else {
             const Indiv* indiv = dynamic_cast<const Indiv*>(lhs);
             if (indiv) {
-                if (op.get() == Op::Type::GE && c > MAX_ENQ) is_empty = true;
-                if (op.get() == Op::Type::EQ && c > MAX_ENQ) is_empty = true;
-                if (op.get() == Op::Type::GT && c >= MAX_ENQ) is_empty = true;
+                if (op.get_type() == Op::Type::GE && c > MAX_ENQ) is_empty = true;
+                if (op.get_type() == Op::Type::EQ && c > MAX_ENQ) is_empty = true;
+                if (op.get_type() == Op::Type::GT && c >= MAX_ENQ) is_empty = true;
             }
             const QSum* qsum = dynamic_cast<const QSum*>(lhs);
             if (qsum) {
-                if (op.get() == Op::Type::GE && c > (qsum->get_qset().size() - 1) * MAX_ENQ) is_empty = true;
-                if (op.get() == Op::Type::EQ && c > (qsum->get_qset().size() - 1) * MAX_ENQ) is_empty = true;
-                if (op.get() == Op::Type::GT && c >= (qsum->get_qset().size() - 1) * MAX_ENQ) is_empty = true;
+                if (op.get_type() == Op::Type::GE && c > (qsum->get_qset().size() - 1) * MAX_ENQ) is_empty = true;
+                if (op.get_type() == Op::Type::EQ && c > (qsum->get_qset().size() - 1) * MAX_ENQ) is_empty = true;
+                if (op.get_type() == Op::Type::GT && c >= (qsum->get_qset().size() - 1) * MAX_ENQ) is_empty = true;
             }
         }
     }
@@ -727,7 +727,7 @@ pair<metric_t, qset_t> Comp::get_zero_queues() const {
 
     const Constant* c = dynamic_cast<const Constant*>(rhs);
 
-    if (op.get() == Op::Type::LE && c && c->get_coeff() == 0) {
+    if (op.get_type() == Op::Type::LE && c && c->get_coeff() == 0) {
         const Indiv* indiv = dynamic_cast<const Indiv*>(lhs);
         const QSum* qsum = dynamic_cast<const QSum*>(lhs);
         if (indiv) {
@@ -866,9 +866,9 @@ void TimedSpec::normalize() {
                     metric = qsum->get_metric();
                 }
                 if (Metric::properties.at(metric).non_decreasing) {
-                    if (op.get() == Op::Type::GE || op.get() == Op::Type::GT) {
+                    if (op.get_type() == Op::Type::GE || op.get_type() == Op::Type::GT) {
                         time_range.second = total_time - 1;
-                    } else if (op.get() == Op::Type::LE || op.get() == Op::Type::LT) {
+                    } else if (op.get_type() == Op::Type::LE || op.get_type() == Op::Type::LT) {
                         time_range.first = 0;
                     }
                 }

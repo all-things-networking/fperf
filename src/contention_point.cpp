@@ -1723,7 +1723,7 @@ ostream& operator<<(ostream& os, const ContentionPoint& p) {
 }
 
 expr ContentionPoint::mk_op(expr lhs, Op op, expr rhs) {
-    switch(op.get()) {
+    switch(op.get_type()) {
         case Op::Type::GT: return lhs > rhs;
         case Op::Type::GE: return lhs >= rhs;
         case Op::Type::LT: return lhs < rhs;

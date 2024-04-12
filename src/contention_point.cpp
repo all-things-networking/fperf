@@ -2162,7 +2162,7 @@ m_val_expr_t ContentionPoint::get_expr(MExpr* lhs, unsigned int t) {
 
 m_val_expr_t ContentionPoint::get_expr(Constant c, unsigned int t) {
     (void) t;
-    return m_val_expr_t(net_ctx.bool_val(true), net_ctx.int_val(c.get_coeff()));
+    return m_val_expr_t(net_ctx.bool_val(true), net_ctx.int_val(c.get_value()));
 }
 
 m_val_expr_t ContentionPoint::get_expr(Time time, unsigned int t) {
@@ -2332,7 +2332,7 @@ void ContentionPoint::eval_rhs(Expr* rhs,
         eval_Time(*time_expr, eg, time, res);
     } else if (const_expr) {
         res.valid = true;
-        res.value = const_expr->get_coeff();
+        res.value = const_expr->get_value();
     } else {
         cout << "ContentionPoint::eval_rhs: invalid variant." << endl;
     }

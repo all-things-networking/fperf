@@ -452,7 +452,7 @@ Workload Search::refine(Workload wl) {
             if (m == metric_t::DST || m == metric_t::ECMP) {
                 unsigned int q = indiv->get_queue();
                 Constant* constant = dynamic_cast<Constant*>(compSpec->get_rhs());
-                unsigned int c = constant->get_coeff();
+                unsigned int c = constant->get_value();
                 if (c < 1) c = 1;
 
                 candidate = wl;
@@ -518,7 +518,7 @@ Workload Search::refine(Workload wl) {
                     wl = last_working_candidate;
                 }
             } else if (constant) {
-                unsigned int c = constant->get_coeff();
+                unsigned int c = constant->get_value();
                 Workload last_working_candidate = wl;
                 bool c_changed = false;
 
@@ -581,7 +581,8 @@ Workload Search::refine(Workload wl) {
 
         Constant* constant = dynamic_cast<Constant*>(rhs);
         if (it->get_time_range() == time_range_t(0, cp->get_total_time() - 1) &&
-            constant && constant->get_coeff() == 0 && compSpec->get_op().get_type() == Op::Type::LE) {
+            constant &&
+            constant->get_value() == 0 && compSpec->get_op().get_type() == Op::Type::LE) {
             Indiv* indiv = dynamic_cast<Indiv*>(lhs);
             if (indiv) {
                 zero_in_base.insert(indiv->get_queue());
@@ -611,7 +612,7 @@ Workload Search::refine(Workload wl) {
             if (!compSpec) continue;
             Expr* rhs = compSpec->get_rhs();
             Constant* constant = dynamic_cast<Constant*>(rhs);
-            if (constant && constant->get_coeff() == 0 &&
+            if (constant && constant->get_value() == 0 &&
                 compSpec->get_op() == Op::Type::LE)
                 continue;
 

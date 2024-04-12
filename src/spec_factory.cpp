@@ -232,7 +232,7 @@ void SpecFactory::pick_rhs_neighbors(Expr* rhs,
     Constant* c = dynamic_cast<Constant*>(rhs);
     if (c) {
         mt19937& gen = dists->get_gen();
-        unsigned int c_val = c->get_coeff();
+        unsigned int c_val = c->get_value();
         unsigned int c_neighbor = params.const_dist(gen);
         while (c_neighbor == c_val) {
             c_neighbor = params.const_dist(gen);

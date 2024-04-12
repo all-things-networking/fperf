@@ -92,11 +92,11 @@ private:
 class Constant : public Expr {
 
 public:
-    Constant(unsigned int coeff);
-    unsigned int get_coeff() const;
+    Constant(unsigned int value);
+    unsigned int get_value() const;
 
 private:
-    unsigned int coeff;
+    unsigned int value;
 
     friend ostream& operator<<(ostream& os, const Constant* c);
     friend ostream& operator<<(ostream& os, const Constant& c);

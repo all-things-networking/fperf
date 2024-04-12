@@ -215,28 +215,28 @@ bool operator<(const Time& t1, const Time& t2) {
 
 //************************************* Constant *************************************//
 
-Constant::Constant(unsigned int coeff): coeff(coeff) {}
+Constant::Constant(unsigned int value): value(value) {}
 
-unsigned int Constant::get_coeff() const {
-    return coeff;
+unsigned int Constant::get_value() const {
+    return value;
 }
 
 ostream& operator<<(ostream& os, const Constant* c) {
-    os << c->coeff;
+    os << c->value;
     return os;
 }
 
 ostream& operator<<(ostream& os, const Constant& c) {
-    os << c.coeff;
+    os << c.value;
     return os;
 }
 
 bool operator==(const Constant& c1, const Constant& c2) {
-    return c1.coeff == c2.coeff;
+    return c1.value == c2.value;
 }
 
 bool operator<(const Constant& c1, const Constant& c2) {
-    return c1.coeff < c2.coeff;
+    return c1.value < c2.value;
 }
 
 //************************************* QSum *************************************//
@@ -674,13 +674,13 @@ void Comp::normalize() {
     if (constant) {
         if (op.get_type() == Op::Type::GT) {
             op = Op(Op::Type::GE);
-            rhs = new Constant(constant->get_coeff() + 1);
+            rhs = new Constant(constant->get_value() + 1);
         } else if (op.get_type() == Op::Type::LT) {
             if (constant == 0)
                 is_empty = true;
             else {
                 op = Op(Op::Type::LE);
-                rhs = new Constant(constant->get_coeff() - 1);
+                rhs = new Constant(constant->get_value() - 1);
             }
         }
     }
@@ -727,7 +727,7 @@ pair<metric_t, qset_t> Comp::get_zero_queues() const {
 
     const Constant* c = dynamic_cast<const Constant*>(rhs);
 
-    if (op.get_type() == Op::Type::LE && c && c->get_coeff() == 0) {
+    if (op.get_type() == Op::Type::LE && c && c->get_value() == 0) {
         const Indiv* indiv = dynamic_cast<const Indiv*>(lhs);
         const QSum* qsum = dynamic_cast<const QSum*>(lhs);
         if (indiv) {
@@ -1259,7 +1259,7 @@ void Workload::normalize(time_range_t time_range) {
                     const Constant* c = dynamic_cast<const Constant*>(rhs);
                     const Time* time = dynamic_cast<const Time*>(rhs);
                     if (c) {
-                        if (!Op::eval(0, op, c->get_coeff())) {
+                        if (!Op::eval(0, op, c->get_value())) {
                             empty = true;
                         }
                         // If not, this spec is all and will not

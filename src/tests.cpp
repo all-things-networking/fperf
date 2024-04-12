@@ -26,6 +26,8 @@
 
 #include "global_vars.h"
 std::map<std::string, unsigned int> opt_count;
+std::map<std::string, vector<unsigned int>> before_cost;
+std::map<std::string, vector<unsigned int>> after_cost;
 
 #include <iterator>
 #include <limits>
@@ -276,6 +278,7 @@ Workload broaden_operations(Workload wl, Search& search) {
     // For COMP specs, try to broaden operations (change = to <=, >=, change < to <=, change > to >=) and see if it's still valid
     // If so, replace the spec with the new spec
     // If not, keep the old spec
+    before_cost["broaden_operations"].push_back(search.cost(wl, "broaden_operations"));
     set<TimedSpec> specs = wl.get_all_specs();
     specs = wl.get_all_specs();
     for (const TimedSpec& spec : specs) {
@@ -456,11 +459,13 @@ Workload broaden_operations(Workload wl, Search& search) {
         }
     }
 
+    after_cost["broaden_operations"].push_back(search.cost(wl, "broaden_operations"));
     return wl;
 }
 
 Workload restrict_time_ranges(Workload wl, Search& search) {
     auto start_time = std::chrono::high_resolution_clock::now();
+    before_cost["restrict_time_ranges"].push_back(search.cost(wl, "restrict_time_ranges"));
 
     // For each spec, try to restrict the time range and see if it's still valid
     // If so, replace the spec with the new spec
@@ -489,8 +494,8 @@ Workload restrict_time_ranges(Workload wl, Search& search) {
                 // It's valid, replace the spec
                 wl = temp_wl;
                 opt_count["restrict_time_ranges"]++;
-                cout << "spec before restricting second time range: " << spec << endl;
-                cout << "spec after restricting second time range: " << spec_to_try << endl;
+//                cout << "spec before restricting second time range: " << spec << endl;
+//                cout << "spec after restricting second time range: " << spec_to_try << endl;
                 continue;
             } else {
                 // It's not valid, keep the old spec
@@ -514,8 +519,8 @@ Workload restrict_time_ranges(Workload wl, Search& search) {
                 // It's valid, replace the spec
                 wl = temp_wl;
                 opt_count["restrict_time_ranges"]++;
-                cout << "spec before restricting second time range: " << spec << endl;
-                cout << "spec after restricting second time range: " << spec_to_try << endl;
+//                cout << "spec before restricting second time range: " << spec << endl;
+//                cout << "spec after restricting second time range: " << spec_to_try << endl;
                 continue;
             } else {
                 // It's not valid, keep the old spec
@@ -529,6 +534,7 @@ Workload restrict_time_ranges(Workload wl, Search& search) {
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
     cout << "restrict_time_ranges took " << duration.count() << " milliseconds" << endl;
 
+    after_cost["restrict_time_ranges"].push_back(search.cost(wl, "restrict_time_ranges"));
     return wl;
 }
 
@@ -706,6 +712,7 @@ vector<Workload> transform_aipg_to_cenq(Workload wl, Search& search) {
     // cenq(q, t) = t or [t1-1, t2]: cenq(q, t) = 1 We return a vector of the original workload and
     // the two new workloads
 
+    before_cost["transform_aipg_to_cenq"].push_back(search.cost(wl, "transform_aipg_to_cenq"));
     cout << "Transforming aipg to cenq" << endl;
 
     // Queue for BFS
@@ -832,6 +839,7 @@ vector<Workload> transform_aipg_to_cenq(Workload wl, Search& search) {
 
 Workload refine(Workload wl, Search& search) {
     Workload lastValidWl = wl;
+    before_cost["refine"].push_back(search.cost(wl, "refine"));
 
     if (!search.check(wl, "refine")) {
         throw std::runtime_error("REFINEMENT ERROR: Original workload is invalid");
@@ -853,11 +861,12 @@ Workload refine(Workload wl, Search& search) {
     lastValidWl = restrict_time_ranges(lastValidWl, search);
     cout << "Final Workload after restricting time ranges: " << endl << lastValidWl << endl;
 
-
+    after_cost["refine"].push_back(search.cost(lastValidWl, "refine"));
     return lastValidWl;
 }
 
 Workload improve(Workload wl, Search& search) {
+    before_cost["improve"].push_back(search.cost(wl, "improve"));
     cout << "Starting improvement process" << endl;
     if (!search.check(wl, "improve")) {
         throw std::runtime_error("IMPROVEMENT ERROR: Original workload is invalid");
@@ -877,6 +886,7 @@ Workload improve(Workload wl, Search& search) {
 
     for (auto& workload : possible_workloads) {
         cout << "Refining " << numWorkloads << "th workload" << endl;
+        after_cost["transform_aipg_to_cenq"].push_back(search.cost(workload, "transform_aipg_to_cenq"));
         numWorkloads++;
         Workload refinedWorkload = refine(workload, search);
         unsigned int currentCost = search.cost(refinedWorkload, "improve");
@@ -891,6 +901,7 @@ Workload improve(Workload wl, Search& search) {
         throw std::runtime_error("Failed to find a best workload");
     }
 
+    after_cost["improve"].push_back(search.cost(*bestWorkloadPtr, "improve"));
     return *bestWorkloadPtr;
 }
 
@@ -940,11 +951,18 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
         // Add cenq specs
         Workload wl(100, cp->in_queue_cnt(), total_time);
         for (unsigned int q = 0; q < enqs.size(); q++) {
-            for (unsigned int t = 0; t < enqs[q].size(); t++) {
-                //            cout << "cenq(q" << q << ", " << t << ") = " << sums[q][t] << endl;
-                wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::EQ, sums[q][t]),
-                                      time_range_t(t, t),
-                                      total_time));
+            unsigned int start_t = 0; // Start of a contiguous period
+            for (unsigned int t = 1; t <= enqs[q].size(); t++) {
+                // Check if we reached the end or found a change in cenq value
+                if (t == enqs[q].size() || sums[q][t] != sums[q][start_t]) {
+                    // We have reached the end of a contiguous period or the end of the array
+                    // Add the spec for the period from start_t to t-1 with the cenq value at start_t
+                    wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::EQ, sums[q][start_t]),
+                                          time_range_t(start_t, t - 1),
+                                          total_time));
+                    start_t = t; // Update start_t to the current time for the next period
+                }
+                // If the value at t is the same as at start_t, we just continue the loop
             }
         }
 
@@ -1109,10 +1127,11 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
             }
         }
 
-
-        cout << "Original Workload: " << endl << wl << endl;
-
         Search search(cp, query, max_spec, config, good_examples_file, bad_examples_file);
+        wl = combine(wl, search);
+        cout << "Original Workload: " << endl << wl << endl;
+        before_cost["research"].push_back(search.cost(wl, "research"));
+
         if (!search.check(wl, "research")) {
             cout << "ERROR: Original workload is invalid" << endl;
 
@@ -1150,6 +1169,7 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
         }
 
         // Randomly remove meta-data specs
+        before_cost["remove_meta_data"].push_back(search.cost(lastValidWl, "remove_meta_data"));
         cout << "Removing meta-data specs..." << endl;
         while (true) {
             if (meta_data_specs.empty()) {
@@ -1171,7 +1191,10 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
             }
         }
         cout << "Finished removing meta-data specs" << endl;
+        after_cost["remove_meta_data"].push_back(search.cost(lastValidWl, "remove_meta_data"));
 
+        // Randomly remove specs
+        before_cost["random_approach"].push_back(search.cost(lastValidWl, "random_approach"));
         cout << "Starting random approach..." << endl;
         while (true) {
             auto specs = wl.get_all_specs(); // Get the current specs.
@@ -1223,12 +1246,14 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
         }
 
         cout << "Last valid workload: " << endl << lastValidWl << endl;
+        after_cost["random_approach"].push_back(search.cost(lastValidWl, "random_approach"));
 
         if (!search.check(lastValidWl, "random_approach")) {
             throw std::runtime_error("ERROR: Last valid workload is invalid");
         } else {
             lastValidWl = improve(lastValidWl, search);
             cout << "Final Workload after improving: " << endl << lastValidWl << endl;
+            after_cost["research"].push_back(search.cost(lastValidWl, "research"));
 
             search.print_stats();
         }

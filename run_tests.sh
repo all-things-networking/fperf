@@ -5,10 +5,10 @@ startTime=$(date +%s)
 
 # Define the arrays of arguments
 tests=("prio" "rr" "fq_codel" "loom" "leaf_spine_bw" "tbf")
-modes=("random")
+modes=("research")
 
 # Base directory for research tests
-baseDir="research_tests"
+baseDir="benchmarks/$(date +%Y-%m-%d-%H-%M-%S)"
 
 # Function to run a single test with a mode and track progress
 run_test() {

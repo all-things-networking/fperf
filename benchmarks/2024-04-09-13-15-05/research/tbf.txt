@@ -1,0 +1,473 @@
+#QM: 1 2
+#bool_vars: 360
+#int_vars:  510
+#constrs: 2819
+base workload: 
+[3, 6]: cenq(0, t) >= 3
+[4, 6]: cenq(0, t) >= 6
+
+base example:
+total time: 6
+TBF.0
+enqs:
+0 0 0 5 1 0 0 
+deqs:
+0 0 0 0 5 1 0 
+pkts metadata: 
+0  |  | [23, 21] [22, 21] [22, 21] [22, 21] [23, 24]  | [23, 24]  |  |  | 
+
+zero_queues: {}
+target_queues: {0, }
+seed is: 14748
+Base example: 
+total time: 6
+TBF.0
+enqs:
+0 0 0 5 1 0 0 
+deqs:
+0 0 0 0 5 1 0 
+pkts metadata: 
+0  |  | [23, 21] [22, 21] [22, 21] [22, 21] [23, 24]  | [23, 24]  |  |  | 
+
+Cannot open file: 
+Cannot open file: 
+Original Workload: 
+[1, 2]: cenq(0, t) = 0
+[3, 3]: cenq(0, t) = 5
+[4, 4]: dst(0, t) = 23
+[4, 4]: ecmp(0, t) = 24
+[4, 6]: cenq(0, t) = 6
+[4, 6]: aipg(0, t) = 1
+
+checking: 
+[1, 2]: cenq(0, t) = 0
+[3, 3]: cenq(0, t) = 5
+[4, 4]: dst(0, t) = 23
+[4, 4]: ecmp(0, t) = 24
+[4, 6]: cenq(0, t) = 6
+[4, 6]: aipg(0, t) = 1
+
+input feasible: SAT
+not query satisfied UNSAT
+Removing meta-data specs...
+checking: 
+[1, 2]: cenq(0, t) = 0
+[3, 3]: cenq(0, t) = 5
+[4, 4]: dst(0, t) = 23
+[4, 6]: cenq(0, t) = 6
+[4, 6]: aipg(0, t) = 1
+
+input feasible: SAT
+not query satisfied UNSAT
+checking: 
+[1, 2]: cenq(0, t) = 0
+[3, 3]: cenq(0, t) = 5
+[4, 6]: cenq(0, t) = 6
+[4, 6]: aipg(0, t) = 1
+
+input feasible: SAT
+not query satisfied UNSAT
+Finished removing meta-data specs
+Starting random approach...
+checking: 
+[1, 2]: cenq(0, t) = 0
+[4, 6]: cenq(0, t) = 6
+[4, 6]: aipg(0, t) = 1
+
+input feasible: SAT
+not query satisfied UNSAT
+checking: 
+[4, 6]: cenq(0, t) = 6
+[4, 6]: aipg(0, t) = 1
+
+input feasible: SAT
+not query satisfied SAT
+total time: 6
+TBF.0
+enqs:
+0 2 1 2 1 0 0 
+deqs:
+0 0 2 1 2 1 0 
+pkts metadata: 
+0 [23, 24] [31, 32]  | [11, 12]  | [25, 26] [35, 36]  | [27, 28]  |  |  | 
+
+checking: 
+[1, 2]: cenq(0, t) = 0
+[4, 6]: aipg(0, t) = 1
+
+input feasible: SAT
+not query satisfied UNSAT
+checking: 
+[4, 6]: aipg(0, t) = 1
+
+input feasible: SAT
+not query satisfied SAT
+total time: 6
+TBF.0
+enqs:
+0 0 2 3 1 0 0 
+deqs:
+0 0 0 2 3 1 0 
+pkts metadata: 
+0  | [28, 29] [36, 37]  | [11, 12] [13, 14] [15, 16]  | [30, 31]  |  |  | 
+
+checking: 
+[1, 2]: cenq(0, t) = 0
+
+input feasible: SAT
+not query satisfied SAT
+total time: 6
+TBF.0
+enqs:
+0 0 0 3 3 0 0 
+deqs:
+0 0 0 0 3 3 0 
+pkts metadata: 
+0  |  | [31, 32] [39, 40] [47, 48]  | [11, 12] [13, 14] [15, 16]  |  |  | 
+
+Last valid workload: 
+[1, 2]: cenq(0, t) = 0
+[4, 6]: aipg(0, t) = 1
+
+checking: 
+[1, 2]: cenq(0, t) = 0
+[4, 6]: aipg(0, t) = 1
+
+input feasible: SAT
+not query satisfied UNSAT
+Starting improvement process
+checking: 
+[1, 2]: cenq(0, t) = 0
+[4, 6]: aipg(0, t) = 1
+
+input feasible: SAT
+not query satisfied UNSAT
+Transforming aipg to cenq
+checking: 
+[1, 2]: cenq(0, t) = 0
+[3, 6]: cenq(0, t) = 1
+
+input feasible: UNSAT
+checking: 
+[1, 2]: cenq(0, t) = 0
+[3, 6]: cenq(0, t) = t
+
+input feasible: UNSAT
+checking: 
+[1, 2]: cenq(0, t) = 0
+[3, 6]: cenq(0, t) = 5
+
+input feasible: UNSAT
+Done transforming aipg to cenq
+Number of possible workloads: 1
+Refining 1th workload
+checking: 
+[1, 2]: cenq(0, t) = 0
+[4, 6]: aipg(0, t) = 1
+
+input feasible: SAT
+not query satisfied UNSAT
+checking: 
+[4, 6]: aipg(0, t) = 1
+
+input feasible: SAT
+not query satisfied SAT
+total time: 6
+TBF.0
+enqs:
+0 2 3 2 1 0 0 
+deqs:
+0 0 2 3 2 1 0 
+pkts metadata: 
+0 [33, 34] [37, 38]  | [11, 12] [17, 18] [21, 22]  | [13, 14] [19, 20]  | [15, 16]  |  |  | 
+
+checking: 
+[1, 2]: cenq(0, t) = 0
+
+input feasible: SAT
+not query satisfied SAT
+total time: 6
+TBF.0
+enqs:
+0 0 0 3 3 0 0 
+deqs:
+0 0 0 0 3 3 0 
+pkts metadata: 
+0  |  | [25, 26] [35, 36] [45, 46]  | [27, 28] [37, 38] [47, 48]  |  |  | 
+
+Workload after removing specs: 
+[1, 2]: cenq(0, t) = 0
+[4, 6]: aipg(0, t) = 1
+
+Workload after combining: 
+[1, 2]: cenq(0, t) = 0
+[4, 6]: aipg(0, t) = 1
+
+zero_in_base: {}
+in_wl: {0, }
+Workload after aggregating indivs to sums: 
+[1, 2]: cenq(0, t) = 0
+[4, 6]: aipg(0, t) = 1
+
+checking: 
+[1, 2]: cenq(0, t) <= 0
+[4, 6]: aipg(0, t) = 1
+
+input feasible: SAT
+not query satisfied UNSAT
+checking: 
+[1, 2]: cenq(0, t) <= 0
+[4, 6]: aipg(0, t) <= 1
+
+input feasible: SAT
+not query satisfied SAT
+total time: 6
+TBF.0
+enqs:
+0 0 0 3 3 0 0 
+deqs:
+0 0 0 0 3 3 0 
+pkts metadata: 
+0  |  | [25, 26] [35, 36] [45, 46]  | [27, 28] [37, 38] [47, 48]  |  |  | 
+
+checking: 
+[1, 2]: cenq(0, t) <= 0
+[4, 6]: aipg(0, t) >= 1
+
+input feasible: SAT
+not query satisfied UNSAT
+Workload after broadening operations: 
+[1, 2]: cenq(0, t) <= 0
+[4, 6]: aipg(0, t) >= 1
+
+checking: 
+[1, 2]: cenq(0, t) <= 0
+[4, 6]: aipg(0, t) >= 0
+
+input feasible: SAT
+not query satisfied SAT
+total time: 6
+TBF.0
+enqs:
+0 0 0 3 3 0 0 
+deqs:
+0 0 0 0 3 3 0 
+pkts metadata: 
+0  |  | [30, 31] [38, 39] [46, 47]  | [11, 12] [13, 14] [15, 16]  |  |  | 
+
+Workload after tightening constant bounds: 
+[1, 2]: cenq(0, t) <= 0
+[4, 6]: aipg(0, t) >= 1
+
+checking: 
+[1, 1]: cenq(0, t) <= 0
+[4, 6]: aipg(0, t) >= 1
+
+input feasible: SAT
+not query satisfied SAT
+total time: 6
+TBF.0
+enqs:
+0 0 3 2 1 0 1 
+deqs:
+0 0 0 3 2 1 0 
+pkts metadata: 
+0  | [22, 23] [32, 33] [42, 43]  | [24, 25] [34, 35]  | [26, 27]  |  | [1000, 1000]  | 
+
+checking: 
+[1, 2]: cenq(0, t) <= 0
+[4, 6]: aipg(0, t) >= 1
+
+input feasible: SAT
+not query satisfied UNSAT
+checking: 
+[1, 2]: cenq(0, t) <= 0
+[4, 5]: aipg(0, t) >= 1
+
+input feasible: SAT
+not query satisfied UNSAT
+checking: 
+[1, 2]: cenq(0, t) <= 0
+[4, 4]: aipg(0, t) >= 1
+
+input feasible: SAT
+not query satisfied UNSAT
+restrict_time_ranges took 98 milliseconds
+Final Workload after restricting time ranges: 
+[1, 2]: cenq(0, t) <= 0
+[4, 4]: aipg(0, t) >= 1
+
+Final Workload after improving: 
+[1, 2]: cenq(0, t) <= 0
+[4, 4]: aipg(0, t) >= 1
+
+-------------------- STATS -----------------------
+Function: 
+no_solver_call: 0
+input_only_solver_call: 0
+query_only_solver_call: 0
+full_solver_call: 2
+opt_count: 0
+avg_cost_improvement_abs: 0
+avg_cost_improvement_rel: 0
+Timing Stats: 
+sum_check_time: 130ms
+avg_check_time: 65ms
+max_check_time: 69ms
+sum_call_time: 0ms
+avg_call_time: 0ms
+--------------------------------------------------
+Function: aggregate_indivs_to_sums
+no_solver_call: 0
+input_only_solver_call: 0
+query_only_solver_call: 0
+full_solver_call: 0
+opt_count: 0
+avg_cost_improvement_abs: 0
+avg_cost_improvement_rel: 0
+Timing Stats: 
+sum_check_time: 0ms
+avg_check_time: 0ms
+max_check_time: 0ms
+sum_call_time: 0ms
+avg_call_time: 0ms
+--------------------------------------------------
+Function: broaden_operations
+no_solver_call: 0
+input_only_solver_call: 0
+query_only_solver_call: 0
+full_solver_call: 3
+opt_count: 2
+avg_cost_improvement_abs: 0
+avg_cost_improvement_rel: 0
+Timing Stats: 
+sum_check_time: 98ms
+avg_check_time: 32.6667ms
+max_check_time: 51ms
+sum_call_time: 0ms
+avg_call_time: 0ms
+--------------------------------------------------
+Function: improve
+no_solver_call: 0
+input_only_solver_call: 0
+query_only_solver_call: 0
+full_solver_call: 1
+opt_count: 0
+avg_cost_improvement_abs: 1
+avg_cost_improvement_rel: 0
+Timing Stats: 
+sum_check_time: 28ms
+avg_check_time: 28ms
+max_check_time: 28ms
+sum_call_time: 0ms
+avg_call_time: 0ms
+--------------------------------------------------
+Function: random_approach
+no_solver_call: 0
+input_only_solver_call: 0
+query_only_solver_call: 0
+full_solver_call: 6
+opt_count: 2
+avg_cost_improvement_abs: 4.29497e+09
+avg_cost_improvement_rel: 6.13567e+08
+Timing Stats: 
+sum_check_time: 232ms
+avg_check_time: 38.6667ms
+max_check_time: 76ms
+sum_call_time: 0ms
+avg_call_time: 0ms
+--------------------------------------------------
+Function: refine
+no_solver_call: 0
+input_only_solver_call: 0
+query_only_solver_call: 0
+full_solver_call: 1
+opt_count: 0
+avg_cost_improvement_abs: 1
+avg_cost_improvement_rel: 0
+Timing Stats: 
+sum_check_time: 20ms
+avg_check_time: 20ms
+max_check_time: 20ms
+sum_call_time: 0ms
+avg_call_time: 0ms
+--------------------------------------------------
+Function: remove_meta_data
+no_solver_call: 0
+input_only_solver_call: 0
+query_only_solver_call: 0
+full_solver_call: 2
+opt_count: 2
+avg_cost_improvement_abs: 4.29497e+09
+avg_cost_improvement_rel: 4.29497e+08
+Timing Stats: 
+sum_check_time: 31ms
+avg_check_time: 15.5ms
+max_check_time: 16ms
+sum_call_time: 0ms
+avg_call_time: 0ms
+--------------------------------------------------
+Function: research
+no_solver_call: 0
+input_only_solver_call: 0
+query_only_solver_call: 0
+full_solver_call: 1
+opt_count: 0
+avg_cost_improvement_abs: 4.29497e+09
+avg_cost_improvement_rel: 4.29497e+08
+Timing Stats: 
+sum_check_time: 85ms
+avg_check_time: 85ms
+max_check_time: 85ms
+sum_call_time: 0ms
+avg_call_time: 0ms
+--------------------------------------------------
+Function: restrict_time_ranges
+no_solver_call: 0
+input_only_solver_call: 0
+query_only_solver_call: 0
+full_solver_call: 4
+opt_count: 3
+avg_cost_improvement_abs: 1
+avg_cost_improvement_rel: 0
+Timing Stats: 
+sum_check_time: 95ms
+avg_check_time: 23.75ms
+max_check_time: 43ms
+sum_call_time: 0ms
+avg_call_time: 0ms
+--------------------------------------------------
+Function: tighten_constant_bounds
+no_solver_call: 0
+input_only_solver_call: 0
+query_only_solver_call: 0
+full_solver_call: 1
+opt_count: 0
+avg_cost_improvement_abs: 0
+avg_cost_improvement_rel: 0
+Timing Stats: 
+sum_check_time: 46ms
+avg_check_time: 46ms
+max_check_time: 46ms
+sum_call_time: 0ms
+avg_call_time: 0ms
+--------------------------------------------------
+Function: transform_aipg_to_cenq
+no_solver_call: 0
+input_only_solver_call: 0
+query_only_solver_call: 0
+full_solver_call: 3
+opt_count: 0
+avg_cost_improvement_abs: 0
+avg_cost_improvement_rel: 0
+Timing Stats: 
+sum_check_time: 9ms
+avg_check_time: 3ms
+max_check_time: 3ms
+sum_call_time: 0ms
+avg_call_time: 0ms
+--------------------------------------------------
+Current working directory: "/Users/lucedes/Documents/GitHub/fperf"
+Creating directory: "benchmarks/csv"
+Saving to "benchmarks/csv/tbf.csv"
+Test execution time: 1 seconds.

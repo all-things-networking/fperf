@@ -807,6 +807,7 @@ Workload Search::tighten_constant_bounds(Workload wl){ // Tighten constant bound
 }
 
 Workload Search::aggregate_indivs_to_sums(Workload wl){
+    before_cost["aggregate_indivs_to_sums"].push_back(cost(wl, "aggregate_indivs_to_sums"));
     Workload candidate(max_spec, in_queue_cnt, total_time);
 
     qset_t in_wl;
@@ -910,6 +911,7 @@ Workload Search::aggregate_indivs_to_sums(Workload wl){
         }
     }
 
+    after_cost["aggregate_indivs_to_sums"].push_back(cost(wl, "aggregate_indivs_to_sums"));
     return wl;
 }
 
@@ -1190,6 +1192,9 @@ void Search::print_stats() {
     std::map<string, double> avg_check_time;
     std::map<string, double> avg_call_time;
 
+    std::map<string, double> avg_cost_improvement_abs;
+    std::map<string, double> avg_cost_improvement_rel;
+
     // For every key-value pair
     for(auto it = all_keys.begin(); it != all_keys.end(); ++it){
         cout << "Function: " << *it << endl;
@@ -1205,6 +1210,22 @@ void Search::print_stats() {
         if(full_solver_call.find(*it) == full_solver_call.end()) full_solver_call[*it] = 0;
         cout << "full_solver_call: " << full_solver_call[*it] << endl;
         cout << "opt_count: " << opt_count[*it] << endl;
+
+        // Calculate cost improvements using before_cost and after_cost
+        if(before_cost.find(*it) == before_cost.end()) before_cost[*it] = {};
+        if(after_cost.find(*it) == after_cost.end()) after_cost[*it] = {};
+        avg_cost_improvement_abs[*it] = 0;
+        avg_cost_improvement_rel[*it] = 0;
+        for(int i = 0; i < before_cost[*it].size(); i++){
+            avg_cost_improvement_abs[*it] += (after_cost[*it][i] - before_cost[*it][i]);
+            avg_cost_improvement_rel[*it] += (after_cost[*it][i] - before_cost[*it][i]) / before_cost[*it][i];
+        }
+        if(before_cost[*it].size() == 0) before_cost[*it].push_back(1); // Avoid division by zero
+        avg_cost_improvement_abs[*it] /= before_cost[*it].size();
+        avg_cost_improvement_rel[*it] /= before_cost[*it].size();
+        cout << "avg_cost_improvement_abs: " << avg_cost_improvement_abs[*it] << endl;
+        cout << "avg_cost_improvement_rel: " << avg_cost_improvement_rel[*it] << endl;
+
 
         if(full_solver_call[*it] == 0) full_solver_call[*it] = 1; // For average calculations
         cout << "Timing Stats: " << endl;
@@ -1262,9 +1283,9 @@ void Search::print_stats() {
     cout << "Saving to " << filePath << endl;
 
     // Write data to file
-    myfile << "Function, no_solver_call, input_only_solver_call, query_only_solver_call, full_solver_call, opt_count, sum_check_time, avg_check_time, max_check_time, sum_call_time, avg_call_time" << endl;
+    myfile << "Function, no_solver_call, input_only_solver_call, query_only_solver_call, full_solver_call, opt_count, avg_cost_improvement_abs, avg_cost_improvement_rel, sum_check_time, avg_check_time, max_check_time, sum_call_time, avg_call_time" << endl;
     for(auto it = all_keys.begin(); it != all_keys.end(); ++it){
-        myfile << *it << ", " << no_solver_call[*it] << ", " << input_only_solver_call[*it] << ", " << query_only_solver_call[*it] << ", " << full_solver_call[*it] << ", " << opt_count[*it] << ", " << sum_check_time[*it] << ", " << avg_check_time[*it] << ", " << max_check_time[*it] << ", " << sum_call_time[*it] << ", " << avg_call_time[*it] << endl;
+        myfile << *it << ", " << no_solver_call[*it] << ", " << input_only_solver_call[*it] << ", " << query_only_solver_call[*it] << ", " << full_solver_call[*it] << ", " << opt_count[*it] << ", " << avg_cost_improvement_abs[*it] << ", " << avg_cost_improvement_rel[*it] << ", " << sum_check_time[*it] << ", " << avg_check_time[*it] << ", " << max_check_time[*it] << ", " << sum_call_time[*it] << ", " << avg_call_time[*it] << endl;
     }
     myfile.close();
 }

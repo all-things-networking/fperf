@@ -64,6 +64,9 @@ public:
 
     friend ostream& operator<<(ostream& os, const Queue& q);
 
+    vector<expr>* tmp_val;
+    vector<expr>* elems_;
+
 protected:
     cid_t id;
     unsigned int size_;
@@ -72,12 +75,11 @@ protected:
 
     unsigned int total_time;
 
-    vector<expr>* elems_;
+
     vector<expr>* enqs_;
     vector<expr> enq_cnt_;
     vector<expr> deq_cnt_;
 
-    vector<expr>* tmp_val;
     vector<expr>* enq_ind;
     vector<expr> tail;
     vector<expr> tmp_tail;

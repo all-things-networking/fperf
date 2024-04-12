@@ -10,6 +10,7 @@
 #include <cstring>
 
 NetContext::NetContext() {
+    list_of_vars = new expr_vector(ctx);
 }
 
 expr NetContext::pkt_const(char const* name) {
@@ -17,16 +18,19 @@ expr NetContext::pkt_const(char const* name) {
     strcpy(val_vname, name);
     strcat(val_vname, "_val");
     expr val_var = ctx.bool_const(val_vname);
+    list_of_vars->push_back(val_var);
 
     char meta1_vname[100];
     strcpy(meta1_vname, name);
     strcat(meta1_vname, "_meta1");
     expr meta1_var = ctx.int_const(meta1_vname);
+    list_of_vars->push_back(meta1_var);
 
     char meta2_vname[100];
     strcpy(meta2_vname, name);
     strcat(meta2_vname, "_meta2");
     expr meta2_var = ctx.int_const(meta2_vname);
+    list_of_vars->push_back(meta2_var);
 
     bool_var_cnt += 1;
     int_var_cnt += 2;
@@ -61,7 +65,9 @@ expr NetContext::null_pkt() {
 
 expr NetContext::int_const(char* name) {
     int_var_cnt++;
-    return ctx.int_const(name);
+    expr int_expression = ctx.int_const(name);
+    list_of_vars->push_back(int_expression);
+    return int_expression;
 }
 
 expr NetContext::int_val(int n) {
@@ -70,7 +76,9 @@ expr NetContext::int_val(int n) {
 
 expr NetContext::bool_const(char* name) {
     bool_var_cnt++;
-    return ctx.bool_const(name);
+    expr bool_expression = ctx.bool_const(name);
+    list_of_vars->push_back(bool_expression);
+    return bool_expression;
 }
 
 expr NetContext::bool_val(bool b) {

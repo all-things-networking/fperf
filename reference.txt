@@ -1,0 +1,1382 @@
+g++ -pedantic-errors -Wno-sign-compare -Wno-unknown-pragmas -Wall -Wextra -std=c++17 -DDEBUG -g -I/usr/local/include -Ilib/ -Ilib/metrics/ -Ilib/cps -Ilib/qms -o build/fperf_test tests/main.cpp tests/rr_scheduler_test.cpp tests/search_test.cpp tests/simple_cp.cpp tests/tbf_test.cpp tests/test_runner.cpp ./build/objects/src/contention_point.o ./build/objects/src/cost.o ./build/objects/src/example.o ./build/objects/src/input_only_solver.o ./build/objects/src/metric.o ./build/objects/src/net_context.o ./build/objects/src/query.o ./build/objects/src/queue.o ./build/objects/src/queuing_module.o ./build/objects/src/search.o ./build/objects/src/shared_config.o ./build/objects/src/solver.o ./build/objects/src/spec_factory.o ./build/objects/src/tests.o ./build/objects/src/util.o ./build/objects/src/workload.o ./build/objects/src/cps/buggy_2l_rr_scheduler.o ./build/objects/src/cps/leaf_spine.o ./build/objects/src/cps/loom_mqprio.o ./build/objects/src/cps/priority_scheduler.o ./build/objects/src/cps/rr_scheduler.o ./build/objects/src/cps/tbf.o ./build/objects/src/metrics/aipg.o ./build/objects/src/metrics/cblocked.o ./build/objects/src/metrics/cdeq.o ./build/objects/src/metrics/cenq.o ./build/objects/src/metrics/deq.o ./build/objects/src/metrics/dst.o ./build/objects/src/metrics/ecmp.o ./build/objects/src/metrics/qsize.o ./build/objects/src/qms/buggy_2l_rr_qm.o ./build/objects/src/qms/leaf_forwarding_qm.o ./build/objects/src/qms/loom_demux_qm.o ./build/objects/src/qms/loom_flow_enq_qm.o ./build/objects/src/qms/loom_nic_enq_qm.o ./build/objects/src/qms/priority_qm.o ./build/objects/src/qms/rr_qm.o ./build/objects/src/qms/spine_forwarding_qm.o ./build/objects/src/qms/switch_xbar_qm.o ./build/objects/src/qms/tbf_qm.o -L/usr/lib -L/usr/local/lib/ -lstdc++ -lm -lz3
+build/fperf_test
+Running: rr_sat
+#QM: 1 6
+#bool_vars: 1490
+#int_vars:  1800
+#constrs: 5836
+base workload: 
+[1, 9]: cenq(1, t) >= t
+[1, 9]: cenq(0, t) >= t
+[1, 9]: cenq(2, t) >= t
+[1, 9]: cenq(3, t) >= t
+[1, 9]: cenq(4, t) >= t
+[10, 10]: cenq(1, t) >= t
+[10, 10]: cenq(0, t) >= t
+[10, 10]: cenq(2, t) >= t
+[10, 10]: cenq(3, t) >= t
+[10, 10]: cenq(4, t) >= t
+[10, 10]: cenq(1, t) > cenq(2, t)
+
+base workload: 
+[1, 9]: cenq(1, t) >= t
+[1, 9]: cenq(0, t) >= t
+[1, 9]: cenq(2, t) >= t
+[1, 9]: cenq(3, t) >= t
+[1, 9]: cenq(4, t) >= t
+[10, 10]: cenq(1, t) >= t
+[10, 10]: cenq(0, t) >= t
+[10, 10]: cenq(2, t) >= t
+[10, 10]: cenq(3, t) >= t
+[10, 10]: cenq(4, t) >= t
+[10, 10]: cenq(1, t) > cenq(2, t)
+
+unsat
+size: 120
+RR_4_lsq_at_0
+RR_head_0_deq_cnt_0_2
+RR_head_0_deq_cnt_0_4
+RR_head_0_deq_cnt_1_2
+RR_head_0_deq_cnt_2_2
+RR_head_2_deq_cnt_2_3
+RR_head_2_deq_cnt_2_5
+RR_head_4_deq_cnt_0_1
+RR_head_4_deq_cnt_2_1
+RR_head_4_deq_cnt_4_0
+RR_lsq_0_at_1_is_one
+RR_lsq_0_at_3_is_one
+RR_lsq_2_at_2_is_one
+RR_lsq_2_at_4_is_one
+RR_lsq_4_at_0_stays_same
+|RR.0[0][1]_gets_enqs[0]|
+|RR.0[0][2]_gets_enqs[0]|
+|RR.0[0][2]_shift_forward_1|
+|RR.0[0][3]_shift_forward_0|
+|RR.0[0][4]_gets_enqs[0]|
+|RR.0[0][4]_shift_forward_0|
+|RR.0[0][4]_shift_forward_1|
+|RR.0[0][5]_gets_enqs[0]|
+|RR.0[0][5]_shift_forward_0|
+|RR.0[0][5]_shift_forward_1|
+|RR.0[0]_null_at_0|
+|RR.0[1][1]_gets_enqs[1]|
+|RR.0[1][2]_gets_enqs[1]|
+|RR.0[1][3]_gets_enqs[0]|
+|RR.0[1][3]_shift_forward_0|
+|RR.0[1][4]_gets_enqs[0]|
+|RR.0[1][4]_shift_forward_0|
+|RR.0[2][2]_gets_enqs[0]|
+|RR.0[2][2]_gets_enqs[1]|
+|RR.0[2][3]_gets_enqs[0]|
+|RR.0[3][1]_gets_enqs[3]|
+|RR.0[3][2]_gets_enqs[0]|
+|RR.0[3][3]_gets_enqs[0]|
+|RR.0[4][1]_gets_null|
+|RR.0[4][2]_gets_enqs[1]|
+|RR.0[4][2]_gets_null|
+|RR.0[4][3]_gets_enqs[0]|
+|RR.0_deq_cnt_bounds[0]|
+|RR.0_deq_cnt_bounds[3]|
+|RR.0_deq_cnt_bounds[4]|
+|RR.0_deq_cnt_gt_zero[0]|
+|RR.0_deq_cnt_gt_zero[1]|
+|RR.0_deq_cnt_gt_zero[3]|
+|RR.0_deq_cnt_gt_zero[4]|
+|RR.0_enq_cnt_bounds[0]|
+|RR.0_enq_cnt_bounds[1]|
+|RR.0_enq_cnt_bounds[2]|
+|RR.0_enq_cnt_bounds[3]|
+|RR.0_enq_cnt_bounds[4]|
+RR.0_no_holes_1_2
+RR.0_no_holes_1_3
+RR.0_no_holes_2_2
+RR.0_no_holes_2_3
+RR.0_no_holes_3_2
+RR.0_no_holes_3_3
+|RR.0_tmp_val[0][0]_small_d_0|
+|RR.0_tmp_val[0][1]_small_d_1|
+|RR.0_tmp_val[0][2]_small_d_0|
+|RR.0_tmp_val[0][3]_small_d_0|
+|RR.0_tmp_val[0][3]_small_d_1|
+|RR.0_tmp_val[0][4]_small_d_0|
+|RR.0_tmp_val[0][4]_small_d_1|
+|RR.0_tmp_val[1][2]_small_d_0|
+|RR.0_tmp_val[1][3]_small_d_0|
+|RR.0_tmp_val[2][1]_small_d_1|
+|RR.0_tmp_val[3][1]_small_d_1|
+|RR.0_tmp_val[4][2]_small_d_0|
+|RR.1[0]_null_at_0|
+|RR.1_deq_cnt_gt_zero[0]|
+|RR.1_deq_cnt_gt_zero[1]|
+|RR.1_deq_cnt_gt_zero[2]|
+|RR.1_deq_cnt_gt_zero[3]|
+|RR.1_deq_cnt_gt_zero[4]|
+|RR.1_deq_cnt_gt_zero[5]|
+|RR.2[0][1]_gets_enqs[0]|
+|RR.2[0][2]_shift_forward_0|
+|RR.2[0][4]_shift_forward_0|
+|RR.2[0]_null_at_0|
+|RR.2[1][1]_gets_enqs[1]|
+|RR.2[1][2]_gets_enqs[0]|
+|RR.2[1][2]_shift_forward_0|
+|RR.2[1][3]_gets_enqs[0]|
+|RR.2[1][3]_gets_enqs[1]|
+|RR.2[1][3]_shift_forward_1|
+|RR.2[2][1]_gets_enqs[2]|
+|RR.2[2][2]_gets_enqs[0]|
+|RR.2[2][2]_gets_enqs[1]|
+|RR.2[2][2]_shift_forward_0|
+|RR.2_deq_cnt_bounds[0]|
+|RR.2_deq_cnt_bounds[2]|
+|RR.2_deq_cnt_bounds[3]|
+|RR.2_deq_cnt_bounds[4]|
+|RR.2_deq_cnt_bounds[5]|
+|RR.2_deq_cnt_gt_zero[0]|
+|RR.2_deq_cnt_gt_zero[3]|
+|RR.2_enq_cnt_bounds[0]|
+|RR.2_enq_cnt_bounds[1]|
+|RR.2_enq_cnt_bounds[2]|
+RR.2_no_holes_0_3
+RR.2_no_holes_1_2
+|RR.2_tmp_val[0][0]_small_d_0|
+|RR.2_tmp_val[0][1]_small_d_0|
+|RR.2_tmp_val[0][2]_small_d_1|
+|RR.2_tmp_val[0][3]_small_d_0|
+|RR.2_tmp_val[1][1]_small_d_0|
+|RR.2_tmp_val[1][2]_small_d_1|
+|RR.2_tmp_val[2][1]_small_d_0|
+|RR.3[0]_null_at_0|
+|RR.4[0]_null_at_0|
+|RR.4_deq_cnt_bounds[0]|
+|RR.4_deq_cnt_gt_zero[0]|
+|RR.sink.0[0]_null_at_0|
+RR.sink.0_deq_cnt_at_0
+base_wl
+query
+UNSAT
+Running: rr_unsat
+#QM: 1 6
+#bool_vars: 1490
+#int_vars:  1800
+#constrs: 5836
+base workload: 
+[5, 10]: cenq(1, t) >= 4
+[5, 10]: cenq(0, t) >= 4
+[5, 10]: cenq(2, t) >= 4
+[5, 10]: cenq(3, t) >= 4
+[5, 10]: cenq(4, t) >= 4
+[10, 10]: cenq(1, t) >= 8
+[10, 10]: cenq(2, t) >= 8
+[10, 10]: cenq(3, t) >= 8
+[10, 10]: cenq(4, t) >= 8
+[10, 10]: cenq(1, t) > cenq(2, t)
+[10, 10]: cenq(1, t) >= 4
+[10, 10]: cenq(0, t) >= 4
+[10, 10]: cenq(2, t) >= 4
+[10, 10]: cenq(3, t) >= 4
+[10, 10]: cenq(4, t) >= 4
+[10, 10]: cenq(0, t) >= 8
+
+base workload: 
+[5, 10]: cenq(1, t) >= 4
+[5, 10]: cenq(0, t) >= 4
+[5, 10]: cenq(2, t) >= 4
+[5, 10]: cenq(3, t) >= 4
+[5, 10]: cenq(4, t) >= 4
+[10, 10]: cenq(1, t) >= 8
+[10, 10]: cenq(2, t) >= 8
+[10, 10]: cenq(3, t) >= 8
+[10, 10]: cenq(4, t) >= 8
+[10, 10]: cenq(1, t) > cenq(2, t)
+[10, 10]: cenq(1, t) >= 4
+[10, 10]: cenq(0, t) >= 4
+[10, 10]: cenq(2, t) >= 4
+[10, 10]: cenq(3, t) >= 4
+[10, 10]: cenq(4, t) >= 4
+[10, 10]: cenq(0, t) >= 8
+
+sat
+---------- T = 0 ----------
+input queues: 
+RR.0: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.1: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.2: x x x [135 136] |-> x x x x x x x x x x -> (1, 0) 
+RR.3: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.4: x x x x |-> x x x x x x x x x x -> (0, 0) 
+output queues: 
+RR.sink.0: x x x x |-> x x x x x x x x x x -> (0, 0) 
+other info: 
+last serviced queue: 4
+qid: cenq, cdeq, deq_cnt
+RR.0: 0, 0, 0
+RR.1: 0, 0, 0
+RR.2: 1, 0, 0
+RR.3: 0, 0, 0
+RR.4: 0, 0, 0
+
+------------- 
+RR
+input queues: 
+RR.0: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.1: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.2: x x x [135 136] |-> x x x x x x x x x x -> (1, 0) 
+RR.3: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.4: x x x x |-> x x x x x x x x x x -> (0, 0) 
+output queues: 
+RR.sink.0: x x x x |-> x x x x x x x x x x -> (0, 0) 
+---------- T = 1 ----------
+input queues: 
+RR.0: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.1: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.2: x x x [3 6] |-> x x x x x x x x x [135 136] -> (1, 1) 
+RR.3: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.4: x x x x |-> x x x x x x x x x x -> (0, 0) 
+output queues: 
+RR.sink.0: x x x [135 136] |-> x x x x x x x x x x -> (1, 0) 
+other info: 
+last serviced queue: 4
+qid: cenq, cdeq, deq_cnt
+RR.0: 0, 0, 0
+RR.1: 0, 0, 0
+RR.2: 2, 1, 1
+RR.3: 0, 0, 0
+RR.4: 0, 0, 0
+
+------------- 
+RR
+input queues: 
+RR.0: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.1: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.2: x x x [3 6] |-> x x x x x x x x x [135 136] -> (1, 1) 
+RR.3: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.4: x x x x |-> x x x x x x x x x x -> (0, 0) 
+output queues: 
+RR.sink.0: x x x [135 136] |-> x x x x x x x x x x -> (1, 0) 
+---------- T = 2 ----------
+input queues: 
+RR.0: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.1: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.2: x x x [16 17] |-> x x x x x x x x x [3 6] -> (1, 1) 
+RR.3: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.4: x x x x |-> x x x x x x x x x x -> (0, 0) 
+output queues: 
+RR.sink.0: x x x [3 6] |-> x x x x x x x x x [135 136] -> (1, 1) 
+other info: 
+last serviced queue: 2
+qid: cenq, cdeq, deq_cnt
+RR.0: 0, 0, 0
+RR.1: 0, 0, 0
+RR.2: 3, 2, 1
+RR.3: 0, 0, 0
+RR.4: 0, 0, 0
+
+------------- 
+RR
+input queues: 
+RR.0: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.1: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.2: x x x [16 17] |-> x x x x x x x x x [3 6] -> (1, 1) 
+RR.3: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.4: x x x x |-> x x x x x x x x x x -> (0, 0) 
+output queues: 
+RR.sink.0: x x x [3 6] |-> x x x x x x x x x [135 136] -> (1, 1) 
+---------- T = 3 ----------
+input queues: 
+RR.0: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.1: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.2: x x x [20 19] |-> x x x x x x x x x [16 17] -> (1, 1) 
+RR.3: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.4: x x x x |-> x x x x x x x x x x -> (0, 0) 
+output queues: 
+RR.sink.0: x x x [16 17] |-> x x x x x x x x x [3 6] -> (1, 1) 
+other info: 
+last serviced queue: 2
+qid: cenq, cdeq, deq_cnt
+RR.0: 0, 0, 0
+RR.1: 0, 0, 0
+RR.2: 4, 3, 1
+RR.3: 0, 0, 0
+RR.4: 0, 0, 0
+
+------------- 
+RR
+input queues: 
+RR.0: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.1: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.2: x x x [20 19] |-> x x x x x x x x x [16 17] -> (1, 1) 
+RR.3: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.4: x x x x |-> x x x x x x x x x x -> (0, 0) 
+output queues: 
+RR.sink.0: x x x [16 17] |-> x x x x x x x x x [3 6] -> (1, 1) 
+---------- T = 4 ----------
+input queues: 
+RR.0: [68 67] [58 57] [43 44] [30 29] |-> x x x x x x x x x x -> (4, 0) 
+RR.1: [126 125] [115 116] [102 101] [12 7] |-> x x x x x x x x x x -> (4, 0) 
+RR.2: x x x x |-> x x x x x x x x x [20 19] -> (0, 1) 
+RR.3: [263 264] [245 246] [227 228] [209 210] |-> x x x x x x x x x x -> (4, 0) 
+RR.4: [331 332] [317 318] [299 300] [281 282] |-> x x x x x x x x x x -> (4, 0) 
+output queues: 
+RR.sink.0: x x x [20 19] |-> x x x x x x x x x [16 17] -> (1, 1) 
+other info: 
+last serviced queue: 2
+qid: cenq, cdeq, deq_cnt
+RR.0: 4, 0, 0
+RR.1: 4, 0, 0
+RR.2: 4, 4, 1
+RR.3: 4, 0, 0
+RR.4: 4, 0, 0
+
+------------- 
+RR
+input queues: 
+RR.0: [68 67] [58 57] [43 44] [30 29] |-> x x x x x x x x x x -> (4, 0) 
+RR.1: [126 125] [115 116] [102 101] [12 7] |-> x x x x x x x x x x -> (4, 0) 
+RR.2: x x x x |-> x x x x x x x x x [20 19] -> (0, 1) 
+RR.3: [263 264] [245 246] [227 228] [209 210] |-> x x x x x x x x x x -> (4, 0) 
+RR.4: [331 332] [317 318] [299 300] [281 282] |-> x x x x x x x x x x -> (4, 0) 
+output queues: 
+RR.sink.0: x x x [20 19] |-> x x x x x x x x x [16 17] -> (1, 1) 
+---------- T = 5 ----------
+input queues: 
+RR.0: [76 75] [74 73] [72 71] [69 70] |-> x x x x x x [68 67] [58 57] [43 44] [30 29] -> (4, 0) 
+RR.1: [131 132] [129 130] [127 128] [87 88] |-> x x x x x x [126 125] [115 116] [102 101] [12 7] -> (4, 0) 
+RR.2: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.3: x x x x |-> x x x x x x [263 264] [245 246] [227 228] [209 210] -> (0, 1) 
+RR.4: x x x [283 284] |-> x x x x x x [331 332] [317 318] [299 300] [281 282] -> (1, 0) 
+output queues: 
+RR.sink.0: x x x [209 210] |-> x x x x x x x x x [20 19] -> (1, 1) 
+other info: 
+last serviced queue: 2
+qid: cenq, cdeq, deq_cnt
+RR.0: 8, 0, 0
+RR.1: 8, 0, 0
+RR.2: 4, 4, 0
+RR.3: 4, 1, 1
+RR.4: 5, 0, 0
+
+------------- 
+RR
+input queues: 
+RR.0: [76 75] [74 73] [72 71] [69 70] |-> x x x x x x [68 67] [58 57] [43 44] [30 29] -> (4, 0) 
+RR.1: [131 132] [129 130] [127 128] [87 88] |-> x x x x x x [126 125] [115 116] [102 101] [12 7] -> (4, 0) 
+RR.2: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.3: x x x x |-> x x x x x x [263 264] [245 246] [227 228] [209 210] -> (0, 1) 
+RR.4: x x x [283 284] |-> x x x x x x [331 332] [317 318] [299 300] [281 282] -> (1, 0) 
+output queues: 
+RR.sink.0: x x x [209 210] |-> x x x x x x x x x [20 19] -> (1, 1) 
+---------- T = 6 ----------
+input queues: 
+RR.0: x x x [77 78] |-> x x [76 75] [74 73] [72 71] [69 70] [68 67] [58 57] [43 44] [30 29] -> (1, 0) 
+RR.1: x x x [133 134] |-> x x [131 132] [129 130] [127 128] [87 88] [126 125] [115 116] [102 101] [12 7] -> (1, 0) 
+RR.2: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.3: x x x x |-> x x x x x x x [263 264] [245 246] [227 228] -> (0, 0) 
+RR.4: [335 336] [321 322] [303 304] [285 286] |-> x x x x x [283 284] [331 332] [317 318] [299 300] [281 282] -> (4, 1) 
+output queues: 
+RR.sink.0: x x x [281 282] |-> x x x x x x x x x [209 210] -> (1, 1) 
+other info: 
+last serviced queue: 3
+qid: cenq, cdeq, deq_cnt
+RR.0: 9, 0, 0
+RR.1: 9, 0, 0
+RR.2: 4, 4, 0
+RR.3: 4, 1, 0
+RR.4: 9, 1, 1
+
+------------- 
+RR
+input queues: 
+RR.0: x x x [77 78] |-> x x [76 75] [74 73] [72 71] [69 70] [68 67] [58 57] [43 44] [30 29] -> (1, 0) 
+RR.1: x x x [133 134] |-> x x [131 132] [129 130] [127 128] [87 88] [126 125] [115 116] [102 101] [12 7] -> (1, 0) 
+RR.2: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.3: x x x x |-> x x x x x x x [263 264] [245 246] [227 228] -> (0, 0) 
+RR.4: [335 336] [321 322] [303 304] [285 286] |-> x x x x x [283 284] [331 332] [317 318] [299 300] [281 282] -> (4, 1) 
+output queues: 
+RR.sink.0: x x x [281 282] |-> x x x x x x x x x [209 210] -> (1, 1) 
+---------- T = 7 ----------
+input queues: 
+RR.0: x x x [32 31] |-> x [77 78] [76 75] [74 73] [72 71] [69 70] [68 67] [58 57] [43 44] [30 29] -> (1, 1) 
+RR.1: x x x x |-> x [133 134] [131 132] [129 130] [127 128] [87 88] [126 125] [115 116] [102 101] [12 7] -> (0, 0) 
+RR.2: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.3: x x x x |-> x x x x x x x [263 264] [245 246] [227 228] -> (0, 0) 
+RR.4: x x x x |-> x x [335 336] [321 322] [303 304] [285 286] [283 284] [331 332] [317 318] [299 300] -> (0, 0) 
+output queues: 
+RR.sink.0: x x x [30 29] |-> x x x x x x x x x [281 282] -> (1, 1) 
+other info: 
+last serviced queue: 4
+qid: cenq, cdeq, deq_cnt
+RR.0: 10, 1, 1
+RR.1: 9, 0, 0
+RR.2: 4, 4, 0
+RR.3: 4, 1, 0
+RR.4: 9, 1, 0
+
+------------- 
+RR
+input queues: 
+RR.0: x x x [32 31] |-> x [77 78] [76 75] [74 73] [72 71] [69 70] [68 67] [58 57] [43 44] [30 29] -> (1, 1) 
+RR.1: x x x x |-> x [133 134] [131 132] [129 130] [127 128] [87 88] [126 125] [115 116] [102 101] [12 7] -> (0, 0) 
+RR.2: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.3: x x x x |-> x x x x x x x [263 264] [245 246] [227 228] -> (0, 0) 
+RR.4: x x x x |-> x x [335 336] [321 322] [303 304] [285 286] [283 284] [331 332] [317 318] [299 300] -> (0, 0) 
+output queues: 
+RR.sink.0: x x x [30 29] |-> x x x x x x x x x [281 282] -> (1, 1) 
+---------- T = 8 ----------
+input queues: 
+RR.0: [- -] [- -] [- -] [33 34] |-> x [32 31] [77 78] [76 75] [74 73] [72 71] [69 70] [68 67] [58 57] [43 44] -> (4, 0) 
+RR.1: x x x x |-> x [133 134] [131 132] [129 130] [127 128] [87 88] [126 125] [115 116] [102 101] [12 7] -> (0, 1) 
+RR.2: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.3: x x x x |-> x x x x x x x [263 264] [245 246] [227 228] -> (0, 0) 
+RR.4: x x [307 308] [289 290] |-> x x [335 336] [321 322] [303 304] [285 286] [283 284] [331 332] [317 318] [299 300] -> (2, 0) 
+output queues: 
+RR.sink.0: x x x [12 7] |-> x x x x x x x x x [30 29] -> (1, 1) 
+other info: 
+last serviced queue: 0
+qid: cenq, cdeq, deq_cnt
+RR.0: 14, 1, 0
+RR.1: 9, 1, 1
+RR.2: 4, 4, 0
+RR.3: 4, 1, 0
+RR.4: 11, 1, 0
+
+------------- 
+RR
+input queues: 
+RR.0: [- -] [- -] [- -] [33 34] |-> x [32 31] [77 78] [76 75] [74 73] [72 71] [69 70] [68 67] [58 57] [43 44] -> (4, 0) 
+RR.1: x x x x |-> x [133 134] [131 132] [129 130] [127 128] [87 88] [126 125] [115 116] [102 101] [12 7] -> (0, 1) 
+RR.2: x x x x |-> x x x x x x x x x x -> (0, 0) 
+RR.3: x x x x |-> x x x x x x x [263 264] [245 246] [227 228] -> (0, 0) 
+RR.4: x x [307 308] [289 290] |-> x x [335 336] [321 322] [303 304] [285 286] [283 284] [331 332] [317 318] [299 300] -> (2, 0) 
+output queues: 
+RR.sink.0: x x x [12 7] |-> x x x x x x x x x [30 29] -> (1, 1) 
+---------- T = 9 ----------
+input queues: 
+RR.0: [- -] [- -] [- -] [- -] |-> [33 34] [32 31] [77 78] [76 75] [74 73] [72 71] [69 70] [68 67] [58 57] [43 44] -> (4, 0) 
+RR.1: [- -] [- -] [- -] [- -] |-> x x [133 134] [131 132] [129 130] [127 128] [87 88] [126 125] [115 116] [102 101] -> (4, 0) 
+RR.2: [- -] [- -] [- -] [- -] |-> x x x x x x x x x x -> (4, 0) 
+RR.3: [- -] [- -] [- -] [- -] |-> x x x x x x x [263 264] [245 246] [227 228] -> (4, 1) 
+RR.4: [- -] [- -] [- -] [- -] |-> [307 308] [289 290] [335 336] [321 322] [303 304] [285 286] [283 284] [331 332] [317 318] [299 300] -> (4, 0) 
+output queues: 
+RR.sink.0: x x x [227 228] |-> x x x x x x x x x [12 7] -> (1, 1) 
+other info: 
+last serviced queue: 1
+qid: cenq, cdeq, deq_cnt
+RR.0: 18, 1, 0
+RR.1: 13, 1, 0
+RR.2: 8, 4, 0
+RR.3: 8, 2, 1
+RR.4: 15, 1, 0
+
+------------- 
+RR
+input queues: 
+RR.0: [- -] [- -] [- -] [- -] |-> [33 34] [32 31] [77 78] [76 75] [74 73] [72 71] [69 70] [68 67] [58 57] [43 44] -> (4, 0) 
+RR.1: [- -] [- -] [- -] [- -] |-> x x [133 134] [131 132] [129 130] [127 128] [87 88] [126 125] [115 116] [102 101] -> (4, 0) 
+RR.2: [- -] [- -] [- -] [- -] |-> x x x x x x x x x x -> (4, 0) 
+RR.3: [- -] [- -] [- -] [- -] |-> x x x x x x x [263 264] [245 246] [227 228] -> (4, 1) 
+RR.4: [- -] [- -] [- -] [- -] |-> [307 308] [289 290] [335 336] [321 322] [303 304] [285 286] [283 284] [331 332] [317 318] [299 300] -> (4, 0) 
+output queues: 
+RR.sink.0: x x x [227 228] |-> x x x x x x x x x [12 7] -> (1, 1) 
+
+SAT
+Running: search
+#QM: 1 2
+#bool_vars: 240
+#int_vars:  300
+#constrs: 1036
+base workload: 
+[1, 5]: cenq(0, t) <= 1
+
+sat
+---------- T = 0 ----------
+input queues: 
+SimpleQM.0: x x x x |-> x x x x x x x x x x -> (0, 0) 
+output queues: 
+SimpleQM.sink.0: x x x x |-> x x x x x x x x x x -> (0, 0) 
+other info: 
+
+------------- 
+SimpleQM
+input queues: 
+SimpleQM.0: x x x x |-> x x x x x x x x x x -> (0, 0) 
+output queues: 
+SimpleQM.sink.0: x x x x |-> x x x x x x x x x x -> (0, 0) 
+---------- T = 1 ----------
+input queues: 
+SimpleQM.0: x x x x |-> x x x x x x x x x x -> (0, 0) 
+output queues: 
+SimpleQM.sink.0: x x x x |-> x x x x x x x x x x -> (0, 0) 
+other info: 
+
+------------- 
+SimpleQM
+input queues: 
+SimpleQM.0: x x x x |-> x x x x x x x x x x -> (0, 0) 
+output queues: 
+SimpleQM.sink.0: x x x x |-> x x x x x x x x x x -> (0, 0) 
+---------- T = 2 ----------
+input queues: 
+SimpleQM.0: x x x x |-> x x x x x x x x x x -> (0, 0) 
+output queues: 
+SimpleQM.sink.0: x x x x |-> x x x x x x x x x x -> (0, 0) 
+other info: 
+
+------------- 
+SimpleQM
+input queues: 
+SimpleQM.0: x x x x |-> x x x x x x x x x x -> (0, 0) 
+output queues: 
+SimpleQM.sink.0: x x x x |-> x x x x x x x x x x -> (0, 0) 
+---------- T = 3 ----------
+input queues: 
+SimpleQM.0: x x x [10 9] |-> x x x x x x x x x x -> (1, 0) 
+output queues: 
+SimpleQM.sink.0: x x x x |-> x x x x x x x x x x -> (0, 0) 
+other info: 
+
+------------- 
+SimpleQM
+input queues: 
+SimpleQM.0: x x x [10 9] |-> x x x x x x x x x x -> (1, 0) 
+output queues: 
+SimpleQM.sink.0: x x x x |-> x x x x x x x x x x -> (0, 0) 
+---------- T = 4 ----------
+input queues: 
+SimpleQM.0: x x x x |-> x x x x x x x x x [10 9] -> (0, 1) 
+output queues: 
+SimpleQM.sink.0: x x x [10 9] |-> x x x x x x x x x x -> (1, 0) 
+other info: 
+
+------------- 
+SimpleQM
+input queues: 
+SimpleQM.0: x x x x |-> x x x x x x x x x [10 9] -> (0, 1) 
+output queues: 
+SimpleQM.sink.0: x x x [10 9] |-> x x x x x x x x x x -> (1, 0) 
+
+base example:
+total time: 5
+SimpleQM.0
+enqs:
+0 1 0 0 0 0 
+deqs:
+0 0 1 0 0 0 
+pkts metadata: 
+0 [0, 0]  |  |  |  |  | 
+
+zero_queues: {}
+target_queues: {0, }
+seed is: 7000
+1 mods didn't work
+1 mods didn't work
+total time: 5
+SimpleQM.0
+enqs:
+0 1 0 0 0 0 
+deqs:
+0 0 1 0 0 0 
+pkts metadata: 
+0 [0, 0]  |  |  |  |  | 
+
+1 mods didn't work
+1 mods didn't work
+total time: 5
+SimpleQM.0
+enqs:
+0 0 0 1 0 0 
+deqs:
+0 0 0 0 1 0 
+pkts metadata: 
+0  |  | [0, 0]  |  |  | 
+
+1 mods didn't work
+1 mods didn't work
+total time: 5
+SimpleQM.0
+enqs:
+0 0 1 0 0 0 
+deqs:
+0 0 0 1 0 0 
+pkts metadata: 
+0  | [4, 3]  |  |  |  | 
+
+1 mods didn't work
+1 mods didn't work
+total time: 5
+SimpleQM.0
+enqs:
+0 0 0 0 1 0 
+deqs:
+0 0 0 0 0 1 
+pkts metadata: 
+0  |  |  | [4, 5]  |  | 
+
+1 mods didn't work
+1 mods didn't work
+0 mods didn't work
+0 mods didn't work
+total time: 5
+SimpleQM.0
+enqs:
+0 0 0 0 0 0 
+deqs:
+0 0 0 0 0 0 
+pkts metadata: 
+0  |  |  |  |  | 
+
+total time: 5
+SimpleQM.0
+enqs:
+0 0 0 0 0 1 
+deqs:
+0 0 0 0 0 0 
+pkts metadata: 
+0  |  |  |  | [1000, 1000]  | 
+
+target queues: {0, }
+----------------------------------------------------------
+avg call time: 0
+round 1
+*
+checking: 
+*
+matched bad example
+local search: 0
+hops: 1
+picking the candidate from set of 5
+done picking the candidate
+greater jump: 0.3 0.740818 0.189096
+candidate: 43: 0 0 3
+[1, 2]: dst(0, t) <= 1
+
+close count: 0 0.243
+----------------------------------------------------------
+avg call time: 0
+round 2
+[1, 2]: dst(0, t) <= 1
+
+checking: 
+[1, 2]: dst(0, t) <= 1
+
+input feasible: UNSAT
+Undoing last step 
+----------------------------------------------------------
+*
+local search: 0
+hops: 1
+picking the candidate from set of 5
+done picking the candidate
+greater jump: 0.4 0.67032 0.288348
+candidate: 44: 0 0 4
+[2, 3]: ecmp(0, t) <= 0
+
+close count: 0 0.243
+----------------------------------------------------------
+avg call time: 0
+round 3
+[2, 3]: ecmp(0, t) <= 0
+
+checking: 
+[2, 3]: ecmp(0, t) <= 0
+
+input feasible: UNSAT
+Undoing last step 
+----------------------------------------------------------
+*
+local search: 0
+hops: 1
+picking the candidate from set of 5
+done picking the candidate
+candidate: 13: 3 0 3
+[4, 5]: aipg(0, t) >= 2
+
+close count: 0 0.243
+----------------------------------------------------------
+avg call time: 0
+round 4
+[4, 5]: aipg(0, t) >= 2
+
+checking: 
+[4, 5]: aipg(0, t) >= 2
+
+input feasible: SAT
+not query satisfied UNSAT
+FOUND!!!!
+-------------------- STATS -----------------------
+number of rounds: 4
+rounds in local search: 0
+number of resets: 0
+no_solver_call: 1
+input_only_solver_call: 0
+query_only_solver_call: 0
+full_solver_call: 3
+infeasible_input_cnt: 2
+full solver stats:
+   w/o query: 0 0.002
+   w/ query: 0.001 0.001
+4	0	0	1	3	0 (2)	1	1 (1)	
+--------------------------------------------------
+search time: 0.007 s
+Solution 0
+refinement 1 time: 0 s
+refinement 3 time: 0 s
+checking: 
+[4, 5]: aipg(0, t) >= 1
+
+input feasible: SAT
+not query satisfied UNSAT
+checking: 
+[4, 5]: aipg(0, t) >= 0
+
+matched bad example
+refinement 4 time: 0.003 s
+zero_in_base: {}
+in_wl: {0, }
+refinement 2 time: 0 s
+[4, 5]: aipg(0, t) >= 1
+
+
+Running: tbf_deq_avg
+#QM: 1 2
+#bool_vars: 600
+#int_vars:  850
+#constrs: 4839
+base workload: 
+[1, 10]: cenq(0, t) >= 4t
+
+sat
+---------- T = 0 ----------
+input queues: 
+TBF.0: x x x x [27 26] [11 12] [112 113] [104 105] [98 99] [93 92] |-> x x x x x x x x x x -> (6, 0) 
+output queues: 
+TBF.sink.0: x x x x x x x x x x |-> x x x x x x x x x x -> (0, 0) 
+other info: 
+Token Queue: 0
+
+------------- 
+TBF
+input queues: 
+TBF.0: x x x x [27 26] [11 12] [112 113] [104 105] [98 99] [93 92] |-> x x x x x x x x x x -> (6, 0) 
+output queues: 
+TBF.sink.0: x x x x x x x x x x |-> x x x x x x x x x x -> (0, 0) 
+---------- T = 1 ----------
+input queues: 
+TBF.0: x x x x x x x x [55 54] [41 43] |-> x x x x [27 26] [11 12] [112 113] [104 105] [98 99] [93 92] -> (2, 4) 
+output queues: 
+TBF.sink.0: x x x x x x [112 113] [104 105] [98 99] [93 92] |-> x x x x x x x x x x -> (4, 0) 
+other info: 
+Token Queue: 4
+
+------------- 
+TBF
+input queues: 
+TBF.0: x x x x x x x x [55 54] [41 43] |-> x x x x [27 26] [11 12] [112 113] [104 105] [98 99] [93 92] -> (2, 4) 
+output queues: 
+TBF.sink.0: x x x x x x [112 113] [104 105] [98 99] [93 92] |-> x x x x x x x x x x -> (4, 0) 
+---------- T = 2 ----------
+input queues: 
+TBF.0: x x x x x [14 15] [116 117] [108 109] [100 101] [95 94] |-> x x x x x x [55 54] [41 43] [27 26] [11 12] -> (5, 4) 
+output queues: 
+TBF.sink.0: x x x x x x [55 54] [41 43] [27 26] [11 12] |-> x x x x x x [112 113] [104 105] [98 99] [93 92] -> (4, 4) 
+other info: 
+Token Queue: 4
+
+------------- 
+TBF
+input queues: 
+TBF.0: x x x x x [14 15] [116 117] [108 109] [100 101] [95 94] |-> x x x x x x [55 54] [41 43] [27 26] [11 12] -> (5, 4) 
+output queues: 
+TBF.sink.0: x x x x x x [55 54] [41 43] [27 26] [11 12] |-> x x x x x x [112 113] [104 105] [98 99] [93 92] -> (4, 4) 
+---------- T = 3 ----------
+input queues: 
+TBF.0: x x x x x x x [56 57] [44 45] [29 30] |-> x x x x x [14 15] [116 117] [108 109] [100 101] [95 94] -> (3, 4) 
+output queues: 
+TBF.sink.0: x x x x x x [116 117] [108 109] [100 101] [95 94] |-> x x x x x x [55 54] [41 43] [27 26] [11 12] -> (4, 4) 
+other info: 
+Token Queue: 4
+
+------------- 
+TBF
+input queues: 
+TBF.0: x x x x x x x [56 57] [44 45] [29 30] |-> x x x x x [14 15] [116 117] [108 109] [100 101] [95 94] -> (3, 4) 
+output queues: 
+TBF.sink.0: x x x x x x [116 117] [108 109] [100 101] [95 94] |-> x x x x x x [55 54] [41 43] [27 26] [11 12] -> (4, 4) 
+---------- T = 4 ----------
+input queues: 
+TBF.0: x x [72 73] [71 70] [68 69] [67 66] [59 58] [46 47] [31 33] [18 17] |-> x x x x x x [56 57] [44 45] [29 30] [14 15] -> (8, 4) 
+output queues: 
+TBF.sink.0: x x x x x x [56 57] [44 45] [29 30] [14 15] |-> x x x x x x [116 117] [108 109] [100 101] [95 94] -> (4, 4) 
+other info: 
+Token Queue: 4
+
+------------- 
+TBF
+input queues: 
+TBF.0: x x [72 73] [71 70] [68 69] [67 66] [59 58] [46 47] [31 33] [18 17] |-> x x x x x x [56 57] [44 45] [29 30] [14 15] -> (8, 4) 
+output queues: 
+TBF.sink.0: x x x x x x [56 57] [44 45] [29 30] [14 15] |-> x x x x x x [116 117] [108 109] [100 101] [95 94] -> (4, 4) 
+---------- T = 5 ----------
+input queues: 
+TBF.0: x x x x x x x x x x |-> x x [72 73] [71 70] [68 69] [67 66] [59 58] [46 47] [31 33] [18 17] -> (0, 4) 
+output queues: 
+TBF.sink.0: x x x x x x [59 58] [46 47] [31 33] [18 17] |-> x x x x x x [56 57] [44 45] [29 30] [14 15] -> (4, 4) 
+other info: 
+Token Queue: 4
+
+------------- 
+TBF
+input queues: 
+TBF.0: x x x x x x x x x x |-> x x [72 73] [71 70] [68 69] [67 66] [59 58] [46 47] [31 33] [18 17] -> (0, 4) 
+output queues: 
+TBF.sink.0: x x x x x x [59 58] [46 47] [31 33] [18 17] |-> x x x x x x [56 57] [44 45] [29 30] [14 15] -> (4, 4) 
+---------- T = 6 ----------
+input queues: 
+TBF.0: x x x x x x [61 60] [49 48] [34 35] [20 19] |-> x x x x x x [72 73] [71 70] [68 69] [67 66] -> (4, 4) 
+output queues: 
+TBF.sink.0: x x x x x x [72 73] [71 70] [68 69] [67 66] |-> x x x x x x [59 58] [46 47] [31 33] [18 17] -> (4, 4) 
+other info: 
+Token Queue: 4
+
+------------- 
+TBF
+input queues: 
+TBF.0: x x x x x x [61 60] [49 48] [34 35] [20 19] |-> x x x x x x [72 73] [71 70] [68 69] [67 66] -> (4, 4) 
+output queues: 
+TBF.sink.0: x x x x x x [72 73] [71 70] [68 69] [67 66] |-> x x x x x x [59 58] [46 47] [31 33] [18 17] -> (4, 4) 
+---------- T = 7 ----------
+input queues: 
+TBF.0: x x x x x x [62 63] [51 50] [37 38] [21 22] |-> x x x x x x [61 60] [49 48] [34 35] [20 19] -> (4, 4) 
+output queues: 
+TBF.sink.0: x x x x x x [61 60] [49 48] [34 35] [20 19] |-> x x x x x x [72 73] [71 70] [68 69] [67 66] -> (4, 4) 
+other info: 
+Token Queue: 4
+
+------------- 
+TBF
+input queues: 
+TBF.0: x x x x x x [62 63] [51 50] [37 38] [21 22] |-> x x x x x x [61 60] [49 48] [34 35] [20 19] -> (4, 4) 
+output queues: 
+TBF.sink.0: x x x x x x [61 60] [49 48] [34 35] [20 19] |-> x x x x x x [72 73] [71 70] [68 69] [67 66] -> (4, 4) 
+---------- T = 8 ----------
+input queues: 
+TBF.0: [200 201] [188 189] [174 175] [160 161] [146 147] [132 133] [64 65] [52 53] [39 40] [25 23] |-> x x x x x x [62 63] [51 50] [37 38] [21 22] -> (10, 4) 
+output queues: 
+TBF.sink.0: x x x x x x [62 63] [51 50] [37 38] [21 22] |-> x x x x x x [61 60] [49 48] [34 35] [20 19] -> (4, 4) 
+other info: 
+Token Queue: 4
+
+------------- 
+TBF
+input queues: 
+TBF.0: [200 201] [188 189] [174 175] [160 161] [146 147] [132 133] [64 65] [52 53] [39 40] [25 23] |-> x x x x x x [62 63] [51 50] [37 38] [21 22] -> (10, 4) 
+output queues: 
+TBF.sink.0: x x x x x x [62 63] [51 50] [37 38] [21 22] |-> x x x x x x [61 60] [49 48] [34 35] [20 19] -> (4, 4) 
+---------- T = 9 ----------
+input queues: 
+TBF.0: x x x x x x x x x x |-> [200 201] [188 189] [174 175] [160 161] [146 147] [132 133] [64 65] [52 53] [39 40] [25 23] -> (0, 4) 
+output queues: 
+TBF.sink.0: x x x x x x [64 65] [52 53] [39 40] [25 23] |-> x x x x x x [62 63] [51 50] [37 38] [21 22] -> (4, 4) 
+other info: 
+Token Queue: 4
+
+------------- 
+TBF
+input queues: 
+TBF.0: x x x x x x x x x x |-> [200 201] [188 189] [174 175] [160 161] [146 147] [132 133] [64 65] [52 53] [39 40] [25 23] -> (0, 4) 
+output queues: 
+TBF.sink.0: x x x x x x [64 65] [52 53] [39 40] [25 23] |-> x x x x x x [62 63] [51 50] [37 38] [21 22] -> (4, 4) 
+
+unsat
+size: 226
+TBF_deq_count_1_10
+TBF_deq_count_1_4
+TBF_deq_count_1_5
+TBF_deq_count_1_6
+TBF_deq_count_1_7
+TBF_deq_count_1_8
+TBF_deq_count_1_9
+TBF_deq_count_2_10
+TBF_deq_count_2_2
+TBF_deq_count_2_3
+TBF_deq_count_2_4
+TBF_deq_count_2_5
+TBF_deq_count_2_6
+TBF_deq_count_2_7
+TBF_deq_count_2_8
+TBF_deq_count_2_9
+TBF_deq_count_3_10
+TBF_deq_count_3_2
+TBF_deq_count_3_3
+TBF_deq_count_3_4
+TBF_deq_count_3_5
+TBF_deq_count_3_6
+TBF_deq_count_3_7
+TBF_deq_count_3_8
+TBF_deq_count_3_9
+TBF_deq_count_4_10
+TBF_deq_count_4_5
+TBF_deq_count_4_6
+TBF_deq_count_4_7
+TBF_deq_count_4_8
+TBF_deq_count_4_9
+TBF_deq_count_5_10
+TBF_deq_count_5_4
+TBF_deq_count_5_5
+TBF_deq_count_5_6
+TBF_deq_count_5_7
+TBF_deq_count_5_8
+TBF_deq_count_5_9
+TBF_deq_count_6_10
+TBF_deq_count_6_9
+TBF_deq_count_7_10
+TBF_deq_count_7_5
+TBF_deq_count_7_6
+TBF_deq_count_7_7
+TBF_deq_count_7_8
+TBF_deq_count_7_9
+TBF_deq_count_8_1
+TBF_deq_count_8_10
+TBF_deq_count_8_2
+TBF_deq_count_8_3
+TBF_deq_count_8_4
+TBF_deq_count_8_5
+TBF_deq_count_8_6
+TBF_deq_count_8_7
+TBF_deq_count_8_8
+TBF_deq_count_8_9
+TBF_deq_count_9_10
+TBF_deq_count_9_5
+TBF_deq_count_9_6
+TBF_deq_count_9_7
+TBF_deq_count_9_8
+TBF_deq_count_9_9
+TBF_tokens_count_0
+TBF_tokens_count_1
+TBF_tokens_count_2
+TBF_tokens_count_3
+TBF_tokens_count_4
+TBF_tokens_count_5
+TBF_tokens_count_6
+TBF_tokens_count_7
+TBF_tokens_count_8
+TBF_tokens_count_9
+|TBF.0[0]_null_at_0|
+|TBF.0[1][2]_shift_forward_4|
+|TBF.0[1][3]_gets_enqs[0]|
+|TBF.0[1][3]_gets_enqs[1]|
+|TBF.0[1][3]_shift_forward_3|
+|TBF.0[1][3]_shift_forward_4|
+|TBF.0[2][2]_gets_enqs[0]|
+|TBF.0[2][2]_gets_enqs[1]|
+|TBF.0[2][2]_gets_enqs[2]|
+|TBF.0[2][2]_shift_forward_4|
+|TBF.0[2][3]_gets_enqs[1]|
+|TBF.0[2][3]_gets_enqs[2]|
+|TBF.0[2][3]_shift_forward_2|
+|TBF.0[2][3]_shift_forward_3|
+|TBF.0[3][1]_gets_enqs[3]|
+|TBF.0[3][2]_gets_enqs[0]|
+|TBF.0[3][2]_gets_enqs[1]|
+|TBF.0[3][2]_gets_enqs[2]|
+|TBF.0[3][2]_gets_enqs[3]|
+|TBF.0[3][2]_shift_forward_4|
+|TBF.0[3][3]_gets_enqs[0]|
+|TBF.0[3][3]_gets_enqs[1]|
+|TBF.0[3][3]_gets_enqs[2]|
+|TBF.0[3][3]_gets_enqs[3]|
+|TBF.0[3][3]_shift_forward_4|
+|TBF.0[4][1]_gets_enqs[4]|
+|TBF.0[4][2]_gets_enqs[0]|
+|TBF.0[4][2]_gets_enqs[1]|
+|TBF.0[4][2]_gets_enqs[2]|
+|TBF.0[4][2]_gets_enqs[3]|
+|TBF.0[4][2]_gets_enqs[4]|
+|TBF.0[4][2]_shift_forward_4|
+|TBF.0[4][3]_gets_enqs[0]|
+|TBF.0[5][1]_gets_enqs[5]|
+|TBF.0[5][2]_gets_enqs[0]|
+|TBF.0[5][2]_gets_enqs[1]|
+|TBF.0[5][2]_gets_enqs[2]|
+|TBF.0[5][2]_gets_enqs[3]|
+|TBF.0[5][2]_gets_enqs[4]|
+|TBF.0[5][2]_gets_enqs[5]|
+|TBF.0[5][2]_shift_forward_4|
+|TBF.0[5][3]_gets_enqs[0]|
+|TBF.0[5][3]_gets_enqs[2]|
+|TBF.0[5][3]_shift_forward_4|
+|TBF.0[5]_null_at_0|
+|TBF.0[6][1]_gets_enqs[6]|
+|TBF.0[6][2]_gets_enqs[0]|
+|TBF.0[6][2]_gets_enqs[1]|
+|TBF.0[6][2]_gets_enqs[2]|
+|TBF.0[6][2]_gets_enqs[3]|
+|TBF.0[6][2]_gets_enqs[4]|
+|TBF.0[6][2]_gets_enqs[5]|
+|TBF.0[6][2]_gets_enqs[6]|
+|TBF.0[6][3]_gets_enqs[0]|
+|TBF.0[6][3]_gets_enqs[2]|
+|TBF.0[6][3]_shift_forward_1|
+|TBF.0[6][3]_shift_forward_2|
+|TBF.0[6][3]_shift_forward_3|
+|TBF.0[7][1]_gets_enqs[7]|
+|TBF.0[7][2]_gets_enqs[1]|
+|TBF.0[7][2]_gets_enqs[2]|
+|TBF.0[7][2]_gets_enqs[3]|
+|TBF.0[7][2]_gets_enqs[4]|
+|TBF.0[7][2]_gets_enqs[5]|
+|TBF.0[7][2]_gets_enqs[6]|
+|TBF.0[7][2]_gets_enqs[7]|
+|TBF.0[7][3]_gets_enqs[0]|
+|TBF.0[7][3]_gets_enqs[2]|
+|TBF.0[7][3]_shift_forward_1|
+|TBF.0[8][1]_gets_enqs[8]|
+|TBF.0[8][2]_gets_enqs[2]|
+|TBF.0[8][3]_gets_enqs[2]|
+|TBF.0[8]_null_at_0|
+|TBF.0[9][1]_gets_enqs[9]|
+|TBF.0[9][2]_gets_enqs[3]|
+|TBF.0[9][3]_gets_enqs[0]|
+|TBF.0[9][3]_gets_enqs[1]|
+|TBF.0[9][3]_gets_enqs[2]|
+|TBF.0_deq_cnt_bounds[0]|
+|TBF.0_deq_cnt_bounds[2]|
+|TBF.0_deq_cnt_bounds[3]|
+|TBF.0_deq_cnt_bounds[4]|
+|TBF.0_deq_cnt_bounds[5]|
+|TBF.0_deq_cnt_bounds[6]|
+|TBF.0_deq_cnt_bounds[7]|
+|TBF.0_deq_cnt_bounds[8]|
+|TBF.0_deq_cnt_bounds[9]|
+|TBF.0_deq_cnt_gt_zero[0]|
+|TBF.0_deq_cnt_gt_zero[1]|
+|TBF.0_deq_cnt_gt_zero[2]|
+|TBF.0_deq_cnt_gt_zero[3]|
+|TBF.0_deq_cnt_gt_zero[4]|
+|TBF.0_deq_cnt_gt_zero[7]|
+|TBF.0_deq_cnt_gt_zero[8]|
+|TBF.0_enq_cnt_bounds[0]|
+|TBF.0_enq_cnt_bounds[1]|
+|TBF.0_enq_cnt_bounds[2]|
+TBF.0_no_holes_1_3
+TBF.0_no_holes_2_2
+TBF.0_no_holes_2_3
+TBF.0_no_holes_3_2
+TBF.0_no_holes_3_3
+TBF.0_no_holes_4_2
+TBF.0_no_holes_4_3
+TBF.0_no_holes_5_2
+TBF.0_no_holes_5_3
+TBF.0_no_holes_6_2
+TBF.0_no_holes_6_3
+TBF.0_no_holes_6_5
+TBF.0_no_holes_7_2
+TBF.0_no_holes_7_3
+TBF.0_no_holes_8_2
+TBF.0_no_holes_8_3
+|TBF.0_tmp_val[0][0]_small_d_0|
+|TBF.0_tmp_val[0][1]_small_d_4|
+|TBF.0_tmp_val[0][2]_small_d_3|
+|TBF.0_tmp_val[0][2]_small_d_4|
+|TBF.0_tmp_val[0][4]_small_d_5|
+|TBF.0_tmp_val[0][4]_small_d_6|
+|TBF.0_tmp_val[0][4]_small_d_7|
+|TBF.0_tmp_val[0][4]_small_d_8|
+|TBF.0_tmp_val[0][7]_small_d_5|
+|TBF.0_tmp_val[1][1]_small_d_4|
+|TBF.0_tmp_val[1][2]_small_d_1|
+|TBF.0_tmp_val[1][2]_small_d_2|
+|TBF.0_tmp_val[1][2]_small_d_3|
+|TBF.0_tmp_val[1][2]_small_d_4|
+|TBF.0_tmp_val[1][2]_small_d_5|
+|TBF.0_tmp_val[2][1]_small_d_4|
+|TBF.0_tmp_val[2][2]_small_d_0|
+|TBF.0_tmp_val[2][2]_small_d_1|
+|TBF.0_tmp_val[2][2]_small_d_2|
+|TBF.0_tmp_val[2][2]_small_d_3|
+|TBF.0_tmp_val[2][2]_small_d_4|
+|TBF.0_tmp_val[3][1]_small_d_4|
+|TBF.0_tmp_val[3][2]_small_d_1|
+|TBF.0_tmp_val[3][2]_small_d_4|
+|TBF.0_tmp_val[4][1]_small_d_4|
+|TBF.0_tmp_val[5][1]_small_d_4|
+|TBF.0_tmp_val[5][2]_small_d_4|
+|TBF.0_tmp_val[6][1]_large_d_4|
+|TBF.0_tmp_val[6][2]_small_d_1|
+|TBF.0_tmp_val[6][2]_small_d_2|
+|TBF.0_tmp_val[6][2]_small_d_3|
+|TBF.0_tmp_val[7][2]_small_d_1|
+|TBF.0_tmp_val[7][2]_small_d_2|
+|TBF.0_tmp_val[9][2]_large_d_1|
+|TBF.0_tmp_val[9][2]_large_d_2|
+|TBF.0_tmp_val[9][2]_large_d_3|
+|TBF.sink.0[0]_null_at_0|
+|TBF.sink.0_deq_cnt_bounds[0]|
+TBF.sink.0_deq_cnt_at_0
+base_wl
+query
+Running: tbf_max_burst
+#QM: 1 2
+#bool_vars: 600
+#int_vars:  850
+#constrs: 4839
+base workload: 
+[10, 10]: cenq(0, t) >= 51
+
+sat
+---------- T = 0 ----------
+input queues: 
+TBF.0: x x x x x x x x [54 55] [40 39] |-> x x x x x x x x x x -> (2, 0) 
+output queues: 
+TBF.sink.0: x x x x x x x x x x |-> x x x x x x x x x x -> (0, 0) 
+other info: 
+Token Queue: 0
+
+------------- 
+TBF
+input queues: 
+TBF.0: x x x x x x x x [54 55] [40 39] |-> x x x x x x x x x x -> (2, 0) 
+output queues: 
+TBF.sink.0: x x x x x x x x x x |-> x x x x x x x x x x -> (0, 0) 
+---------- T = 1 ----------
+input queues: 
+TBF.0: x x x x x x x [71 70] [57 56] [42 41] |-> x x x x x x x x [54 55] [40 39] -> (3, 2) 
+output queues: 
+TBF.sink.0: x x x x x x x x [54 55] [40 39] |-> x x x x x x x x x x -> (2, 0) 
+other info: 
+Token Queue: 3
+
+------------- 
+TBF
+input queues: 
+TBF.0: x x x x x x x [71 70] [57 56] [42 41] |-> x x x x x x x x [54 55] [40 39] -> (3, 2) 
+output queues: 
+TBF.sink.0: x x x x x x x x [54 55] [40 39] |-> x x x x x x x x x x -> (2, 0) 
+---------- T = 2 ----------
+input queues: 
+TBF.0: x x x x x x x [19 20] [15 16] [11 12] |-> x x x x x x x [71 70] [57 56] [42 41] -> (3, 3) 
+output queues: 
+TBF.sink.0: x x x x x x x [71 70] [57 56] [42 41] |-> x x x x x x x x [54 55] [40 39] -> (3, 2) 
+other info: 
+Token Queue: 4
+
+------------- 
+TBF
+input queues: 
+TBF.0: x x x x x x x [19 20] [15 16] [11 12] |-> x x x x x x x [71 70] [57 56] [42 41] -> (3, 3) 
+output queues: 
+TBF.sink.0: x x x x x x x [71 70] [57 56] [42 41] |-> x x x x x x x x [54 55] [40 39] -> (3, 2) 
+---------- T = 3 ----------
+input queues: 
+TBF.0: x x x x x x x x [17 18] [13 14] |-> x x x x x x x [19 20] [15 16] [11 12] -> (2, 3) 
+output queues: 
+TBF.sink.0: x x x x x x x [19 20] [15 16] [11 12] |-> x x x x x x x [71 70] [57 56] [42 41] -> (3, 3) 
+other info: 
+Token Queue: 4
+
+------------- 
+TBF
+input queues: 
+TBF.0: x x x x x x x x [17 18] [13 14] |-> x x x x x x x [19 20] [15 16] [11 12] -> (2, 3) 
+output queues: 
+TBF.sink.0: x x x x x x x [19 20] [15 16] [11 12] |-> x x x x x x x [71 70] [57 56] [42 41] -> (3, 3) 
+---------- T = 4 ----------
+input queues: 
+TBF.0: x x x x x [108 109] [92 93] [75 74] [59 58] [44 43] |-> x x x x x x x x [17 18] [13 14] -> (5, 2) 
+output queues: 
+TBF.sink.0: x x x x x x x x [17 18] [13 14] |-> x x x x x x x [19 20] [15 16] [11 12] -> (2, 3) 
+other info: 
+Token Queue: 4
+
+------------- 
+TBF
+input queues: 
+TBF.0: x x x x x [108 109] [92 93] [75 74] [59 58] [44 43] |-> x x x x x x x x [17 18] [13 14] -> (5, 2) 
+output queues: 
+TBF.sink.0: x x x x x x x x [17 18] [13 14] |-> x x x x x x x [19 20] [15 16] [11 12] -> (2, 3) 
+---------- T = 5 ----------
+input queues: 
+TBF.0: x x x x x x x x x x |-> x x x x x [108 109] [92 93] [75 74] [59 58] [44 43] -> (0, 5) 
+output queues: 
+TBF.sink.0: x x x x x [108 109] [92 93] [75 74] [59 58] [44 43] |-> x x x x x x x x [17 18] [13 14] -> (5, 2) 
+other info: 
+Token Queue: 5
+
+------------- 
+TBF
+input queues: 
+TBF.0: x x x x x x x x x x |-> x x x x x [108 109] [92 93] [75 74] [59 58] [44 43] -> (0, 5) 
+output queues: 
+TBF.sink.0: x x x x x [108 109] [92 93] [75 74] [59 58] [44 43] |-> x x x x x x x x [17 18] [13 14] -> (5, 2) 
+---------- T = 6 ----------
+input queues: 
+TBF.0: x x x x [128 129] [112 113] [96 97] [79 78] [63 62] [48 47] |-> x x x x x x x x x x -> (6, 0) 
+output queues: 
+TBF.sink.0: x x x x x x x x x x |-> x x x x x [108 109] [92 93] [75 74] [59 58] [44 43] -> (0, 5) 
+other info: 
+Token Queue: 3
+
+------------- 
+TBF
+input queues: 
+TBF.0: x x x x [128 129] [112 113] [96 97] [79 78] [63 62] [48 47] |-> x x x x x x x x x x -> (6, 0) 
+output queues: 
+TBF.sink.0: x x x x x x x x x x |-> x x x x x [108 109] [92 93] [75 74] [59 58] [44 43] -> (0, 5) 
+---------- T = 7 ----------
+input queues: 
+TBF.0: [- -] [178 179] [162 163] [146 147] [130 131] [114 115] [98 99] [80 81] [65 64] [50 49] |-> x x x x [128 129] [112 113] [96 97] [79 78] [63 62] [48 47] -> (10, 5) 
+output queues: 
+TBF.sink.0: x x x x x [112 113] [96 97] [79 78] [63 62] [48 47] |-> x x x x x x x x x x -> (5, 0) 
+other info: 
+Token Queue: 5
+
+------------- 
+TBF
+input queues: 
+TBF.0: [- -] [178 179] [162 163] [146 147] [130 131] [114 115] [98 99] [80 81] [65 64] [50 49] |-> x x x x [128 129] [112 113] [96 97] [79 78] [63 62] [48 47] -> (10, 5) 
+output queues: 
+TBF.sink.0: x x x x x [112 113] [96 97] [79 78] [63 62] [48 47] |-> x x x x x x x x x x -> (5, 0) 
+---------- T = 8 ----------
+input queues: 
+TBF.0: [- -] [- -] [- -] [- -] [- -] [- -] [- -] [82 83] [67 66] [52 53] |-> [178 179] [162 163] [146 147] [130 131] [114 115] [98 99] [80 81] [65 64] [50 49] [128 129] -> (10, 3) 
+output queues: 
+TBF.sink.0: x x x x x x x [65 64] [50 49] [128 129] |-> x x x x x [112 113] [96 97] [79 78] [63 62] [48 47] -> (3, 5) 
+other info: 
+Token Queue: 3
+
+------------- 
+TBF
+input queues: 
+TBF.0: [- -] [- -] [- -] [- -] [- -] [- -] [- -] [82 83] [67 66] [52 53] |-> [178 179] [162 163] [146 147] [130 131] [114 115] [98 99] [80 81] [65 64] [50 49] [128 129] -> (10, 3) 
+output queues: 
+TBF.sink.0: x x x x x x x [65 64] [50 49] [128 129] |-> x x x x x [112 113] [96 97] [79 78] [63 62] [48 47] -> (3, 5) 
+---------- T = 9 ----------
+input queues: 
+TBF.0: [- -] [- -] [- -] [- -] [- -] [- -] [- -] [- -] [- -] [- -] |-> [82 83] [67 66] [52 53] [178 179] [162 163] [146 147] [130 131] [114 115] [98 99] [80 81] -> (10, 3) 
+output queues: 
+TBF.sink.0: x x x x x x x [114 115] [98 99] [80 81] |-> x x x x x x x [65 64] [50 49] [128 129] -> (3, 3) 
+other info: 
+Token Queue: 3
+
+------------- 
+TBF
+input queues: 
+TBF.0: [- -] [- -] [- -] [- -] [- -] [- -] [- -] [- -] [- -] [- -] |-> [82 83] [67 66] [52 53] [178 179] [162 163] [146 147] [130 131] [114 115] [98 99] [80 81] -> (10, 3) 
+output queues: 
+TBF.sink.0: x x x x x x x [114 115] [98 99] [80 81] |-> x x x x x x x [65 64] [50 49] [128 129] -> (3, 3) 
+
+unsat
+size: 105
+TBF_deq_count_1_10
+TBF_deq_count_1_4
+TBF_deq_count_1_5
+TBF_deq_count_1_6
+TBF_deq_count_1_7
+TBF_deq_count_1_8
+TBF_deq_count_1_9
+TBF_deq_count_2_10
+TBF_deq_count_2_6
+TBF_deq_count_2_7
+TBF_deq_count_2_8
+TBF_deq_count_2_9
+TBF_deq_count_3_10
+TBF_deq_count_3_6
+TBF_deq_count_3_7
+TBF_deq_count_3_8
+TBF_deq_count_3_9
+TBF_deq_count_4_1
+TBF_deq_count_4_10
+TBF_deq_count_4_2
+TBF_deq_count_4_3
+TBF_deq_count_4_4
+TBF_deq_count_4_5
+TBF_deq_count_4_6
+TBF_deq_count_4_7
+TBF_deq_count_4_8
+TBF_deq_count_4_9
+TBF_deq_count_5_10
+TBF_deq_count_5_6
+TBF_deq_count_5_7
+TBF_deq_count_5_8
+TBF_deq_count_5_9
+TBF_deq_count_6_10
+TBF_deq_count_6_4
+TBF_deq_count_6_5
+TBF_deq_count_6_6
+TBF_deq_count_6_7
+TBF_deq_count_6_8
+TBF_deq_count_6_9
+TBF_deq_count_7_0
+TBF_deq_count_7_1
+TBF_deq_count_7_10
+TBF_deq_count_7_2
+TBF_deq_count_7_3
+TBF_deq_count_7_4
+TBF_deq_count_7_5
+TBF_deq_count_7_6
+TBF_deq_count_7_7
+TBF_deq_count_7_8
+TBF_deq_count_7_9
+TBF_deq_count_8_10
+TBF_deq_count_8_4
+TBF_deq_count_8_5
+TBF_deq_count_8_6
+TBF_deq_count_8_7
+TBF_deq_count_8_8
+TBF_deq_count_8_9
+TBF_deq_count_9_10
+TBF_deq_count_9_6
+TBF_deq_count_9_7
+TBF_deq_count_9_8
+TBF_deq_count_9_9
+TBF_tokens_count_0
+TBF_tokens_count_1
+TBF_tokens_count_2
+TBF_tokens_count_3
+TBF_tokens_count_4
+TBF_tokens_count_5
+TBF_tokens_count_6
+TBF_tokens_count_7
+TBF_tokens_count_8
+TBF_tokens_count_9
+|TBF.0[0]_null_at_0|
+|TBF.0[5]_null_at_0|
+|TBF.0_deq_cnt_bounds[0]|
+|TBF.0_deq_cnt_bounds[1]|
+|TBF.0_deq_cnt_bounds[2]|
+|TBF.0_deq_cnt_bounds[3]|
+|TBF.0_deq_cnt_bounds[4]|
+|TBF.0_deq_cnt_bounds[5]|
+|TBF.0_deq_cnt_bounds[6]|
+|TBF.0_deq_cnt_bounds[7]|
+|TBF.0_deq_cnt_bounds[8]|
+|TBF.0_deq_cnt_bounds[9]|
+|TBF.0_deq_cnt_gt_zero[0]|
+|TBF.0_deq_cnt_gt_zero[4]|
+|TBF.0_deq_cnt_gt_zero[6]|
+|TBF.0_deq_cnt_gt_zero[7]|
+TBF.0_no_holes_1_6
+TBF.0_no_holes_1_7
+TBF.0_no_holes_2_6
+TBF.0_no_holes_3_6
+TBF.0_no_holes_5_6
+TBF.0_no_holes_5_7
+TBF.0_no_holes_6_6
+|TBF.0_tmp_val[0][6]_small_d_4|
+|TBF.0_tmp_val[0][6]_small_d_5|
+|TBF.0_tmp_val[1][6]_small_d_0|
+|TBF.0_tmp_val[1][6]_small_d_1|
+|TBF.0_tmp_val[1][6]_small_d_2|
+|TBF.0_tmp_val[1][6]_small_d_3|
+|TBF.0_tmp_val[1][6]_small_d_4|
+|TBF.0_tmp_val[1][6]_small_d_5|
+|TBF.0_tmp_val[1][6]_small_d_6|
+query
+
+--------------- Test Results ---------------
+
+rr_sat: Pass
+rr_unsat: Pass
+search: Pass
+tbf_deq_avg: Pass
+tbf_max_burst: Pass
+
+---------------------------------------------

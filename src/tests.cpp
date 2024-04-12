@@ -34,6 +34,7 @@
 #include <set>
 #include <vector>
 #include <chrono>
+#include <unordered_set>
 
 void run(ContentionPoint* cp,
          IndexedExample* base_eg,
@@ -515,7 +516,8 @@ Workload restrict_time_ranges_z3(Workload wl, Search& search, ContentionPoint* c
 
     for(const TimedSpec& spec : specs){
         cout << "Optimizing spec " << spec << endl;
-        auto opt = new optimize(ctx);
+//        auto opt = new optimize(ctx);
+        auto opt = new solver(ctx);
         // FORALL enq, internal queue: !X || query
         // X = model && base_wl && workload_minus_current_spec && current_spec
 
@@ -527,39 +529,6 @@ Workload restrict_time_ranges_z3(Workload wl, Search& search, ContentionPoint* c
 
         unsigned int bool_vars{0};
         unsigned int int_vars{0};
-
-        // TODO: Add variables enq, elem, enq_cnt, deq_cnt, tmp_val
-        vector<string> pkt_names = {"enq", "elem"};
-
-        for (unsigned int q = 0; q < cp->in_queues.size(); q++) {
-            for(unsigned int i = 0; i < cp->in_queues[q]->max_enq(); i++){
-                for (unsigned int t = 0; t < total_time - 1; t++) {
-                    expr pkt1 = cp->in_queues[q]->enqs(i)[t + 1];
-                    //                expr val1 = cp->net_ctx.pkt2val(pkt1);
-                    //                expr meta11 = cp->net_ctx.pkt2meta1(pkt1);
-                    //                expr meta12 = cp->net_ctx.pkt2meta2(pkt1);
-                    // Format Prio.2_enq[0][3]_val
-                    string val_name = "Prio." + to_string(q) + "_enqs[" + to_string(i) + "][" + to_string(t + 1) + "]_val";
-                    expr val1 = ctx.int_const(val_name.c_str());
-                    bool_vars++;
-                    // Format Prio.2_enq[0][3]_meta1
-                    string meta11_name = "Prio." + to_string(q) + "_enqs[" + to_string(i) + "][" + to_string(t + 1) + "]_meta1";
-                    expr meta11 = ctx.int_const(meta11_name.c_str());
-                    int_vars++;
-                    // Format Prio.2_enq[0][3]_meta2
-                    string meta12_name = "Prio." + to_string(q) + "_enqs[" + to_string(i) + "][" + to_string(t + 1) + "]_meta2";
-                    expr meta12 = ctx.int_const(meta12_name.c_str());
-                    int_vars++;
-                    //                enqs_and_internals.push_back(pkt1);
-                    enqs_and_internals.push_back(val1);
-                    enqs_and_internals.push_back(meta11);
-                    enqs_and_internals.push_back(meta12);
-                }
-            }
-        }
-
-        // Print number of variables
-        cout << "bool_vars: " << bool_vars << ", int_vars: " << int_vars << endl;
 
         // Add internal queue variables
         // None for prio
@@ -589,11 +558,21 @@ Workload restrict_time_ranges_z3(Workload wl, Search& search, ContentionPoint* c
         // 1. Get expression for current spec
         Comp comp = get<Comp>(wl_spec);
 
-        // 2. Add constraints dependent on time range
+        // 2. Add sanity-check constraints on new variables
+        expr time_range_constraints = ctx.bool_val(true);
+        time_range_constraints = time_range_constraints && (start_time <= end_time);
+        time_range_constraints = time_range_constraints && (start_time >= ctx.int_val(0));
+        time_range_constraints = time_range_constraints && (end_time < ctx.int_val(wl.get_total_time()));
+
+        int current_start_time = time_range.first;
+        int current_end_time = time_range.second;
+        time_range_constraints = time_range_constraints && (start_time >= ctx.int_val(current_start_time));
+        time_range_constraints = time_range_constraints && (end_time <= ctx.int_val(current_end_time));
+
+        opt->add(time_range_constraints);
+
+        // 3. Add constraints dependent on time range
         expr current_spec = ctx.bool_val(true);
-        current_spec = current_spec && (start_time <= end_time);
-        current_spec = current_spec && (start_time >= ctx.int_val(0));
-        current_spec = current_spec && (end_time < ctx.int_val(wl.get_total_time()));
         for(int i = 0; i < wl.get_total_time(); i++){
             expr i_expr = implies(start_time <= i && i <= end_time, cp->get_expr(comp, i));
             current_spec = current_spec && i_expr;
@@ -606,10 +585,57 @@ Workload restrict_time_ranges_z3(Workload wl, Search& search, ContentionPoint* c
 
         expr X = net_model && base_wl && workload_minus_current_spec && current_spec;
         expr not_X_or_query = !X || query_expr;
-        expr forall_not_X_or_query = forall(enqs_and_internals, not_X_or_query);
+
+        auto all_vars = *cp->net_ctx.list_of_vars;
+
+        // Print number of bool and int vars
+        for(auto const& var : all_vars){
+            if(var.is_bool()){
+                bool_vars++;
+            }else if(var.is_int()){
+                int_vars++;
+            }
+        }
+        cout << "bool_vars: " << bool_vars << ", int_vars: " << int_vars << endl;
+
+        expr forall_not_X_or_query = forall(all_vars, not_X_or_query); // P(x)
         opt->add(forall_not_X_or_query);
 
-        auto objective = opt->minimize(end_time - start_time);
+        // Standard optimization problem min. f(x) s.t. P(x)
+        // Can be encoded as logic formula P(x) && forall y: P(y) => f(x) <= f(y)
+        // Here, f(end_time, start_time) is end_time - start_time
+        // P(end_time, start_time) is !X || query_expr
+
+        expr bounded_start_time = ctx.int_const("bounded_start_time");
+        expr bounded_end_time = ctx.int_const("bounded_end_time");
+
+        expr bounded_time_range_constraints = ctx.bool_val(true);
+        bounded_time_range_constraints = bounded_time_range_constraints && (bounded_start_time <= bounded_end_time);
+        bounded_time_range_constraints = bounded_time_range_constraints && (bounded_start_time >= ctx.int_val(0));
+        bounded_time_range_constraints = bounded_time_range_constraints && (bounded_end_time < ctx.int_val(wl.get_total_time()));
+
+        bounded_time_range_constraints = bounded_time_range_constraints && (bounded_start_time >= ctx.int_val(current_start_time));
+        bounded_time_range_constraints = bounded_time_range_constraints && (bounded_end_time <= ctx.int_val(current_end_time));
+        opt->add(bounded_time_range_constraints);
+
+        expr bounded_current_spec = ctx.bool_val(true);
+        for(int i = 0; i < wl.get_total_time(); i++){
+            expr i_expr = implies(bounded_start_time <= i && i <= bounded_end_time, cp->get_expr(comp, i));
+            bounded_current_spec = bounded_current_spec && i_expr;
+        }
+
+        expr bounded_not_X_or_query = !(net_model && base_wl && workload_minus_current_spec && bounded_current_spec) || query_expr;
+        expr P_y = forall(all_vars, bounded_not_X_or_query);
+        expr f = bounded_end_time - bounded_start_time;
+        expr_vector opt_exprs(ctx);
+        opt_exprs.push_back(bounded_start_time);
+        opt_exprs.push_back(bounded_end_time);
+        expr optimization = forall(opt_exprs, implies(P_y, f >= end_time - start_time));
+        opt->add(optimization);
+
+
+
+//        auto objective = opt->minimize(end_time - start_time);
 
         check_result z3_result = opt->check();
 
@@ -629,11 +655,10 @@ Workload restrict_time_ranges_z3(Workload wl, Search& search, ContentionPoint* c
                 wl.add_spec(spec_to_try);
                 continue;
             } else {
-                // Error: the solver should return a valid Workload
-                cout << "Error: the solver should return a valid Workload" << endl;
+                throw std::runtime_error("Z3 returned an invalid Workload");
             }
         }else{
-            cout << "Error: the solver could not find a valid Workload" << endl;
+            throw std::runtime_error("Z3 could not find a solution");
         }
 
         delete opt;
@@ -1311,7 +1336,7 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
 //        [1, 7]: cenq(2, t) >= 1
         Workload wl(100, cp->in_queue_cnt(), total_time);
         wl.clear();
-        time_range_t time_range1 = time_range_t(0, 5);
+        time_range_t time_range1 = time_range_t(0, 6); // Optimal is [0, 5]
         time_range_t time_range2 = time_range_t(0, 6);
         qset_t queues = {0, 1};
         wl.add_spec(TimedSpec(Comp(QSum(queues, metric_t::CENQ), op_t::GE, Time(1)), time_range1, total_time));
@@ -1351,6 +1376,85 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
         std::cout << s.get_model() << "\n";
         s.add(a < 0);
         std::cout << s.check() << "\n";
+    } else if (searchMode == "z3_test2"){
+//        z3::context c;
+//        z3::solver s(c);
+//
+//        // Example usage
+//        z3::expr x = c.bool_const("x");
+//        z3::expr y = c.bool_const("y");
+//        s.add(x && !y);
+//        s.add(!x || y);
+//
+//        auto vars = get_all_vars(s);
+//        for (auto& var : vars) {
+//            std::cout << var << std::endl;
+//        }
+    } else if (searchMode == "z3_test3"){
+//        auto& ctx = cp->net_ctx.z3_ctx();
+//
+//        z3::solver* s = cp->z3_solver;
+//
+//        auto vars = get_all_vars(*s);
+//        vector<expr> error_free_vars;
+//
+//        // TEST
+//        // For each variable:
+//        // Create an expr_vector containing only that variable
+//        // Create a forall quantifier with that variable
+//        // If it causes an error, print the variable
+//        for(auto& var : vars){
+//            z3::expr_vector expression_vector(ctx);
+//            expression_vector.push_back(var);
+//            try {
+//                z3::expr forall = z3::forall(expression_vector, ctx.bool_val(true));
+//                // Add it to list of error-free variables
+//
+//                if(var.is_const()){
+//                    error_free_vars.push_back(var);
+//                }
+//
+//            } catch (z3::exception e){
+//                std::cout << "Error with variable: " << var << std::endl;
+//            }
+//        }
+//
+//        cout << "Original number of variables: " << vars.size() << endl;
+//        cout << "Number of errors: " << vars.size() - error_free_vars.size() << endl;
+//        cout << "Number of error-free variables: " << error_free_vars.size() << endl;
+
+    } else if (searchMode == "z3_test4"){
+        expr_vector* all_vars = cp->net_ctx.list_of_vars;
+
+        // Print each variable
+        for (unsigned int i = 0; i < all_vars->size(); i++) {
+            std::cout << (*all_vars)[i] << std::endl;
+        }
+
+        // Print number of bool and int variables
+        unsigned int bool_vars = 0;
+        unsigned int int_vars = 0;
+        for (unsigned int i = 0; i < all_vars->size(); i++) {
+            if ((*all_vars)[i].is_bool()) {
+                bool_vars++;
+            } else if ((*all_vars)[i].is_int()) {
+                int_vars++;
+            }
+        }
+        std::cout << "Number of bool variables: " << bool_vars << std::endl;
+        std::cout << "Number of int variables: " << int_vars << std::endl;
+
+        // Try creating a forall quantifier with each variable
+        for (unsigned int i = 0; i < all_vars->size(); i++) {
+            z3::expr_vector expression_vector(cp->net_ctx.z3_ctx());
+            expression_vector.push_back((*all_vars)[i]);
+            try {
+                z3::expr forall = z3::forall(expression_vector, cp->net_ctx.z3_ctx().bool_val(true));
+            } catch (z3::exception e) {
+                std::cout << "Error with variable: " << (*all_vars)[i] << std::endl;
+            }
+        }
+
     } else {
         throw std::runtime_error("Invalid search mode");
     }

@@ -113,11 +113,10 @@ public:
     vector<Queue*> in_queues;
     vector<Queue*> out_queues;
 
-protected:
-
     solver* z3_solver;
     optimize* z3_optimizer;
 
+protected:
     unsigned int total_time;
 
     vector<cid_t> nodes;

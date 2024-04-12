@@ -42,6 +42,8 @@ public:
     unsigned long get_bool_var_cnt();
     unsigned long get_int_var_cnt();
 
+    expr_vector* list_of_vars;
+
 private:
     context ctx;
     // Packets

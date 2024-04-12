@@ -42,8 +42,10 @@ cid_t get_unique_id(cid_t module_id, cid_t queue_id) {
 
 //************************************* COMP *************************************//
 
-Op::Op() {}
-Op::Op(Op::Type op) : type(op) {}
+Op::Op() {
+}
+Op::Op(Op::Type op): type(op) {
+}
 
 Op::Type Op::get_type() const {
     return type;

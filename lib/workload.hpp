@@ -11,12 +11,12 @@
 
 #include <iostream>
 #include <map>
+#include <memory>
 #include <set>
+#include <string>
 #include <tuple>
 #include <variant>
 #include <vector>
-#include <string>
-#include <memory>
 
 #include "cost.hpp"
 #include "example.hpp"

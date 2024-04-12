@@ -9,9 +9,9 @@
 #include "spec_factory.hpp"
 
 #include <algorithm>
+#include <random>
 #include <set>
 #include <sstream>
-#include <random>
 
 #include "util.hpp"
 
@@ -189,7 +189,7 @@ Expr* SpecFactory::random_rhs(RandomSpecGenerationParameters params) {
         rhs_type = dists->rhs();
     }
 
-    if (params.time_valid && rhs_type == 1){
+    if (params.time_valid && rhs_type == 1) {
         Time time = random_time();
         return new Time(time);
     }
@@ -366,4 +366,3 @@ Time SpecFactory::random_time() {
 Op SpecFactory::random_op() {
     return dists->op();
 }
-

@@ -57,8 +57,7 @@ void ContentionPoint::init() {
 
     DEBUG_MSG("#QM: " << nodes.size() << " " << id_to_ioq.size() << endl);
     DEBUG_MSG("#bool_vars: " << net_ctx.get_bool_var_cnt() << endl);
-    DEBUG_MSG("#int_vars: "
-              << " " << net_ctx.get_int_var_cnt() << endl);
+    DEBUG_MSG("#int_vars: " << " " << net_ctx.get_int_var_cnt() << endl);
     DEBUG_MSG("#constrs: " << constr_map.size() << endl);
 }
 
@@ -1723,7 +1722,7 @@ ostream& operator<<(ostream& os, const ContentionPoint& p) {
 }
 
 expr ContentionPoint::mk_op(expr lhs, Op op, expr rhs) {
-    switch(op.get_type()) {
+    switch (op.get_type()) {
         case Op::Type::GT: return lhs > rhs;
         case Op::Type::GE: return lhs >= rhs;
         case Op::Type::LT: return lhs < rhs;
@@ -2133,28 +2132,28 @@ expr ContentionPoint::get_expr(Comp comp, unsigned int t) {
 }
 
 m_val_expr_t ContentionPoint::get_expr(Expr* rhs, unsigned int t) {
-    MExpr* lhs = dynamic_cast <MExpr*>(rhs);
-    if(lhs) {
+    MExpr* lhs = dynamic_cast<MExpr*>(rhs);
+    if (lhs) {
         return get_expr(lhs, t);
     }
-    Time* time = dynamic_cast <Time*>(rhs);
-    if(time) {
+    Time* time = dynamic_cast<Time*>(rhs);
+    if (time) {
         return get_expr(*time, t);
     }
-    Constant* constant = dynamic_cast <Constant*>(rhs);
-    if(constant) {
+    Constant* constant = dynamic_cast<Constant*>(rhs);
+    if (constant) {
         return get_expr(*constant, t);
     }
     throw std::runtime_error("ContentionPoint::get_expr: Invalid Rhs");
 }
 
 m_val_expr_t ContentionPoint::get_expr(MExpr* lhs, unsigned int t) {
-    QSum* qsum = dynamic_cast <QSum*>(lhs);
-    if(qsum) {
+    QSum* qsum = dynamic_cast<QSum*>(lhs);
+    if (qsum) {
         return get_expr(*qsum, t);
     }
-    Indiv* indiv = dynamic_cast <Indiv*>(lhs);
-    if(indiv) {
+    Indiv* indiv = dynamic_cast<Indiv*>(lhs);
+    if (indiv) {
         return get_expr(*indiv, t);
     }
     throw std::runtime_error("ContentionPoint::get_expr: Invalid MExpr");
@@ -2214,15 +2213,15 @@ bool ContentionPoint::timedspec_satisfies_example(TimedSpec spec, IndexedExample
 
     WlSpec* wlspec = spec.get_wl_spec();
 
-    if(Comp* compSpec = dynamic_cast<Comp*>(wlspec)) {
+    if (Comp* compSpec = dynamic_cast<Comp*>(wlspec)) {
         return eval_spec(*compSpec, eg, time_range);
-    } else if(Incr* incrSpec = dynamic_cast<Incr*>(wlspec)) {
+    } else if (Incr* incrSpec = dynamic_cast<Incr*>(wlspec)) {
         return eval_spec(*incrSpec, eg, time_range);
-    } else if(Decr* decrSpec = dynamic_cast<Decr*>(wlspec)) {
+    } else if (Decr* decrSpec = dynamic_cast<Decr*>(wlspec)) {
         return eval_spec(*decrSpec, eg, time_range);
-    } else if(Same* sameSpec = dynamic_cast<Same*>(wlspec)) {
+    } else if (Same* sameSpec = dynamic_cast<Same*>(wlspec)) {
         return eval_spec(*sameSpec, eg, time_range);
-    } else if(Unique* uniqueSpec = dynamic_cast<Unique*>(wlspec)) {
+    } else if (Unique* uniqueSpec = dynamic_cast<Unique*>(wlspec)) {
         return eval_spec(*uniqueSpec, eg, time_range);
     } else {
         throw std::runtime_error("ContentionPoint::timedspec_satisfies_example: Invalid WlSpec");
@@ -2341,12 +2340,12 @@ void ContentionPoint::eval_m_expr(MExpr* m_expr,
                                   unsigned int time,
                                   metric_val& res) const {
     Indiv* indiv = dynamic_cast<Indiv*>(m_expr);
-    if(indiv) {
+    if (indiv) {
         eval_m_expr(*indiv, eg, time, res);
         return;
     }
     QSum* qsum = dynamic_cast<QSum*>(m_expr);
-    if(qsum) {
+    if (qsum) {
         eval_m_expr(*qsum, eg, time, res);
         return;
     }

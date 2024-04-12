@@ -215,7 +215,8 @@ bool operator<(const Time& t1, const Time& t2) {
 
 //************************************* Constant *************************************//
 
-Constant::Constant(unsigned int value): value(value) {}
+Constant::Constant(unsigned int value): value(value) {
+}
 
 unsigned int Constant::get_value() const {
     return value;
@@ -418,7 +419,7 @@ bool Incr::operator==(const WlSpec& other) const {
     return (this->metric == other_incr->metric && this->queue == other_incr->queue);
 }
 
-bool Incr::less_than(const WlSpec &other) const {
+bool Incr::less_than(const WlSpec& other) const {
     const Incr* other_incr = dynamic_cast<const Incr*>(&other);
     return (this->metric < other_incr->metric ||
             (this->metric == other_incr->metric && this->queue < other_incr->queue));
@@ -458,7 +459,7 @@ bool Decr::operator==(const WlSpec& other) const {
     return (this->metric == other_decr->metric && this->queue == other_decr->queue);
 }
 
-bool Decr::less_than(const WlSpec &other) const {
+bool Decr::less_than(const WlSpec& other) const {
     const Decr* other_decr = dynamic_cast<const Decr*>(&other);
     return (this->metric < other_decr->metric ||
             (this->metric == other_decr->metric && this->queue < other_decr->queue));
@@ -525,8 +526,10 @@ void Comp::normalize() {
                 bool intersect = inters.size() > 0;
 
                 if (lhs_qset == rhs_qset) {
-                    if (op.get_type() == Op::Type::GE || op.get_type() == Op::Type::LE) is_all = true;
-                    if (op.get_type() == Op::Type::GT || op.get_type() == Op::Type::LT) is_empty = true;
+                    if (op.get_type() == Op::Type::GE || op.get_type() == Op::Type::LE)
+                        is_all = true;
+                    if (op.get_type() == Op::Type::GT || op.get_type() == Op::Type::LT)
+                        is_empty = true;
                 } else if (is_superset(rhs_qset, lhs_qset)) {
                     set<unsigned int> diff;
                     set_difference(rhs_qset.begin(),
@@ -592,14 +595,16 @@ void Comp::normalize() {
                     if (lhs_diff.size() == 1) {
                         lhs = new Indiv(lhs_qsum->get_metric(), *(lhs_diff.begin()));
                     } else {
-                        lhs = new QSum(qset_t(lhs_diff.begin(), lhs_diff.end()), lhs_qsum->get_metric());
+                        lhs = new QSum(qset_t(lhs_diff.begin(), lhs_diff.end()),
+                                       lhs_qsum->get_metric());
                     }
 
                     // set rhs
                     if (rhs_diff.size() == 1) {
                         rhs = new Indiv(rhs_qsum->get_metric(), *(rhs_diff.begin()));
                     } else {
-                        rhs = new QSum(qset_t(rhs_diff.begin(), rhs_diff.end()), rhs_qsum->get_metric());
+                        rhs = new QSum(qset_t(rhs_diff.begin(), rhs_diff.end()),
+                                       rhs_qsum->get_metric());
                     }
                 }
             }
@@ -696,9 +701,12 @@ void Comp::normalize() {
             }
             const QSum* qsum = dynamic_cast<const QSum*>(lhs);
             if (qsum) {
-                if (op.get_type() == Op::Type::GE && c > (qsum->get_qset().size() - 1) * MAX_ENQ) is_empty = true;
-                if (op.get_type() == Op::Type::EQ && c > (qsum->get_qset().size() - 1) * MAX_ENQ) is_empty = true;
-                if (op.get_type() == Op::Type::GT && c >= (qsum->get_qset().size() - 1) * MAX_ENQ) is_empty = true;
+                if (op.get_type() == Op::Type::GE && c > (qsum->get_qset().size() - 1) * MAX_ENQ)
+                    is_empty = true;
+                if (op.get_type() == Op::Type::EQ && c > (qsum->get_qset().size() - 1) * MAX_ENQ)
+                    is_empty = true;
+                if (op.get_type() == Op::Type::GT && c >= (qsum->get_qset().size() - 1) * MAX_ENQ)
+                    is_empty = true;
             }
         }
     }
@@ -760,14 +768,16 @@ Expr* Comp::get_rhs() const {
 bool Comp::operator==(const WlSpec& other) const {
     if (dynamic_cast<const Comp*>(&other) == NULL) return false;
     const Comp* other_comp = dynamic_cast<const Comp*>(&other);
-    return (this->lhs == other_comp->lhs && this->op == other_comp->op && this->rhs == other_comp->rhs);
+    return (this->lhs == other_comp->lhs && this->op == other_comp->op &&
+            this->rhs == other_comp->rhs);
 }
 
 bool Comp::less_than(const WlSpec& other) const {
     const Comp* other_comp = dynamic_cast<const Comp*>(&other);
     return (this->lhs < other_comp->lhs ||
             (this->lhs == other_comp->lhs && this->op < other_comp->op) ||
-            (this->lhs == other_comp->lhs && this->op == other_comp->op && this->rhs < other_comp->rhs));
+            (this->lhs == other_comp->lhs && this->op == other_comp->op &&
+             this->rhs < other_comp->rhs));
 }
 
 int Comp::type_id() const {
@@ -1126,7 +1136,9 @@ void Workload::normalize(time_range_t time_range) {
     for (set<WlSpec*>::iterator it = specs.begin(); it != specs.end(); it++) {
 
         // Check if all
-        if ((*it)->spec_is_all()) { continue; }
+        if ((*it)->spec_is_all()) {
+            continue;
+        }
 
         filtered_specs.insert(*it);
     }
@@ -1351,8 +1363,7 @@ void Workload::regenerate_spec_set() {
         time_range_t time_range = it->first;
         set<WlSpec*> specs = it->second;
 
-        for (set<WlSpec*>::iterator s_it = specs.begin(); s_it != specs.end();
-             s_it++) {
+        for (set<WlSpec*>::iterator s_it = specs.begin(); s_it != specs.end(); s_it++) {
 
             bool already_exists = false;
             for (unsigned int i = 0; i < new_all_specs.size(); i++) {
@@ -1457,8 +1468,7 @@ string Workload::get_timeline_str() {
             }
 
             bool is_first = true;
-            for (set<WlSpec*>::iterator it2 = specs.begin(); it2 != specs.end();
-                 it2++) {
+            for (set<WlSpec*>::iterator it2 = specs.begin(); it2 != specs.end(); it2++) {
                 if (!is_first) {
                     ss << "        ";
                 }

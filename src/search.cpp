@@ -580,8 +580,7 @@ Workload Search::refine(Workload wl) {
         Expr* rhs = compSpec->get_rhs();
 
         Constant* constant = dynamic_cast<Constant*>(rhs);
-        if (it->get_time_range() == time_range_t(0, cp->get_total_time() - 1) &&
-            constant &&
+        if (it->get_time_range() == time_range_t(0, cp->get_total_time() - 1) && constant &&
             constant->get_value() == 0 && compSpec->get_op().get_type() == Op::Type::LE) {
             Indiv* indiv = dynamic_cast<Indiv*>(lhs);
             if (indiv) {
@@ -612,8 +611,7 @@ Workload Search::refine(Workload wl) {
             if (!compSpec) continue;
             Expr* rhs = compSpec->get_rhs();
             Constant* constant = dynamic_cast<Constant*>(rhs);
-            if (constant && constant->get_value() == 0 &&
-                compSpec->get_op() == Op::Type::LE)
+            if (constant && constant->get_value() == 0 && compSpec->get_op() == Op::Type::LE)
                 continue;
 
             MExpr* lhs = compSpec->get_lhs();
@@ -909,10 +907,9 @@ void Search::print_stats() {
     cout << round_no << "\t" << reset_cnt << "\t" << rounds_in_local_search << "\t"
          << no_solver_call << "\t" << full_solver_call << "\t"
          << cp->get_check_workload_without_query_avg_time() << " ("
-         << cp->get_check_workload_without_query_max_time() << ")"
-         << "\t" << (full_solver_call - infeasible_input_cnt) << "\t"
+         << cp->get_check_workload_without_query_max_time() << ")" << "\t"
+         << (full_solver_call - infeasible_input_cnt) << "\t"
          << cp->get_check_workload_with_query_avg_time() << " ("
-         << cp->get_check_workload_with_query_max_time() << ")"
-         << "\t" << endl;
+         << cp->get_check_workload_with_query_max_time() << ")" << "\t" << endl;
     cout << "--------------------------------------------------" << endl;
 }

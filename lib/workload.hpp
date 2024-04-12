@@ -266,7 +266,6 @@ private:
 class Comp : public WlSpec {
 public:
     Comp(MExpr* lhs, Op op, Expr* rhs);
-    Comp(unsigned int, Op, unsigned int) = delete; // This is not allowed
 
     virtual bool spec_is_empty() const override;
     bool spec_is_all() const override;

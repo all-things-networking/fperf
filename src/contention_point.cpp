@@ -2333,8 +2333,6 @@ void ContentionPoint::eval_rhs(Expr* rhs,
     } else if (const_expr) {
         res.valid = true;
         res.value = const_expr->get_value();
-    } else {
-        cout << "ContentionPoint::eval_rhs: invalid variant." << endl;
     }
 }
 

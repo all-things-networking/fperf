@@ -58,6 +58,8 @@ public:
 
     friend ostream& operator<<(ostream& os, const Op& op);
 
+    static bool eval(unsigned int lhs_val, const Op& op, unsigned int rhs_val);
+
     static Op random_op();
 
     void neg();

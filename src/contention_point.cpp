@@ -57,8 +57,7 @@ void ContentionPoint::init() {
 
     DEBUG_MSG("#QM: " << nodes.size() << " " << id_to_ioq.size() << endl);
     DEBUG_MSG("#bool_vars: " << net_ctx.get_bool_var_cnt() << endl);
-    DEBUG_MSG("#int_vars: "
-              << " " << net_ctx.get_int_var_cnt() << endl);
+    DEBUG_MSG("#int_vars: " << net_ctx.get_int_var_cnt() << endl);
     DEBUG_MSG("#constrs: " << constr_map.size() << endl);
 }
 

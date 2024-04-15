@@ -907,9 +907,9 @@ void Search::print_stats() {
     cout << round_no << "\t" << reset_cnt << "\t" << rounds_in_local_search << "\t"
          << no_solver_call << "\t" << full_solver_call << "\t"
          << cp->get_check_workload_without_query_avg_time() << " ("
-         << cp->get_check_workload_without_query_max_time() << ")" << "\t"
+         << cp->get_check_workload_without_query_max_time() << ")\t"
          << (full_solver_call - infeasible_input_cnt) << "\t"
          << cp->get_check_workload_with_query_avg_time() << " ("
-         << cp->get_check_workload_with_query_max_time() << ")" << "\t" << endl;
+         << cp->get_check_workload_with_query_max_time() << ")\t" << endl;
     cout << "--------------------------------------------------" << endl;
 }

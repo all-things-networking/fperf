@@ -41,9 +41,72 @@ The Grammar:
  TIME        := C.t
 ----------------------------------------------------------------- */
 
+//************************************* RHS *************************************//
+class Expr {
+public:
+    virtual ~Expr() = default;
+    virtual unsigned int ast_size() const;
+    virtual bool applies_to_queue(unsigned int queue) const;
+
+    virtual bool operator==(const Expr& other) const;
+    virtual bool operator<(const Expr& other) const;
+};
+
+ostream& operator<<(ostream& os, const Expr* rhs);
+ostream& operator<<(ostream& os, const Expr& rhs);
+
+//************************************* LHS / MExpr *************************************//
+
+class MExpr : public Expr {
+public:
+    virtual ~MExpr() = default;
+    unsigned int ast_size() const override;
+    bool applies_to_queue(unsigned int queue) const override;
+
+    virtual bool operator==(const MExpr& other) const;
+    virtual bool operator<(const MExpr& other) const;
+};
+
+ostream& operator<<(ostream& os, const MExpr* m_expr);
+ostream& operator<<(ostream& os, const MExpr& m_expr);
+
+//************************************* TIME *************************************//
+
+class Time : public Expr {
+
+public:
+    Time(unsigned int coeff);
+    unsigned int get_coeff() const;
+
+private:
+    unsigned int coeff;
+
+    friend ostream& operator<<(ostream& os, const Time* time);
+    friend ostream& operator<<(ostream& os, const Time& time);
+    friend bool operator==(const Time& t1, const Time& t2);
+    friend bool operator<(const Time& t1, const Time& t2);
+};
+
+//************************************* Constant *************************************//
+
+class Constant : public Expr {
+
+public:
+    Constant(unsigned int value);
+    unsigned int get_value() const;
+
+private:
+    unsigned int value;
+
+    friend ostream& operator<<(ostream& os, const Constant* c);
+    friend ostream& operator<<(ostream& os, const Constant& c);
+    friend bool operator==(const Constant& c1, const Constant& c2);
+    friend bool operator<(const Constant& c1, const Constant& c2);
+};
+
 //************************************* QSUM *************************************//
 
-class QSum {
+class QSum : public MExpr {
 
 public:
     QSum(qset_t qset, metric_t metric);
@@ -58,6 +121,7 @@ private:
     qset_t qset;
     metric_t metric;
 
+    friend ostream& operator<<(ostream& os, const QSum* tsum);
     friend ostream& operator<<(ostream& os, const QSum& tsum);
     friend bool operator==(const QSum& s1, const QSum& s2);
     friend bool operator<(const QSum& s1, const QSum& s2);
@@ -66,7 +130,7 @@ private:
 
 //************************************* INDIV *************************************//
 
-class Indiv {
+class Indiv : public MExpr {
 
 public:
     Indiv(metric_t metric, unsigned int queue);
@@ -80,54 +144,11 @@ private:
     metric_t metric;
     unsigned int queue;
 
+    friend ostream& operator<<(ostream& os, const Indiv* tone);
     friend ostream& operator<<(ostream& os, const Indiv& tone);
     friend bool operator==(const Indiv& s1, const Indiv& s2);
     friend bool operator<(const Indiv& s1, const Indiv& s2);
 };
-
-//************************************* TIME *************************************//
-
-class Time {
-
-public:
-    Time(unsigned int coeff);
-    unsigned int get_coeff() const;
-
-private:
-    unsigned int coeff;
-
-    friend ostream& operator<<(ostream& os, const Time& time);
-    friend bool operator==(const Time& t1, const Time& t2);
-    friend bool operator<(const Time& t1, const Time& t2);
-};
-
-//************************************* MTRC_EXPR/LHS *************************************//
-
-typedef variant<QSum, Indiv> m_expr_t;
-typedef m_expr_t lhs_t;
-
-unsigned int lhs_ast_size(const lhs_t lhs);
-unsigned int m_expr_ast_size(const m_expr_t m_expr);
-
-bool lhs_applies_to_queue(const lhs_t lhs, unsigned int queue);
-bool m_expr_applies_to_queue(const m_expr_t m_expr, unsigned int queue);
-
-ostream& operator<<(ostream& os, const m_expr_t& m_expr);
-
-bool operator==(const m_expr_t& m_expr1, const m_expr_t& m_expr2);
-bool operator<(const m_expr_t& m_expr1, const m_expr_t& m_expr2);
-
-//************************************* RHS *************************************//
-
-typedef variant<m_expr_t, Time, unsigned int> rhs_t;
-
-unsigned int rhs_ast_size(const rhs_t rhs);
-bool rhs_applies_to_queue(const rhs_t rhs, unsigned int queue);
-
-ostream& operator<<(ostream& os, const rhs_t& rhs);
-
-bool operator==(const rhs_t& rhs1, const rhs_t& rhs2);
-bool operator<(const rhs_t& rhs1, const rhs_t& rhs2);
 
 //************************************* WlSpec *************************************//
 
@@ -244,7 +265,7 @@ private:
 
 class Comp : public WlSpec {
 public:
-    Comp(lhs_t lhs, op_t op, rhs_t rhs);
+    Comp(MExpr* lhs, Op op, Expr* rhs);
 
     virtual bool spec_is_empty() const override;
     bool spec_is_all() const override;
@@ -253,16 +274,16 @@ public:
     pair<metric_t, qset_t> get_zero_queues() const;
 
 
-    lhs_t get_lhs() const;
-    op_t get_op() const;
-    rhs_t get_rhs() const;
+    MExpr* get_lhs() const;
+    Op get_op() const;
+    Expr* get_rhs() const;
 
     bool operator==(const WlSpec& other) const override;
 
 private:
-    lhs_t lhs;
-    op_t op;
-    rhs_t rhs;
+    MExpr* lhs;
+    Op op;
+    Expr* rhs;
 
     bool is_empty = false;
     bool is_all = false;

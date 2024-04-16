@@ -1721,13 +1721,13 @@ ostream& operator<<(ostream& os, const ContentionPoint& p) {
     return os;
 }
 
-expr ContentionPoint::mk_op(expr lhs, op_t op, expr rhs) {
-    switch (op) {
-        case (op_t::GT): return lhs > rhs;
-        case (op_t::GE): return lhs >= rhs;
-        case (op_t::LT): return lhs < rhs;
-        case (op_t::LE): return lhs <= rhs;
-        case (op_t::EQ): return lhs == rhs;
+expr ContentionPoint::mk_op(expr lhs, Op op, expr rhs) {
+    switch (op.get_type()) {
+        case Op::Type::GT: return lhs > rhs;
+        case Op::Type::GE: return lhs >= rhs;
+        case Op::Type::LT: return lhs < rhs;
+        case Op::Type::LE: return lhs <= rhs;
+        case Op::Type::EQ: return lhs == rhs;
     }
     cout << "FPerfModel::mk_op: should not reach here" << endl;
     return lhs >= rhs;
@@ -2131,17 +2131,37 @@ expr ContentionPoint::get_expr(Comp comp, unsigned int t) {
     return (lhs.first && rhs.first && mk_op(lhs.second, comp.get_op(), rhs.second));
 }
 
-m_val_expr_t ContentionPoint::get_expr(rhs_t rhs, unsigned int t) {
-    return visit([t, this](auto const& sf) { return this->get_expr(sf, t); }, rhs);
+m_val_expr_t ContentionPoint::get_expr(Expr* rhs, unsigned int t) {
+    MExpr* lhs = dynamic_cast<MExpr*>(rhs);
+    if (lhs) {
+        return get_expr(lhs, t);
+    }
+    Time* time = dynamic_cast<Time*>(rhs);
+    if (time) {
+        return get_expr(*time, t);
+    }
+    Constant* constant = dynamic_cast<Constant*>(rhs);
+    if (constant) {
+        return get_expr(*constant, t);
+    }
+    throw std::runtime_error("ContentionPoint::get_expr: Invalid Rhs");
 }
 
-m_val_expr_t ContentionPoint::get_expr(lhs_t lhs, unsigned int t) {
-    return visit([t, this](auto const& sf) { return this->get_expr(sf, t); }, lhs);
+m_val_expr_t ContentionPoint::get_expr(MExpr* lhs, unsigned int t) {
+    QSum* qsum = dynamic_cast<QSum*>(lhs);
+    if (qsum) {
+        return get_expr(*qsum, t);
+    }
+    Indiv* indiv = dynamic_cast<Indiv*>(lhs);
+    if (indiv) {
+        return get_expr(*indiv, t);
+    }
+    throw std::runtime_error("ContentionPoint::get_expr: Invalid MExpr");
 }
 
-m_val_expr_t ContentionPoint::get_expr(unsigned int c, unsigned int t) {
+m_val_expr_t ContentionPoint::get_expr(Constant c, unsigned int t) {
     (void) t;
-    return m_val_expr_t(net_ctx.bool_val(true), net_ctx.int_val(c));
+    return m_val_expr_t(net_ctx.bool_val(true), net_ctx.int_val(c.get_value()));
 }
 
 m_val_expr_t ContentionPoint::get_expr(Time time, unsigned int t) {
@@ -2283,7 +2303,7 @@ bool ContentionPoint::eval_spec(Comp comp, IndexedExample* eg, time_range_t time
     for (unsigned int t = time_range.first; t <= time_range.second; t++) {
         metric_val lhs_m_val, rhs_m_val;
 
-        eval_lhs(comp.get_lhs(), eg, t, lhs_m_val);
+        eval_m_expr(comp.get_lhs(), eg, t, lhs_m_val);
         if (!lhs_m_val.valid) return false;
 
         eval_rhs(comp.get_rhs(), eg, t, rhs_m_val);
@@ -2291,42 +2311,45 @@ bool ContentionPoint::eval_spec(Comp comp, IndexedExample* eg, time_range_t time
 
         unsigned int lhs_val = lhs_m_val.value;
         unsigned int rhs_val = rhs_m_val.value;
-        bool res = eval_op(lhs_val, comp.get_op(), rhs_val);
+        bool res = Op::eval(lhs_val, comp.get_op(), rhs_val);
         if (!res) return false;
     }
 
     return true;
 }
 
-void ContentionPoint::eval_rhs(rhs_t rhs,
+void ContentionPoint::eval_rhs(Expr* rhs,
                                IndexedExample* eg,
                                unsigned int time,
                                metric_val& res) const {
-    if (holds_alternative<m_expr_t>(rhs)) {
-        eval_m_expr(get<m_expr_t>(rhs), eg, time, res);
-    } else if (holds_alternative<Time>(rhs)) {
-        eval_Time(get<Time>(rhs), eg, time, res);
-    } else if (holds_alternative<unsigned int>(rhs)) {
+    MExpr* m_expr = dynamic_cast<MExpr*>(rhs);
+    Time* time_expr = dynamic_cast<Time*>(rhs);
+    Constant* const_expr = dynamic_cast<Constant*>(rhs);
+    if (m_expr) {
+        eval_m_expr(m_expr, eg, time, res);
+    } else if (time_expr) {
+        eval_Time(*time_expr, eg, time, res);
+    } else if (const_expr) {
         res.valid = true;
-        res.value = get<unsigned int>(rhs);
-    } else {
-        cout << "ContentionPoint::eval_rhs: invalid variant." << endl;
+        res.value = const_expr->get_value();
     }
 }
 
-void ContentionPoint::eval_lhs(lhs_t lhs,
-                               IndexedExample* eg,
-                               unsigned int time,
-                               metric_val& res) const {
-    eval_m_expr(lhs, eg, time, res);
-}
-
-void ContentionPoint::eval_m_expr(m_expr_t m_expr,
+void ContentionPoint::eval_m_expr(MExpr* m_expr,
                                   IndexedExample* eg,
                                   unsigned int time,
                                   metric_val& res) const {
-    visit([&eg, time, &res, this](auto const& sf) { this->eval_m_expr(sf, eg, time, res); },
-          m_expr);
+    Indiv* indiv = dynamic_cast<Indiv*>(m_expr);
+    if (indiv) {
+        eval_m_expr(*indiv, eg, time, res);
+        return;
+    }
+    QSum* qsum = dynamic_cast<QSum*>(m_expr);
+    if (qsum) {
+        eval_m_expr(*qsum, eg, time, res);
+        return;
+    }
+    throw std::runtime_error("ContentionPoint::eval_m_expr: Invalid MExpr");
 }
 
 void ContentionPoint::eval_m_expr(QSum qsum,

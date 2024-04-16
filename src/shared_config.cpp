@@ -80,8 +80,9 @@ unsigned int Dists::input_queue_cnt() {
     return input_queue_cnt_dist(gen);
 }
 
-op_t Dists::op() {
-    return (op_t) op_dist(gen);
+Op Dists::op() {
+    Op::Type type = (Op::Type) op_dist(gen);
+    return Op(type);
 }
 
 unsigned int Dists::timestep() {

@@ -14,14 +14,14 @@ bool test_search() {
   SimpleCP *ss = new SimpleCP(total_time);
 
   Workload wl(100, 1, total_time);
-  wl.add_spec(TimedSpec(new Comp(Indiv(metric_t::CENQ, 0), op_t::LE, (uint)1), time_range_t(last_t, last_t), total_time));
+  wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, 0), Op(Op::Type::LE), new Constant((uint)1)), time_range_t(last_t, last_t), total_time));
   ss->set_base_workload(wl);
 
   // Query
   cid_t queue_id = ss->get_in_queue()->get_id();
 
   Query query(query_quant_t::FORALL, time_range_t(last_t, last_t), queue_id,
-              metric_t::CDEQ, op_t::GE, 1);
+              metric_t::CDEQ, Op(Op::Type::GE), 1);
 
   ss->set_query(query);
 

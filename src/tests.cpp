@@ -47,7 +47,7 @@ void prio(string good_examples_file, string bad_examples_file) {
                 time_range_t(0, prio->get_total_time() - 1),
                 query_qid,
                 metric_t::CBLOCKED,
-                op_t::GT,
+                Op(Op::Type::GT),
                 query_thresh);
 
     prio->set_query(query);
@@ -118,16 +118,18 @@ void rr(string good_examples_file, string bad_examples_file) {
 
     for (unsigned int i = 1; i <= recur; i++) {
         for (unsigned int q = 0; q < in_queue_cnt; q++) {
-            wl.add_spec(TimedSpec(new Comp(Indiv(metric_t::CENQ, q), op_t::GE, i * rate),
-                                  time_range_t(i * period - 1, i * period - 1),
-                                  total_time));
+            wl.add_spec(TimedSpec(
+                new Comp(new Indiv(metric_t::CENQ, q), Op(Op::Type::GE), new Constant(i * rate)),
+                time_range_t(i * period - 1, i * period - 1),
+                total_time));
         }
     }
 
-    wl.add_spec(
-        TimedSpec(new Comp(Indiv(metric_t::CENQ, queue1), op_t::GT, Indiv(metric_t::CENQ, queue2)),
-                  time_range_t(total_time - 1, total_time - 1),
-                  total_time));
+    wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, queue1),
+                                   Op(Op::Type::GT),
+                                   new Indiv(metric_t::CENQ, queue2)),
+                          time_range_t(total_time - 1, total_time - 1),
+                          total_time));
 
     cout << "base workload: " << endl << wl << endl;
 
@@ -141,7 +143,7 @@ void rr(string good_examples_file, string bad_examples_file) {
                 time_range_t(total_time - 1 - (period - 1), total_time - 1),
                 qdiff_t(queue2_id, queue1_id),
                 metric_t::CDEQ,
-                op_t::GE,
+                Op(Op::Type::GE),
                 3);
 
     rr->set_query(query);
@@ -207,7 +209,7 @@ void fq_codel(string good_examples_file, string bad_examples_file) {
     // Base Workload
     Workload wl(in_queue_cnt * 5, in_queue_cnt, total_time);
     for (unsigned int q = 0; q < last_queue; q++) {
-        wl.add_spec(TimedSpec(new Comp(Indiv(metric_t::CENQ, q), op_t::GE, Time(1)),
+        wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, q), Op(Op::Type::GE), new Time(1)),
                               total_time,
                               total_time));
     }
@@ -220,7 +222,7 @@ void fq_codel(string good_examples_file, string bad_examples_file) {
                 time_range_t(total_time - 1, total_time - 1),
                 query_qid,
                 metric_t::CDEQ,
-                op_t::GE,
+                Op(Op::Type::GE),
                 query_thresh);
 
     cp->set_query(query);
@@ -297,16 +299,18 @@ void loom(string good_examples_file, string bad_examples_file) {
     // Base Workload
 
     Workload wl(20, cp->in_queue_cnt(), total_time);
-    wl.add_spec(TimedSpec(new Comp(QSum(tenant1_qset, metric_t::CENQ), op_t::GE, Time(1)),
-                          total_time,
-                          total_time));
-    wl.add_spec(TimedSpec(new Comp(QSum(tenant2_qset, metric_t::CENQ), op_t::GE, Time(1)),
-                          total_time,
-                          total_time));
+    wl.add_spec(
+        TimedSpec(new Comp(new QSum(tenant1_qset, metric_t::CENQ), Op(Op::Type::GE), new Time(1)),
+                  total_time,
+                  total_time));
+    wl.add_spec(
+        TimedSpec(new Comp(new QSum(tenant2_qset, metric_t::CENQ), Op(Op::Type::GE), new Time(1)),
+                  total_time,
+                  total_time));
 
     for (unsigned int q = 0; q < cp->in_queue_cnt(); q++) {
         if (q % 3 == 2) {
-            wl.add_spec(TimedSpec(new Comp(Indiv(metric_t::CENQ, q), op_t::LE, 0u),
+            wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, q), Op(Op::Type::LE), 0u),
                                   total_time,
                                   total_time));
         }
@@ -319,7 +323,7 @@ void loom(string good_examples_file, string bad_examples_file) {
                 time_range_t(total_time - 1 - query_time, total_time - 1),
                 qdiff_t(cp->get_out_queue(1)->get_id(), cp->get_out_queue(0)->get_id()),
                 metric_t::CENQ,
-                op_t::GT,
+                Op(Op::Type::GT),
                 3u);
 
     cp->set_query(query);
@@ -392,13 +396,15 @@ void leaf_spine_bw(string good_examples_file, string bad_examples_file) {
     // Base Workload
     Workload wl(in_queue_cnt + 5, in_queue_cnt, total_time);
 
-    wl.add_spec(TimedSpec(new Comp(Indiv(metric_t::CENQ, src_server), op_t::GE, Time(1)),
-                          total_time - 1,
-                          total_time));
+    wl.add_spec(
+        TimedSpec(new Comp(new Indiv(metric_t::CENQ, src_server), Op(Op::Type::GE), new Time(1)),
+                  total_time - 1,
+                  total_time));
 
-    wl.add_spec(TimedSpec(new Comp(Indiv(metric_t::DST, src_server), op_t::EQ, dst_server),
-                          total_time - 1,
-                          total_time));
+    wl.add_spec(TimedSpec(
+        new Comp(new Indiv(metric_t::DST, src_server), Op(Op::Type::EQ), new Constant(dst_server)),
+        total_time - 1,
+        total_time));
 
     for (unsigned int q = 0; q < in_queue_cnt; q++) {
         Same* s = new Same(metric_t::DST, q);
@@ -419,7 +425,7 @@ void leaf_spine_bw(string good_examples_file, string bad_examples_file) {
                 time_range_t(total_time - 1, total_time - 1),
                 query_qid,
                 metric_t::CENQ,
-                op_t::LE,
+                Op(Op::Type::LE),
                 query_thresh);
 
     cp->set_query(query);
@@ -483,10 +489,11 @@ void tbf(std::string good_examples_file, std::string bad_examples_file) {
     Workload wl(100, 1, total_time);
 
     for (uint i = 0; i < interval; i++) {
-        wl.add_spec(TimedSpec(
-            new Comp(Indiv(metric_t::CENQ, 0), op_t::GE, (unsigned int) (i + 1) * link_rate),
-            time_range_t(start + i, start + i),
-            total_time));
+        wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, 0),
+                                       Op(Op::Type::GE),
+                                       new Constant((unsigned int) (i + 1) * link_rate)),
+                              time_range_t(start + i, start + i),
+                              total_time));
     }
     tbf->set_base_workload(wl);
 
@@ -496,7 +503,7 @@ void tbf(std::string good_examples_file, std::string bad_examples_file) {
                 time_range_t(0, total_time - 1),
                 queue_id,
                 metric_t::DEQ,
-                op_t::GT,
+                Op(Op::Type::GT),
                 link_rate);
 
     tbf->set_query(query);

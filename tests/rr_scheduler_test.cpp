@@ -18,10 +18,10 @@ bool test_unsat_query() {
   Workload wl(100, in_queue_cnt, total_time);
 
   for (unsigned int q = 0; q < in_queue_cnt; q++) {
-      wl.add_spec(TimedSpec(new Comp(Indiv(metric_t::CENQ, q), op_t::GE, Time(1)), time_range_t(0, total_time - 1), total_time));
+      wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, q), Op(Op::Type::GE), new Time(1)), time_range_t(0, total_time - 1), total_time));
   }
 
-  wl.add_spec(TimedSpec(new Comp(Indiv(metric_t::CENQ, queue1), op_t::GT, Indiv(metric_t::CENQ, queue2)), time_range_t(total_time - 1, total_time - 1), total_time));
+  wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, queue1), Op(Op::Type::GT), new Indiv(metric_t::CENQ, queue2)), time_range_t(total_time - 1, total_time - 1), total_time));
 
   cout << "base workload: " << endl << wl << endl;
 
@@ -33,7 +33,7 @@ bool test_unsat_query() {
 
   Query query(query_quant_t::FORALL,
               time_range_t(total_time - 1 - (period - 1), total_time - 1),
-              qdiff_t(queue2_id, queue1_id), metric_t::CDEQ, op_t::GE, 3);
+              qdiff_t(queue2_id, queue1_id), metric_t::CDEQ, Op(Op::Type::GE), 3);
 
   rr->set_query(query);
 
@@ -61,11 +61,11 @@ bool test_sat_query() {
 
   for (unsigned int i = 1; i <= recur; i++) {
       for (unsigned int q = 0; q < in_queue_cnt; q++) {
-          wl.add_spec(TimedSpec(new Comp(Indiv(metric_t::CENQ, q), op_t::GE, i * rate), time_range_t(i * period - 1, i * period - 1), total_time));
+          wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, q), Op(Op::Type::GE), new Constant(i * rate)), time_range_t(i * period - 1, i * period - 1), total_time));
       }
   }
 
-  wl.add_spec(TimedSpec(new Comp(Indiv(metric_t::CENQ, queue1), op_t::GT, Indiv(metric_t::CENQ, queue2)), time_range_t(total_time - 1, total_time - 1), total_time));
+  wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, queue1), Op(Op::Type::GT), new Indiv(metric_t::CENQ, queue2)), time_range_t(total_time - 1, total_time - 1), total_time));
 
   cout << "base workload: " << endl << wl << endl;
 
@@ -77,7 +77,7 @@ bool test_sat_query() {
 
   Query query(query_quant_t::FORALL,
               time_range_t(total_time - 1 - (period - 1), total_time - 1),
-              qdiff_t(queue2_id, queue1_id), metric_t::CDEQ, op_t::GE, 3);
+              qdiff_t(queue2_id, queue1_id), metric_t::CDEQ, Op(Op::Type::GE), 3);
 
   rr->set_query(query);
 

@@ -281,9 +281,17 @@ void ContentionPoint::add_out_queue_constrs() {
     }
 }
 
+void ContentionPoint::add_past_workload(Workload wl) {
+    past_workloads.push_back(wl);
+}
+
 void ContentionPoint::set_base_workload(Workload wl) {
     this->base_wl = wl;
-    this->base_wl_expr = get_expr(wl);
+    expr wl_expr = get_expr(wl);
+    for(Workload workload : past_workloads) {
+        wl_expr = wl_expr && !get_expr(workload);
+    }
+    this->base_wl_expr = wl_expr;
     DEBUG_MSG("base workload: " << endl << wl << endl);
 }
 

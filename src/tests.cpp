@@ -859,7 +859,7 @@ Workload refine(Workload wl, Search& search) {
 //    lastValidWl = restrict_time_ranges_z3(lastValidWl, search, search.cp);
 //    cout << "Final Workload after restricting time ranges using Z3: " << endl << lastValidWl << endl;
     lastValidWl = restrict_time_ranges(lastValidWl, search);
-    cout << "Final Workload after restricting time ranges: " << endl << lastValidWl << endl;
+    cout << "Workload after restricting time ranges: " << endl << lastValidWl << endl;
 
     after_cost["refine"].push_back(search.cost(lastValidWl, "refine"));
     return lastValidWl;
@@ -924,7 +924,7 @@ Workload improve(Workload wl, Search& search) {
 // - changing indiv to sums
 // - Combining (expand based on new patterns we recognize). Ask Z3 to give us the most concise with synthesis? Use get_expr to create Z3 variables for search. Ask to find an equivalent workload spec... if we want a general rhs, have mutually-exclusive booleans to represent which type of rhs we are using
 
-void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int total_time, Query query, unsigned int max_spec, string good_examples_file, string bad_examples_file, SharedConfig* config, unsigned int good_example_cnt, unsigned int bad_example_cnt){
+Workload research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int total_time, Query query, unsigned int max_spec, string good_examples_file, string bad_examples_file, SharedConfig* config, unsigned int good_example_cnt, unsigned int bad_example_cnt){
     // Create a workload that perfectly describes the base example
     // That is, for each queue, for each timestep, the workload has a spec of the form:
     // [t, t]: cenq(queue_id, t) = sum from 0 to t of enqs[queue_id][t]
@@ -1252,11 +1252,23 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
             throw std::runtime_error("ERROR: Last valid workload is invalid");
         } else {
             lastValidWl = improve(lastValidWl, search);
-            cout << "Final Workload after improving: " << endl << lastValidWl << endl;
+            cout << "Final Workload: " << endl << lastValidWl << endl;
             after_cost["research"].push_back(search.cost(lastValidWl, "research"));
 
             search.print_stats();
         }
+
+
+        timeline_t wl_timeline = lastValidWl.get_timeline();
+        cout << "Timeline: " << endl;
+        for (auto const& [time, specs] : wl_timeline) {
+            cout << "Time: " << time << endl;
+            for (auto const& spec : specs) {
+                cout << spec << endl;
+            }
+        }
+
+        return lastValidWl;
 
         //    Workload lastValidWlBroad = lastValidWl;
         //    unsigned int broad_cost = search.cost(lastValidWlBroad);
@@ -1479,403 +1491,454 @@ void prio(string good_examples_file, string bad_examples_file) {
 
 void rr(string good_examples_file, string bad_examples_file) {
 
-    cout << "rr" << endl;
-    time_typ start_time = noww();
+    vector<Workload> workloads;
 
-    unsigned int in_queue_cnt = 5;
-    unsigned int period = 5;
-    unsigned int recur = 2;
-    unsigned int rate = 4;
+    unsigned int loop_count = 0;
 
-    unsigned int good_example_cnt = 25;
-    unsigned int bad_example_cnt = 25;
-    unsigned int total_time = recur * period;
-
-    // Create contention point
-    RRScheduler* rr = new RRScheduler(in_queue_cnt, total_time);
-
-    unsigned int queue1 = 1;
-    unsigned int queue2 = 2;
-
-    // Base workload
-    Workload wl(100, in_queue_cnt, total_time);
-
-    for (unsigned int i = 1; i <= recur; i++) {
-        for (unsigned int q = 0; q < in_queue_cnt; q++) {
-            wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::GE, i * rate),
-                                  time_range_t(i * period - 1, i * period - 1),
-                                  total_time));
+    while(true) {
+        loop_count++;
+        if(loop_count >= 5) {
+            throw std::runtime_error("Loop count exceeded");
         }
+        cout << "rr" << endl;
+        time_typ start_time = noww();
+
+        unsigned int in_queue_cnt = 5;
+        unsigned int period = 5;
+        unsigned int recur = 2;
+        unsigned int rate = 4;
+
+        unsigned int good_example_cnt = 25;
+        unsigned int bad_example_cnt = 25;
+        unsigned int total_time = recur * period;
+
+        // Create contention point
+        RRScheduler* rr = new RRScheduler(in_queue_cnt, total_time);
+
+        unsigned int queue1 = 1;
+        unsigned int queue2 = 2;
+
+        // Base workload
+        Workload wl(100, in_queue_cnt, total_time);
+
+        for (unsigned int i = 1; i <= recur; i++) {
+            for (unsigned int q = 0; q < in_queue_cnt; q++) {
+                wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::GE, i * rate),
+                                      time_range_t(i * period - 1, i * period - 1),
+                                      total_time));
+            }
+        }
+
+        wl.add_spec(
+            TimedSpec(Comp(Indiv(metric_t::CENQ, queue1), op_t::GT, Indiv(metric_t::CENQ, queue2)),
+                      time_range_t(total_time - 1, total_time - 1),
+                      total_time));
+
+        cout << "base workload: " << endl << wl << endl;
+
+        for(const Workload& workload : workloads) {
+            rr->add_past_workload(workload);
+        }
+        rr->set_base_workload(wl);
+
+        // Query
+        cid_t queue1_id = rr->get_in_queues()[queue1]->get_id();
+        cid_t queue2_id = rr->get_in_queues()[queue2]->get_id();
+
+        Query query(query_quant_t::FORALL,
+                    time_range_t(total_time - 1 - (period - 1), total_time - 1),
+                    qdiff_t(queue2_id, queue1_id),
+                    metric_t::CDEQ,
+                    op_t::GE,
+                    3);
+
+        rr->set_query(query);
+
+        cout << "cp setup: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s" << endl;
+
+        // generate base example
+        start_time = noww();
+        IndexedExample* base_eg = new IndexedExample();
+        qset_t target_queues;
+
+        bool res = rr->generate_base_example(base_eg, target_queues, in_queue_cnt);
+
+        if (!res) {
+            cout << "ERROR: couldn't generate base example" << endl;
+            return;
+        }
+
+        cout << "base example generation: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s"
+             << endl;
+
+
+        // Set shared config
+        DistsParams dists_params;
+        dists_params.in_queue_cnt = rr->in_queue_cnt();
+        dists_params.total_time = total_time;
+        dists_params.pkt_meta1_val_max = 2;
+        dists_params.pkt_meta2_val_max = 2;
+        dists_params.random_seed = 29663;
+
+        Dists* dists = new Dists(dists_params);
+        SharedConfig* config = new SharedConfig(total_time, rr->in_queue_cnt(), target_queues, dists);
+        bool config_set = rr->set_shared_config(config);
+        if (!config_set) return;
+
+        workloads.push_back(research_project(base_eg, rr, total_time, query, 10, good_examples_file, bad_examples_file, config, good_example_cnt, bad_example_cnt));
     }
-
-    wl.add_spec(
-        TimedSpec(Comp(Indiv(metric_t::CENQ, queue1), op_t::GT, Indiv(metric_t::CENQ, queue2)),
-                  time_range_t(total_time - 1, total_time - 1),
-                  total_time));
-
-    cout << "base workload: " << endl << wl << endl;
-
-    rr->set_base_workload(wl);
-
-    // Query
-    cid_t queue1_id = rr->get_in_queues()[queue1]->get_id();
-    cid_t queue2_id = rr->get_in_queues()[queue2]->get_id();
-
-    Query query(query_quant_t::FORALL,
-                time_range_t(total_time - 1 - (period - 1), total_time - 1),
-                qdiff_t(queue2_id, queue1_id),
-                metric_t::CDEQ,
-                op_t::GE,
-                3);
-
-    rr->set_query(query);
-
-    cout << "cp setup: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s" << endl;
-
-    // generate base example
-    start_time = noww();
-    IndexedExample* base_eg = new IndexedExample();
-    qset_t target_queues;
-
-    bool res = rr->generate_base_example(base_eg, target_queues, in_queue_cnt);
-
-    if (!res) {
-        cout << "ERROR: couldn't generate base example" << endl;
-        return;
-    }
-
-    cout << "base example generation: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s"
-         << endl;
-
-
-    // Set shared config
-    DistsParams dists_params;
-    dists_params.in_queue_cnt = rr->in_queue_cnt();
-    dists_params.total_time = total_time;
-    dists_params.pkt_meta1_val_max = 2;
-    dists_params.pkt_meta2_val_max = 2;
-    dists_params.random_seed = 29663;
-
-    Dists* dists = new Dists(dists_params);
-    SharedConfig* config = new SharedConfig(total_time, rr->in_queue_cnt(), target_queues, dists);
-    bool config_set = rr->set_shared_config(config);
-    if (!config_set) return;
-
-    research_project(base_eg, rr, total_time, query, 10, good_examples_file, bad_examples_file, config, good_example_cnt, bad_example_cnt);
 }
 
 void fq_codel(string good_examples_file, string bad_examples_file) {
 
-    cout << "fq_codel" << endl;
-    time_typ start_time = noww();
+    vector<Workload> workloads;
 
-    unsigned int in_queue_cnt = 5;
-    unsigned int total_time = 14;
-    unsigned int query_thresh = (total_time / in_queue_cnt) + 3;
-    unsigned int last_queue = in_queue_cnt - 1;
+    unsigned int loop_count = 0;
 
-    unsigned int good_example_cnt = 50;
-    unsigned int bad_example_cnt = 50;
+    while(true) {
 
-    // Create contention point
-    Buggy2LRRScheduler* cp = new Buggy2LRRScheduler(in_queue_cnt, total_time);
+         if(loop_count >= 10) {
+            throw std::runtime_error("Loop count exceeded");
+        }
 
-    // Base Workload
-    Workload wl(in_queue_cnt * 5, in_queue_cnt, total_time);
-    for (unsigned int q = 0; q < last_queue; q++) {
-        wl.add_spec(
-            TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::GE, Time(1)), total_time, total_time));
+        cout << "fq_codel" << endl;
+        time_typ start_time = noww();
+
+        unsigned int in_queue_cnt = 5;
+        unsigned int total_time = 14;
+        unsigned int query_thresh = (total_time / in_queue_cnt) + 3;
+        unsigned int last_queue = in_queue_cnt - 1;
+
+        unsigned int good_example_cnt = 50;
+        unsigned int bad_example_cnt = 50;
+
+        // Create contention point
+        Buggy2LRRScheduler* cp = new Buggy2LRRScheduler(in_queue_cnt, total_time);
+
+        // Base Workload
+        Workload wl(in_queue_cnt * 5, in_queue_cnt, total_time);
+        for (unsigned int q = 0; q < last_queue; q++) {
+            wl.add_spec(
+                TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::GE, Time(1)), total_time, total_time));
+        }
+
+        for(Workload workload : workloads) {
+            cp->add_past_workload(workload);
+        }
+        cp->set_base_workload(wl);
+
+        // Query
+        cid_t query_qid = cp->get_in_queues()[last_queue]->get_id();
+        Query query(query_quant_t::FORALL,
+                    time_range_t(total_time - 1, total_time - 1),
+                    query_qid,
+                    metric_t::CDEQ,
+                    op_t::GE,
+                    query_thresh);
+
+        cp->set_query(query);
+
+        cout << "cp setup: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s" << endl;
+
+        // generate base example
+        start_time = noww();
+        IndexedExample* base_eg = new IndexedExample();
+        qset_t target_queues;
+
+        bool res = cp->generate_base_example(base_eg, target_queues, in_queue_cnt);
+
+        if (!res) {
+            cout << "ERROR: couldn't generate base example" << endl;
+            return;
+        }
+
+        cout << "base example generation: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s"
+             << endl;
+
+
+        // Set shared config
+        DistsParams dists_params;
+        dists_params.in_queue_cnt = cp->in_queue_cnt();
+        dists_params.total_time = total_time;
+        dists_params.pkt_meta1_val_max = 2;
+        dists_params.pkt_meta2_val_max = 2;
+        dists_params.random_seed = 4854;
+
+        Dists* dists = new Dists(dists_params);
+        SharedConfig* config = new SharedConfig(total_time, cp->in_queue_cnt(), target_queues, dists);
+        bool config_set = cp->set_shared_config(config);
+        if (!config_set) return;
+
+        workloads.push_back(research_project(base_eg, cp, total_time, query, 10, good_examples_file, bad_examples_file, config, good_example_cnt, bad_example_cnt));
     }
-
-    cp->set_base_workload(wl);
-
-    // Query
-    cid_t query_qid = cp->get_in_queues()[last_queue]->get_id();
-    Query query(query_quant_t::FORALL,
-                time_range_t(total_time - 1, total_time - 1),
-                query_qid,
-                metric_t::CDEQ,
-                op_t::GE,
-                query_thresh);
-
-    cp->set_query(query);
-
-    cout << "cp setup: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s" << endl;
-
-    // generate base example
-    start_time = noww();
-    IndexedExample* base_eg = new IndexedExample();
-    qset_t target_queues;
-
-    bool res = cp->generate_base_example(base_eg, target_queues, in_queue_cnt);
-
-    if (!res) {
-        cout << "ERROR: couldn't generate base example" << endl;
-        return;
-    }
-
-    cout << "base example generation: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s"
-         << endl;
-
-
-    // Set shared config
-    DistsParams dists_params;
-    dists_params.in_queue_cnt = cp->in_queue_cnt();
-    dists_params.total_time = total_time;
-    dists_params.pkt_meta1_val_max = 2;
-    dists_params.pkt_meta2_val_max = 2;
-    dists_params.random_seed = 4854;
-
-    Dists* dists = new Dists(dists_params);
-    SharedConfig* config = new SharedConfig(total_time, cp->in_queue_cnt(), target_queues, dists);
-    bool config_set = cp->set_shared_config(config);
-    if (!config_set) return;
-
-    research_project(base_eg, cp, total_time, query, 10, good_examples_file, bad_examples_file, config, good_example_cnt, bad_example_cnt);
 }
 
 void loom(string good_examples_file, string bad_examples_file) {
 
-    cout << "loom" << endl;
-    time_typ start_time = noww();
+    vector<Workload> workloads;
 
-    unsigned int nic_tx_queue_cnt = 4;
-    unsigned int per_core_flow_cnt = 3;
-    unsigned int query_time = 3;
+    while(true) {
+        cout << "loom" << endl;
+        time_typ start_time = noww();
 
-    unsigned int good_example_cnt = 50;
-    unsigned int bad_example_cnt = 50;
-    unsigned int total_time = 10;
+        unsigned int nic_tx_queue_cnt = 4;
+        unsigned int per_core_flow_cnt = 3;
+        unsigned int query_time = 3;
 
-    // Create contention point
-    LoomMQPrio* cp = new LoomMQPrio(nic_tx_queue_cnt, per_core_flow_cnt, total_time);
+        unsigned int good_example_cnt = 50;
+        unsigned int bad_example_cnt = 50;
+        unsigned int total_time = 10;
+
+        // Create contention point
+        LoomMQPrio* cp = new LoomMQPrio(nic_tx_queue_cnt, per_core_flow_cnt, total_time);
 
 
-    qset_t tenant1_qset;
-    qset_t tenant2_qset;
+        qset_t tenant1_qset;
+        qset_t tenant2_qset;
 
-    for (unsigned int i = 0; i < cp->in_queue_cnt(); i++) {
-        if (i % 3 == 0)
-            tenant1_qset.insert(i);
-        else
-            tenant2_qset.insert(i);
-    }
-
-    // Base Workload
-
-    Workload wl(20, cp->in_queue_cnt(), total_time);
-    wl.add_spec(TimedSpec(Comp(QSum(tenant1_qset, metric_t::CENQ), op_t::GE, Time(1)),
-                          total_time,
-                          total_time));
-    wl.add_spec(TimedSpec(Comp(QSum(tenant2_qset, metric_t::CENQ), op_t::GE, Time(1)),
-                          total_time,
-                          total_time));
-
-    for (unsigned int q = 0; q < cp->in_queue_cnt(); q++) {
-        if (q % 3 == 2) {
-            wl.add_spec(
-                TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::LE, 0u), total_time, total_time));
+        for (unsigned int i = 0; i < cp->in_queue_cnt(); i++) {
+            if (i % 3 == 0)
+                tenant1_qset.insert(i);
+            else
+                tenant2_qset.insert(i);
         }
+
+        // Base Workload
+
+        Workload wl(20, cp->in_queue_cnt(), total_time);
+        wl.add_spec(TimedSpec(Comp(QSum(tenant1_qset, metric_t::CENQ), op_t::GE, Time(1)),
+                              total_time,
+                              total_time));
+        wl.add_spec(TimedSpec(Comp(QSum(tenant2_qset, metric_t::CENQ), op_t::GE, Time(1)),
+                              total_time,
+                              total_time));
+
+        for (unsigned int q = 0; q < cp->in_queue_cnt(); q++) {
+            if (q % 3 == 2) {
+                wl.add_spec(
+                    TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::LE, 0u), total_time, total_time));
+            }
+        }
+
+        for(Workload workload : workloads) {
+            cp->add_past_workload(workload);
+        }
+        cp->set_base_workload(wl);
+
+        // Query
+        Query query(query_quant_t::FORALL,
+                    time_range_t(total_time - 1 - query_time, total_time - 1),
+                    qdiff_t(cp->get_out_queue(1)->get_id(), cp->get_out_queue(0)->get_id()),
+                    metric_t::CENQ,
+                    op_t::GT,
+                    3u);
+
+        cp->set_query(query);
+
+        cout << "cp setup: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s" << endl;
+
+        // generate base example
+        start_time = noww();
+        IndexedExample* base_eg = new IndexedExample();
+        qset_t target_queues;
+
+        bool res = cp->generate_base_example(base_eg, target_queues, cp->in_queue_cnt());
+
+        if (!res) {
+            cout << "ERROR: couldn't generate base example" << endl;
+            return;
+        }
+
+        cout << "base example generation: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s"
+             << endl;
+
+
+        // Set shared config
+        DistsParams dists_params;
+        dists_params.in_queue_cnt = cp->in_queue_cnt();
+        dists_params.total_time = total_time;
+        dists_params.pkt_meta1_val_max = 3;
+        dists_params.pkt_meta2_val_max = 2;
+        dists_params.random_seed = 13388;
+
+        Dists* dists = new Dists(dists_params);
+        SharedConfig* config = new SharedConfig(total_time, cp->in_queue_cnt(), target_queues, dists);
+        bool config_set = cp->set_shared_config(config);
+        if (!config_set) return;
+
+        workloads.push_back(research_project(base_eg, cp, total_time, query, 24, good_examples_file, bad_examples_file, config, good_example_cnt, bad_example_cnt));
     }
-
-    cp->set_base_workload(wl);
-
-    // Query
-    Query query(query_quant_t::FORALL,
-                time_range_t(total_time - 1 - query_time, total_time - 1),
-                qdiff_t(cp->get_out_queue(1)->get_id(), cp->get_out_queue(0)->get_id()),
-                metric_t::CENQ,
-                op_t::GT,
-                3u);
-
-    cp->set_query(query);
-
-    cout << "cp setup: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s" << endl;
-
-    // generate base example
-    start_time = noww();
-    IndexedExample* base_eg = new IndexedExample();
-    qset_t target_queues;
-
-    bool res = cp->generate_base_example(base_eg, target_queues, cp->in_queue_cnt());
-
-    if (!res) {
-        cout << "ERROR: couldn't generate base example" << endl;
-        return;
-    }
-
-    cout << "base example generation: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s"
-         << endl;
-
-
-    // Set shared config
-    DistsParams dists_params;
-    dists_params.in_queue_cnt = cp->in_queue_cnt();
-    dists_params.total_time = total_time;
-    dists_params.pkt_meta1_val_max = 3;
-    dists_params.pkt_meta2_val_max = 2;
-    dists_params.random_seed = 13388;
-
-    Dists* dists = new Dists(dists_params);
-    SharedConfig* config = new SharedConfig(total_time, cp->in_queue_cnt(), target_queues, dists);
-    bool config_set = cp->set_shared_config(config);
-    if (!config_set) return;
-
-    research_project(base_eg, cp, total_time, query, 24, good_examples_file, bad_examples_file, config, good_example_cnt, bad_example_cnt);
 
 }
 
 void leaf_spine_bw(string good_examples_file, string bad_examples_file) {
-    cout << "leaf_spine_bw" << endl;
-    time_typ start_time = noww();
 
-    unsigned int leaf_cnt = 3;
-    unsigned int spine_cnt = 2;
-    unsigned int servers_per_leaf = 2;
-    unsigned int server_cnt = leaf_cnt * servers_per_leaf;
-    bool reduce_queues = true;
+    vector<Workload> workloads;
 
-    unsigned int src_server = 0;
-    unsigned int dst_server = (2 * servers_per_leaf) + 1;
-    unsigned int query_thresh = 4;
+    while(true) {
+        cout << "leaf_spine_bw" << endl;
+        time_typ start_time = noww();
 
-    unsigned int good_example_cnt = 50;
-    unsigned int bad_example_cnt = 50;
-    unsigned int total_time = 10;
+        unsigned int leaf_cnt = 3;
+        unsigned int spine_cnt = 2;
+        unsigned int servers_per_leaf = 2;
+        unsigned int server_cnt = leaf_cnt * servers_per_leaf;
+        bool reduce_queues = true;
 
-    // Create contention point
-    LeafSpine* cp = new LeafSpine(leaf_cnt, spine_cnt, servers_per_leaf, total_time, reduce_queues);
+        unsigned int src_server = 0;
+        unsigned int dst_server = (2 * servers_per_leaf) + 1;
+        unsigned int query_thresh = 4;
 
-    unsigned int in_queue_cnt = cp->in_queue_cnt();
+        unsigned int good_example_cnt = 50;
+        unsigned int bad_example_cnt = 50;
+        unsigned int total_time = 10;
 
-    // Base Workload
-    Workload wl(in_queue_cnt + 5, in_queue_cnt, total_time);
+        // Create contention point
+        LeafSpine* cp = new LeafSpine(leaf_cnt, spine_cnt, servers_per_leaf, total_time, reduce_queues);
 
-    wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, src_server), op_t::GE, Time(1)),
-                          total_time - 1,
-                          total_time));
+        unsigned int in_queue_cnt = cp->in_queue_cnt();
 
-    wl.add_spec(TimedSpec(Comp(Indiv(metric_t::DST, src_server), op_t::EQ, dst_server),
-                          total_time - 1,
-                          total_time));
+        // Base Workload
+        Workload wl(in_queue_cnt + 5, in_queue_cnt, total_time);
 
-    for (unsigned int q = 0; q < in_queue_cnt; q++) {
-        Same s(metric_t::DST, q);
-        wl.add_spec(TimedSpec(s, time_range_t(0, total_time - 1), total_time));
+        wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, src_server), op_t::GE, Time(1)),
+                              total_time - 1,
+                              total_time));
+
+        wl.add_spec(TimedSpec(Comp(Indiv(metric_t::DST, src_server), op_t::EQ, dst_server),
+                              total_time - 1,
+                              total_time));
+
+        for (unsigned int q = 0; q < in_queue_cnt; q++) {
+            Same s(metric_t::DST, q);
+            wl.add_spec(TimedSpec(s, time_range_t(0, total_time - 1), total_time));
+        }
+
+        qset_t unique_qset;
+        for (unsigned int q = 0; q < in_queue_cnt; q++)
+            unique_qset.insert(q);
+        Unique uniq(metric_t::DST, unique_qset);
+        wl.add_spec(TimedSpec(uniq, time_range_t(0, total_time - 1), total_time));
+
+        for(Workload workload : workloads) {
+            cp->add_past_workload(workload);
+        }
+        cp->set_base_workload(wl);
+
+        // Query
+        cid_t query_qid = cp->get_out_queue(dst_server)->get_id();
+        Query query(query_quant_t::FORALL,
+                    time_range_t(total_time - 1, total_time - 1),
+                    query_qid,
+                    metric_t::CENQ,
+                    op_t::LE,
+                    query_thresh);
+
+        cp->set_query(query);
+
+        cout << "cp setup: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s" << endl;
+
+        // generate base example
+        start_time = noww();
+        IndexedExample* base_eg = new IndexedExample();
+        qset_t target_queues;
+
+        bool res = cp->generate_base_example(base_eg, target_queues, cp->in_queue_cnt());
+
+        if (!res) {
+            cout << "ERROR: couldn't generate base example" << endl;
+            return;
+        }
+
+        cout << "base example generation: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s"
+             << endl;
+
+
+        // Set shared config
+        DistsParams dists_params;
+        dists_params.in_queue_cnt = cp->in_queue_cnt();
+        dists_params.total_time = total_time;
+        dists_params.pkt_meta1_val_max = server_cnt - 1;
+        dists_params.pkt_meta2_val_max = spine_cnt - 1;
+        dists_params.random_seed = 24212;
+
+        Dists* dists = new Dists(dists_params);
+        SharedConfig* config = new SharedConfig(total_time, cp->in_queue_cnt(), target_queues, dists);
+        bool config_set = cp->set_shared_config(config);
+        if (!config_set) return;
+
+        workloads.push_back(research_project(base_eg, cp, total_time, query, 24, good_examples_file, bad_examples_file, config, good_example_cnt, bad_example_cnt));
     }
-
-    qset_t unique_qset;
-    for (unsigned int q = 0; q < in_queue_cnt; q++)
-        unique_qset.insert(q);
-    Unique uniq(metric_t::DST, unique_qset);
-    wl.add_spec(TimedSpec(uniq, time_range_t(0, total_time - 1), total_time));
-
-    cp->set_base_workload(wl);
-
-    // Query
-    cid_t query_qid = cp->get_out_queue(dst_server)->get_id();
-    Query query(query_quant_t::FORALL,
-                time_range_t(total_time - 1, total_time - 1),
-                query_qid,
-                metric_t::CENQ,
-                op_t::LE,
-                query_thresh);
-
-    cp->set_query(query);
-
-    cout << "cp setup: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s" << endl;
-
-    // generate base example
-    start_time = noww();
-    IndexedExample* base_eg = new IndexedExample();
-    qset_t target_queues;
-
-    bool res = cp->generate_base_example(base_eg, target_queues, cp->in_queue_cnt());
-
-    if (!res) {
-        cout << "ERROR: couldn't generate base example" << endl;
-        return;
-    }
-
-    cout << "base example generation: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s"
-         << endl;
-
-
-    // Set shared config
-    DistsParams dists_params;
-    dists_params.in_queue_cnt = cp->in_queue_cnt();
-    dists_params.total_time = total_time;
-    dists_params.pkt_meta1_val_max = server_cnt - 1;
-    dists_params.pkt_meta2_val_max = spine_cnt - 1;
-    dists_params.random_seed = 24212;
-
-    Dists* dists = new Dists(dists_params);
-    SharedConfig* config = new SharedConfig(total_time, cp->in_queue_cnt(), target_queues, dists);
-    bool config_set = cp->set_shared_config(config);
-    if (!config_set) return;
-
-    research_project(base_eg, cp, total_time, query, 24, good_examples_file, bad_examples_file, config, good_example_cnt, bad_example_cnt);
 }
 
 void tbf(std::string good_examples_file, std::string bad_examples_file) {
-    unsigned int total_time = 6;
-    unsigned int start = 2;
-    unsigned int interval = 2;
 
-    unsigned int link_rate = 3;
+    vector<Workload> workloads;
 
-    TBFInfo info;
-    info.link_rate = link_rate;
-    info.max_tokens = 6;
-    info.max_enq = 10;
+    while(true) {
+        unsigned int total_time = 6;
+        unsigned int start = 2;
+        unsigned int interval = 2;
 
-    TBF* tbf = new TBF(total_time, info);
+        unsigned int link_rate = 3;
 
-    Workload wl(100, 1, total_time);
+        TBFInfo info;
+        info.link_rate = link_rate;
+        info.max_tokens = 6;
+        info.max_enq = 10;
 
-    for (uint i = 0; i < interval; i++) {
-        wl.add_spec(
-            TimedSpec(Comp(Indiv(metric_t::CENQ, 0), op_t::GE, (unsigned int) (i + 1) * link_rate),
-                      time_range_t(start + i, start + i),
-                      total_time));
+        TBF* tbf = new TBF(total_time, info);
+
+        Workload wl(100, 1, total_time);
+
+        for (uint i = 0; i < interval; i++) {
+            wl.add_spec(
+                TimedSpec(Comp(Indiv(metric_t::CENQ, 0), op_t::GE, (unsigned int) (i + 1) * link_rate),
+                          time_range_t(start + i, start + i),
+                          total_time));
+        }
+
+        for(Workload workload : workloads) {
+            tbf->add_past_workload(workload);
+        }
+        tbf->set_base_workload(wl);
+
+        cid_t queue_id = tbf->get_in_queue()->get_id();
+
+        Query query(query_quant_t::EXISTS,
+                    time_range_t(0, total_time - 1),
+                    queue_id,
+                    metric_t::DEQ,
+                    op_t::GT,
+                    link_rate);
+
+        tbf->set_query(query);
+
+        IndexedExample* base_eg = new IndexedExample();
+        qset_t target_queues;
+
+        bool res = tbf->generate_base_example(base_eg, target_queues, 1);
+
+        if (!res) {
+            cout << "ERROR: couldn't generate base example" << endl;
+            return;
+        }
+
+        // Set shared config
+        DistsParams dists_params;
+        dists_params.in_queue_cnt = tbf->in_queue_cnt();
+        dists_params.total_time = total_time;
+        dists_params.pkt_meta1_val_max = 2;
+        dists_params.pkt_meta2_val_max = 2;
+        dists_params.random_seed = 14748;
+
+        Dists* dists = new Dists(dists_params);
+        SharedConfig* config = new SharedConfig(total_time, tbf->in_queue_cnt(), target_queues, dists);
+        bool config_set = tbf->set_shared_config(config);
+        if (!config_set) return;
+
+        workloads.push_back(research_project(base_eg, tbf, total_time, query, 8, good_examples_file, bad_examples_file, config, 50, 50));
     }
-    tbf->set_base_workload(wl);
-
-    cid_t queue_id = tbf->get_in_queue()->get_id();
-
-    Query query(query_quant_t::EXISTS,
-                time_range_t(0, total_time - 1),
-                queue_id,
-                metric_t::DEQ,
-                op_t::GT,
-                link_rate);
-
-    tbf->set_query(query);
-
-    IndexedExample* base_eg = new IndexedExample();
-    qset_t target_queues;
-
-    bool res = tbf->generate_base_example(base_eg, target_queues, 1);
-
-    if (!res) {
-        cout << "ERROR: couldn't generate base example" << endl;
-        return;
-    }
-
-    // Set shared config
-    DistsParams dists_params;
-    dists_params.in_queue_cnt = tbf->in_queue_cnt();
-    dists_params.total_time = total_time;
-    dists_params.pkt_meta1_val_max = 2;
-    dists_params.pkt_meta2_val_max = 2;
-    dists_params.random_seed = 14748;
-
-    Dists* dists = new Dists(dists_params);
-    SharedConfig* config = new SharedConfig(total_time, tbf->in_queue_cnt(), target_queues, dists);
-    bool config_set = tbf->set_shared_config(config);
-    if (!config_set) return;
-
-    research_project(base_eg, tbf, total_time, query, 8, good_examples_file, bad_examples_file, config, 50, 50);
 
 }
 

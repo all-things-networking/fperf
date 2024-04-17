@@ -1154,6 +1154,19 @@ Workload Search::random_neighbor(Workload wl, unsigned int hops) {
     return candidates[nei_dist(gen)];
 }
 
+void Search::clear_stats() {
+    sum_check_time.clear();
+    max_check_time.clear();
+    no_solver_call.clear();
+    input_only_solver_call.clear();
+    query_only_solver_call.clear();
+    full_solver_call.clear();
+    sum_call_time.clear();
+    before_cost.clear();
+    after_cost.clear();
+    opt_count.clear();
+}
+
 void Search::print_stats() {
     cout << "-------------------- STATS -----------------------" << endl;
 //    cout << "infeasible_input_cnt: " << infeasible_input_cnt << endl;
@@ -1214,13 +1227,17 @@ void Search::print_stats() {
         // Calculate cost improvements using before_cost and after_cost
         if(before_cost.find(*it) == before_cost.end()) before_cost[*it] = {};
         if(after_cost.find(*it) == after_cost.end()) after_cost[*it] = {};
+        if(before_cost[*it].size() == 0) before_cost[*it].push_back(1); // Avoid division by zero
         avg_cost_improvement_abs[*it] = 0;
         avg_cost_improvement_rel[*it] = 0;
         for(int i = 0; i < before_cost[*it].size(); i++){
-            avg_cost_improvement_abs[*it] += (after_cost[*it][i] - before_cost[*it][i]);
-            avg_cost_improvement_rel[*it] += (after_cost[*it][i] - before_cost[*it][i]) / before_cost[*it][i];
+            if (i < after_cost[*it].size() && before_cost[*it][i] != 0) { // Ensure the index exists in after_cost and avoid division by zero
+                avg_cost_improvement_abs[*it] += (after_cost[*it][i] - before_cost[*it][i]);
+                avg_cost_improvement_rel[*it] += (after_cost[*it][i] - before_cost[*it][i]) / static_cast<double>(before_cost[*it][i]);
+            } else {
+                cout << "Skipping calculation at index " << i << " due to missing data or zero division risk." << endl;
+            }
         }
-        if(before_cost[*it].size() == 0) before_cost[*it].push_back(1); // Avoid division by zero
         avg_cost_improvement_abs[*it] /= before_cost[*it].size();
         avg_cost_improvement_rel[*it] /= before_cost[*it].size();
         cout << "avg_cost_improvement_abs: " << avg_cost_improvement_abs[*it] << endl;

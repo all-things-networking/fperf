@@ -1,0 +1,12 @@
+Function, no_solver_call, input_only_solver_call, query_only_solver_call, full_solver_call, opt_count, avg_cost_improvement_abs, avg_cost_improvement_rel, sum_check_time, avg_check_time, max_check_time, sum_call_time, avg_call_time
+, 0, 0, 0, 3, 0, 0, 0, 1833, 611, 843, 0, 0
+aggregate_indivs_to_sums, 0, 0, 0, 8, 0, 0, 0, 90, 11.25, 12, 0, 0
+broaden_operations, 0, 0, 0, 5, 3, 0, 0, 4284, 856.8, 1314, 0, 0
+improve, 0, 0, 0, 1, 0, 2, 0, 1024, 1024, 1024, 0, 0
+random_approach, 0, 0, 0, 71, 48, 4.29497e+09, 6.81741e+07, 47572, 670.028, 1762, 0, 0
+refine, 0, 0, 0, 1, 0, 2, 0, 597, 597, 597, 0, 0
+remove_meta_data, 0, 0, 0, 27, 27, 4.29497e+09, 4.66844e+07, 20241, 749.667, 1120, 0, 0
+research, 0, 0, 0, 1, 0, 4.29497e+09, 4.66844e+07, 1159, 1159, 1159, 0, 0
+restrict_time_ranges, 0, 0, 0, 9, 6, 2, 0, 8540, 948.889, 1417, 0, 0
+tighten_constant_bounds, 0, 0, 0, 2, 0, 0, 0, 1325, 662.5, 852, 0, 0
+transform_aipg_to_cenq, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0

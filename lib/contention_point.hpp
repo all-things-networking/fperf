@@ -113,6 +113,10 @@ public:
     vector<Queue*> in_queues;
     vector<Queue*> out_queues;
 
+    vector<Workload> past_workloads;
+
+    void add_past_workload(Workload wl);
+
     solver* z3_solver;
     optimize* z3_optimizer;
 

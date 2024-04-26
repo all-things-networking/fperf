@@ -25,6 +25,9 @@
 #include "metric.hpp"
 
 #include "global_vars.h"
+std::map<std::string, unsigned int> opt_count;
+std::map<std::string, vector<unsigned int>> before_cost;
+std::map<std::string, vector<unsigned int>> after_cost;
 
 #include <iterator>
 #include <limits>
@@ -163,10 +166,12 @@ Workload combine(Workload wl, Search& search) { // Need to pass in search so we 
                 TimedSpec spec_to_add = TimedSpec(Comp(Indiv(metric_t::CENQ, *qset.begin()), op_t::EQ, Time(1)), time_range_t(*contiguous_tset.begin() - 1, *contiguous_tset.rbegin() - 1), wl.get_total_time());
                 //                cout << "BROADEN: Adding spec: " << spec_to_add << endl;
                 wl.add_spec(spec_to_add);
+                opt_count["combine"]++;
             } else {
                 TimedSpec spec_to_add = TimedSpec(Comp(QSum(qset, metric_t::CENQ), op_t::EQ, Time(1)), time_range_t(*contiguous_tset.begin() - 1, *contiguous_tset.rbegin() - 1), wl.get_total_time());
                 //                cout << "BROADEN: Adding spec: " << spec_to_add << endl;
                 wl.add_spec(spec_to_add);
+                opt_count["combine"]++;
             }
 
             // Step 2: Remove all the old specs
@@ -262,6 +267,7 @@ Workload combine(Workload wl, Search& search) { // Need to pass in search so we 
             TimedSpec spec_to_add = TimedSpec(Comp(QSum(qset, metric_t::CENQ), op_t::LE, Time(0)), time_range, wl.get_total_time());
             //            cout << "BROADEN: Adding spec: " << spec_to_add << endl;
             wl.add_spec(spec_to_add);
+            opt_count["combine"]++;
         }
     }
 
@@ -273,6 +279,7 @@ Workload broaden_operations(Workload wl, Search& search) {
     // For COMP specs, try to broaden operations (change = to <=, >=, change < to <=, change > to >=) and see if it's still valid
     // If so, replace the spec with the new spec
     // If not, keep the old spec
+    before_cost["broaden_operations"].push_back(search.cost(wl, "broaden_operations"));
     set<TimedSpec> specs = wl.get_all_specs();
     specs = wl.get_all_specs();
     for (const TimedSpec& spec : specs) {
@@ -300,6 +307,7 @@ Workload broaden_operations(Workload wl, Search& search) {
                         // It's valid, replace the spec
                         wl.rm_spec(spec);
                         wl.add_spec(spec_to_try);
+                        opt_count["broaden_operations"]++;
                         continue;
                     } else {
                         // It's not valid, keep the old spec
@@ -317,6 +325,7 @@ Workload broaden_operations(Workload wl, Search& search) {
                         // It's valid, replace the spec
                         wl.rm_spec(spec);
                         wl.add_spec(spec_to_try);
+                        opt_count["broaden_operations"]++;
                         continue;
                     } else {
                         // It's not valid, keep the old spec
@@ -333,6 +342,7 @@ Workload broaden_operations(Workload wl, Search& search) {
                         // It's valid, replace the spec
                         wl.rm_spec(spec);
                         wl.add_spec(spec_to_try);
+                        opt_count["broaden_operations"]++;
                         continue;
                     } else {
                         // It's not valid, keep the old spec
@@ -349,6 +359,7 @@ Workload broaden_operations(Workload wl, Search& search) {
                         // It's valid, replace the spec
                         wl.rm_spec(spec);
                         wl.add_spec(spec_to_try);
+                        opt_count["broaden_operations"]++;
                         continue;
                     } else {
                         // It's not valid, keep the old spec
@@ -378,6 +389,7 @@ Workload broaden_operations(Workload wl, Search& search) {
                         // It's valid, replace the spec
                         wl.rm_spec(spec);
                         wl.add_spec(spec_to_try);
+                        opt_count["broaden_operations"]++;
                         continue;
                     } else {
                         // It's not valid, keep the old spec
@@ -397,6 +409,7 @@ Workload broaden_operations(Workload wl, Search& search) {
                         // It's valid, replace the spec
                         wl.rm_spec(spec);
                         wl.add_spec(spec_to_try);
+                        opt_count["broaden_operations"]++;
                         continue;
                     } else {
                         // It's not valid, keep the old spec
@@ -416,6 +429,7 @@ Workload broaden_operations(Workload wl, Search& search) {
                         // It's valid, replace the spec
                         wl.rm_spec(spec);
                         wl.add_spec(spec_to_try);
+                        opt_count["broaden_operations"]++;
                         continue;
                     } else {
                         // It's not
@@ -436,6 +450,7 @@ Workload broaden_operations(Workload wl, Search& search) {
                         // It's valid, replace the spec
                         wl.rm_spec(spec);
                         wl.add_spec(spec_to_try);
+                        opt_count["broaden_operations"]++;
                         continue;
                     } else {
                         // It's not valid, keep the old spec
@@ -445,11 +460,13 @@ Workload broaden_operations(Workload wl, Search& search) {
         }
     }
 
+    after_cost["broaden_operations"].push_back(search.cost(wl, "broaden_operations"));
     return wl;
 }
 
 Workload restrict_time_ranges(Workload wl, Search& search) {
     auto start_time = std::chrono::high_resolution_clock::now();
+    before_cost["restrict_time_ranges"].push_back(search.cost(wl, "restrict_time_ranges"));
 
     // For each spec, try to restrict the time range and see if it's still valid
     // If so, replace the spec with the new spec
@@ -459,18 +476,27 @@ Workload restrict_time_ranges(Workload wl, Search& search) {
         wl_spec_t wl_spec = spec.get_wl_spec();
         time_range_t time_range = spec.get_time_range();
 
+        // Get set of all specs except the current one
+        set<TimedSpec> other_specs = wl.get_all_specs();
+        other_specs.erase(spec);
+
         // Try to restrict right side of time range
         while(time_range.second > time_range.first){
             time_range.second--;
             TimedSpec spec_to_try = TimedSpec(wl_spec, time_range, wl.get_total_time());
             // Create temp workload
             Workload temp_wl = wl;
-            temp_wl.rm_spec(spec);
+            temp_wl.clear();
+            for(const TimedSpec& other_spec : other_specs){
+                temp_wl.add_spec(other_spec);
+            }
             temp_wl.add_spec(spec_to_try);
             if (search.check(temp_wl, "restrict_time_ranges")) {
                 // It's valid, replace the spec
-                wl.rm_spec(spec);
-                wl.add_spec(spec_to_try);
+                wl = temp_wl;
+                opt_count["restrict_time_ranges"]++;
+//                cout << "spec before restricting second time range: " << spec << endl;
+//                cout << "spec after restricting second time range: " << spec_to_try << endl;
                 continue;
             } else {
                 // It's not valid, keep the old spec
@@ -485,12 +511,17 @@ Workload restrict_time_ranges(Workload wl, Search& search) {
             TimedSpec spec_to_try = TimedSpec(wl_spec, time_range, wl.get_total_time());
             // Create temp workload
             Workload temp_wl = wl;
-            temp_wl.rm_spec(spec);
+            temp_wl.clear();
+            for(const TimedSpec& other_spec : other_specs){
+                temp_wl.add_spec(other_spec);
+            }
             temp_wl.add_spec(spec_to_try);
             if (search.check(temp_wl, "restrict_time_ranges")) {
                 // It's valid, replace the spec
-                wl.rm_spec(spec);
-                wl.add_spec(spec_to_try);
+                wl = temp_wl;
+                opt_count["restrict_time_ranges"]++;
+//                cout << "spec before restricting second time range: " << spec << endl;
+//                cout << "spec after restricting second time range: " << spec_to_try << endl;
                 continue;
             } else {
                 // It's not valid, keep the old spec
@@ -504,6 +535,7 @@ Workload restrict_time_ranges(Workload wl, Search& search) {
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
     cout << "restrict_time_ranges took " << duration.count() << " milliseconds" << endl;
 
+    after_cost["restrict_time_ranges"].push_back(search.cost(wl, "restrict_time_ranges"));
     return wl;
 }
 
@@ -705,6 +737,7 @@ vector<Workload> transform_aipg_to_cenq(Workload wl, Search& search) {
     // cenq(q, t) = t or [t1-1, t2]: cenq(q, t) = 1 We return a vector of the original workload and
     // the two new workloads
 
+    before_cost["transform_aipg_to_cenq"].push_back(search.cost(wl, "transform_aipg_to_cenq"));
     cout << "Transforming aipg to cenq" << endl;
 
     // Queue for BFS
@@ -762,6 +795,7 @@ vector<Workload> transform_aipg_to_cenq(Workload wl, Search& search) {
                                 if (search.check(temp_wl, "transform_aipg_to_cenq")) {
                                     // Add to queue
                                     workloadQueue.push(temp_wl);
+                                    opt_count["transform_aipg_to_cenq"]++;
                                 } else {
                                     // It's not valid, try another option
 
@@ -780,6 +814,7 @@ vector<Workload> transform_aipg_to_cenq(Workload wl, Search& search) {
                                     if (search.check(temp_wl, "transform_aipg_to_cenq")) {
                                         // Add to queue
                                         workloadQueue.push(temp_wl);
+                                        opt_count["transform_aipg_to_cenq"]++;
                                     } else {
                                         // It's not valid, try another option
 
@@ -802,6 +837,7 @@ vector<Workload> transform_aipg_to_cenq(Workload wl, Search& search) {
                                         if (search.check(temp_wl, "transform_aipg_to_cenq")) {
                                             // Add to queue
                                             workloadQueue.push(temp_wl);
+                                            opt_count["transform_aipg_to_cenq"]++;
                                         } else {
                                             // It's not valid, don't add any new workloads to the
                                             // queue At this point, we just keep aipg
@@ -828,13 +864,14 @@ vector<Workload> transform_aipg_to_cenq(Workload wl, Search& search) {
 
 Workload refine(Workload wl, Search& search) {
     Workload lastValidWl = wl;
+    before_cost["refine"].push_back(search.cost(wl, "refine"));
 
     if (!search.check(wl, "refine")) {
         throw std::runtime_error("REFINEMENT ERROR: Original workload is invalid");
     }
 
     lastValidWl = search.setup_refinement(lastValidWl);
-//    lastValidWl = search.remove_specs(lastValidWl);  # Unnecessary (should never happen, since we've already removed all unnecessary specs)
+    lastValidWl = search.remove_specs(lastValidWl);  // Unnecessary (should never happen, since we've already removed all unnecessary specs)
     cout << "Workload after removing specs: " << endl << lastValidWl << endl;
     lastValidWl = combine(lastValidWl, search);
     cout << "Workload after combining: " << endl << lastValidWl << endl;
@@ -847,13 +884,14 @@ Workload refine(Workload wl, Search& search) {
 //    lastValidWl = restrict_time_ranges_z3(lastValidWl, search, search.cp);
 //    cout << "Final Workload after restricting time ranges using Z3: " << endl << lastValidWl << endl;
     lastValidWl = restrict_time_ranges(lastValidWl, search);
-    cout << "Final Workload after restricting time ranges: " << endl << lastValidWl << endl;
+    cout << "Workload after restricting time ranges: " << endl << lastValidWl << endl;
 
-
+    after_cost["refine"].push_back(search.cost(lastValidWl, "refine"));
     return lastValidWl;
 }
 
 Workload improve(Workload wl, Search& search) {
+    before_cost["improve"].push_back(search.cost(wl, "improve"));
     cout << "Starting improvement process" << endl;
     if (!search.check(wl, "improve")) {
         throw std::runtime_error("IMPROVEMENT ERROR: Original workload is invalid");
@@ -873,6 +911,7 @@ Workload improve(Workload wl, Search& search) {
 
     for (auto& workload : possible_workloads) {
         cout << "Refining " << numWorkloads << "th workload" << endl;
+        after_cost["transform_aipg_to_cenq"].push_back(search.cost(workload, "transform_aipg_to_cenq"));
         numWorkloads++;
         Workload refinedWorkload = refine(workload, search);
         unsigned int currentCost = search.cost(refinedWorkload, "improve");
@@ -887,6 +926,7 @@ Workload improve(Workload wl, Search& search) {
         throw std::runtime_error("Failed to find a best workload");
     }
 
+    after_cost["improve"].push_back(search.cost(*bestWorkloadPtr, "improve"));
     return *bestWorkloadPtr;
 }
 
@@ -909,7 +949,7 @@ Workload improve(Workload wl, Search& search) {
 // - changing indiv to sums
 // - Combining (expand based on new patterns we recognize). Ask Z3 to give us the most concise with synthesis? Use get_expr to create Z3 variables for search. Ask to find an equivalent workload spec... if we want a general rhs, have mutually-exclusive booleans to represent which type of rhs we are using
 
-void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int total_time, Query query, unsigned int max_spec, string good_examples_file, string bad_examples_file, SharedConfig* config, unsigned int good_example_cnt, unsigned int bad_example_cnt){
+Workload research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int total_time, Query query, unsigned int max_spec, string good_examples_file, string bad_examples_file, SharedConfig* config, unsigned int good_example_cnt, unsigned int bad_example_cnt){
     // Create a workload that perfectly describes the base example
     // That is, for each queue, for each timestep, the workload has a spec of the form:
     // [t, t]: cenq(queue_id, t) = sum from 0 to t of enqs[queue_id][t]
@@ -936,11 +976,26 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
         // Add cenq specs
         Workload wl(100, cp->in_queue_cnt(), total_time);
         for (unsigned int q = 0; q < enqs.size(); q++) {
-            for (unsigned int t = 0; t < enqs[q].size(); t++) {
-                //            cout << "cenq(q" << q << ", " << t << ") = " << sums[q][t] << endl;
-                wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::EQ, sums[q][t]),
-                                      time_range_t(t, t),
-                                      total_time));
+            unsigned int start_t = 0; // Start of a contiguous period
+            for (unsigned int t = 1; t <= enqs[q].size(); t++) {
+                // Check if we reached the end or found a change in cenq value
+                if (t == enqs[q].size() || sums[q][t] != sums[q][start_t]) {
+                    // We have reached the end of a contiguous period or the end of the array
+                    // Add the spec for the period from start_t to t-1 with the cenq value at start_t
+                    wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::EQ, sums[q][start_t]),
+                                          time_range_t(start_t, t - 1),
+                                          total_time));
+                    start_t = t; // Update start_t to the current time for the next period
+                }
+                // If the value at t is the same as at start_t, we just continue the loop
+            }
+        }
+
+        // Get set of queues with no traffic (cenq at last timestep is 0)
+        std::set<unsigned int> empty_queues;
+        for (unsigned int q = 0; q < cp->in_queue_cnt(); q++) {
+            if (sums[q][total_time - 1] == 0) {
+                empty_queues.insert(q);
             }
         }
 
@@ -955,6 +1010,10 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
         // Add ecmp and dst specs to the workload
 
         for (unsigned int q = 0; q < enqs.size(); q++) {
+            // If empty queue, skip (in theory this is actually unnecessary, since all meta-data specs should be invalid anyway)
+            if (empty_queues.find(q) != empty_queues.end()) {
+                continue;
+            }
             for (unsigned int t = 0; t < enqs[q].size(); t++) {
                 metric_val metric_value;
                 ecmp.eval(base_eg, t, q, metric_value);
@@ -974,26 +1033,6 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
             }
         }
 
-
-        cout << "Original Workload: " << endl << wl << endl;
-
-        Search search(cp, query, max_spec, config, good_examples_file, bad_examples_file);
-        if (!search.check(wl, "research")) {
-            cout << "ERROR: Original workload is invalid" << endl;
-
-            solver_res_t workload_feasible = search.cp->check_workload_without_query(wl);
-            if (workload_feasible == solver_res_t::UNSAT) {
-                cout << "Workload is infeasible" << endl;
-            }
-
-            IndexedExample* counter_eg = new IndexedExample();
-            solver_res_t query_only_res = search.cp->check_workload_with_query(wl, counter_eg);
-            if (query_only_res == solver_res_t::UNKNOWN) {
-                cout << "Counter-example: " << endl << *counter_eg << endl;
-            }
-            return;
-        }
-
         // Keep randomly removing specs until we hit 'minimum' workload
         // (i.e. the workload that is valid but removing any spec makes it invalid)
 
@@ -1001,20 +1040,7 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
         // types
         auto all_specs = wl.get_all_specs();
         auto meta_data_specs = std::vector<TimedSpec>();
-        //    for(auto const& timed_spec : all_specs){
-        //        wl_spec_t spec = timed_spec.get_wl_spec();
-        //        if(holds_alternative<Comp>(spec)){
-        //            Comp comp = get<Comp>(spec);
-        //            if(holds_alternative<Indiv>(comp.lhs)){
-        //                Indiv indiv = get<Indiv>(comp.lhs);
-        //                if(indiv.get_metric() == metric_t::ECMP || indiv.get_metric() ==
-        //                metric_t::DST){
-        //                    meta_data_specs.push_back(timed_spec);
-        //                }
-        //            }
-        //        }
-        //    }
-        //
+
         Workload originalWorkload = wl;
 
         std::random_device rd;
@@ -1109,14 +1135,42 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
         AIPG aipg = AIPG(q0, total_time, cp->net_ctx);
         // Add aipg specs to the workload
         for (unsigned int q = 0; q < enqs.size(); q++) {
+            // If empty queue, skip (aipg conveys no information)
+            if (empty_queues.find(q) != empty_queues.end()) {
+                continue;
+            }
             for (unsigned int t = 0; t < enqs[q].size(); t++) {
                 metric_val metric_value;
                 aipg.eval(base_eg, t, q, metric_value);
                 unsigned int value = metric_value.value;
-                wl.add_spec(TimedSpec(Comp(Indiv(metric_t::AIPG, q), op_t::EQ, value),
-                                      time_range_t(t, t),
-                                      total_time));
+                // Don't add if aipg=0 (this conveys no information)
+                if (metric_value.valid && value != 0) { // OPTIMIZATION: Don't add if aipg=0
+                    wl.add_spec(TimedSpec(Comp(Indiv(metric_t::AIPG, q), op_t::EQ, value),
+                                          time_range_t(t, t),
+                                          total_time));
+                }
             }
+        }
+
+        Search search(cp, query, max_spec, config, good_examples_file, bad_examples_file);
+        wl = combine(wl, search);
+        cout << "Original Workload: " << endl << wl << endl;
+        before_cost["research"].push_back(search.cost(wl, "research"));
+
+        if (!search.check(wl, "research")) {
+            cout << "ERROR: Original workload is invalid" << endl;
+
+            solver_res_t workload_feasible = search.cp->check_workload_without_query(wl);
+            if (workload_feasible == solver_res_t::UNSAT) {
+                cout << "Workload is infeasible" << endl;
+            }
+
+            IndexedExample* counter_eg = new IndexedExample();
+            solver_res_t query_only_res = search.cp->check_workload_with_query(wl, counter_eg);
+            if (query_only_res == solver_res_t::UNKNOWN) {
+                cout << "Counter-example: " << endl << *counter_eg << endl;
+            }
+            throw std::runtime_error("ERROR: Original workload is invalid");
         }
 
         lastValidWl = wl; // Store the initial workload state.
@@ -1140,6 +1194,7 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
         }
 
         // Randomly remove meta-data specs
+        before_cost["remove_meta_data"].push_back(search.cost(lastValidWl, "remove_meta_data"));
         cout << "Removing meta-data specs..." << endl;
         while (true) {
             if (meta_data_specs.empty()) {
@@ -1153,6 +1208,7 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
                 lastValidWl = wl; // Update the last valid state.
                 meta_data_specs.erase(
                     it); // Remove the spec from the set of potential meta-data specs.
+                opt_count["remove_meta_data"]++;
             } else {
                 wl.add_spec(specToRemove); // Put the last removed spec back.
                 meta_data_specs.erase(
@@ -1160,7 +1216,10 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
             }
         }
         cout << "Finished removing meta-data specs" << endl;
+        after_cost["remove_meta_data"].push_back(search.cost(lastValidWl, "remove_meta_data"));
 
+        // Randomly remove specs
+        before_cost["random_approach"].push_back(search.cost(lastValidWl, "random_approach"));
         cout << "Starting random approach..." << endl;
         while (true) {
             auto specs = wl.get_all_specs(); // Get the current specs.
@@ -1203,6 +1262,7 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
                 wl = tempWl;            // Update the original workload if the temp one is valid.
                 lastValidWl = wl;       // Update the last valid state.
                 attemptedSpecs.clear(); // Reset attempted specs since the workload has changed.
+                opt_count["random_approach"]++;
             } else {
                 //            cout << "Workload is invalid after removing spec" << endl;
                 attemptedSpecs.insert(specToRemove); // Mark this spec as attempted.
@@ -1211,15 +1271,29 @@ void research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned int
         }
 
         cout << "Last valid workload: " << endl << lastValidWl << endl;
+        after_cost["random_approach"].push_back(search.cost(lastValidWl, "random_approach"));
 
         if (!search.check(lastValidWl, "random_approach")) {
             throw std::runtime_error("ERROR: Last valid workload is invalid");
         } else {
             lastValidWl = improve(lastValidWl, search);
-            cout << "Final Workload after improving: " << endl << lastValidWl << endl;
+            cout << "Final Workload: " << endl << lastValidWl << endl;
+            after_cost["research"].push_back(search.cost(lastValidWl, "research"));
 
             search.print_stats();
         }
+
+
+        timeline_t wl_timeline = lastValidWl.get_timeline();
+        cout << "Timeline: " << endl;
+        for (auto const& [time, specs] : wl_timeline) {
+            cout << "Time: " << time << endl;
+            for (auto const& spec : specs) {
+                cout << spec << endl;
+            }
+        }
+
+        return lastValidWl;
 
         //    Workload lastValidWlBroad = lastValidWl;
         //    unsigned int broad_cost = search.cost(lastValidWlBroad);
@@ -1521,403 +1595,454 @@ void prio(string good_examples_file, string bad_examples_file) {
 
 void rr(string good_examples_file, string bad_examples_file) {
 
-    cout << "rr" << endl;
-    time_typ start_time = noww();
+    vector<Workload> workloads;
 
-    unsigned int in_queue_cnt = 5;
-    unsigned int period = 5;
-    unsigned int recur = 2;
-    unsigned int rate = 4;
+    unsigned int loop_count = 0;
 
-    unsigned int good_example_cnt = 25;
-    unsigned int bad_example_cnt = 25;
-    unsigned int total_time = recur * period;
-
-    // Create contention point
-    RRScheduler* rr = new RRScheduler(in_queue_cnt, total_time);
-
-    unsigned int queue1 = 1;
-    unsigned int queue2 = 2;
-
-    // Base workload
-    Workload wl(100, in_queue_cnt, total_time);
-
-    for (unsigned int i = 1; i <= recur; i++) {
-        for (unsigned int q = 0; q < in_queue_cnt; q++) {
-            wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::GE, i * rate),
-                                  time_range_t(i * period - 1, i * period - 1),
-                                  total_time));
+    while(true) {
+        loop_count++;
+        if(loop_count >= 5) {
+            throw std::runtime_error("Loop count exceeded");
         }
+        cout << "rr" << endl;
+        time_typ start_time = noww();
+
+        unsigned int in_queue_cnt = 5;
+        unsigned int period = 5;
+        unsigned int recur = 2;
+        unsigned int rate = 4;
+
+        unsigned int good_example_cnt = 25;
+        unsigned int bad_example_cnt = 25;
+        unsigned int total_time = recur * period;
+
+        // Create contention point
+        RRScheduler* rr = new RRScheduler(in_queue_cnt, total_time);
+
+        unsigned int queue1 = 1;
+        unsigned int queue2 = 2;
+
+        // Base workload
+        Workload wl(100, in_queue_cnt, total_time);
+
+        for (unsigned int i = 1; i <= recur; i++) {
+            for (unsigned int q = 0; q < in_queue_cnt; q++) {
+                wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::GE, i * rate),
+                                      time_range_t(i * period - 1, i * period - 1),
+                                      total_time));
+            }
+        }
+
+        wl.add_spec(
+            TimedSpec(Comp(Indiv(metric_t::CENQ, queue1), op_t::GT, Indiv(metric_t::CENQ, queue2)),
+                      time_range_t(total_time - 1, total_time - 1),
+                      total_time));
+
+        cout << "base workload: " << endl << wl << endl;
+
+        for(const Workload& workload : workloads) {
+            rr->add_past_workload(workload);
+        }
+        rr->set_base_workload(wl);
+
+        // Query
+        cid_t queue1_id = rr->get_in_queues()[queue1]->get_id();
+        cid_t queue2_id = rr->get_in_queues()[queue2]->get_id();
+
+        Query query(query_quant_t::FORALL,
+                    time_range_t(total_time - 1 - (period - 1), total_time - 1),
+                    qdiff_t(queue2_id, queue1_id),
+                    metric_t::CDEQ,
+                    op_t::GE,
+                    3);
+
+        rr->set_query(query);
+
+        cout << "cp setup: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s" << endl;
+
+        // generate base example
+        start_time = noww();
+        IndexedExample* base_eg = new IndexedExample();
+        qset_t target_queues;
+
+        bool res = rr->generate_base_example(base_eg, target_queues, in_queue_cnt);
+
+        if (!res) {
+            cout << "ERROR: couldn't generate base example" << endl;
+            return;
+        }
+
+        cout << "base example generation: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s"
+             << endl;
+
+
+        // Set shared config
+        DistsParams dists_params;
+        dists_params.in_queue_cnt = rr->in_queue_cnt();
+        dists_params.total_time = total_time;
+        dists_params.pkt_meta1_val_max = 2;
+        dists_params.pkt_meta2_val_max = 2;
+        dists_params.random_seed = 29663;
+
+        Dists* dists = new Dists(dists_params);
+        SharedConfig* config = new SharedConfig(total_time, rr->in_queue_cnt(), target_queues, dists);
+        bool config_set = rr->set_shared_config(config);
+        if (!config_set) return;
+
+        workloads.push_back(research_project(base_eg, rr, total_time, query, 10, good_examples_file, bad_examples_file, config, good_example_cnt, bad_example_cnt));
     }
-
-    wl.add_spec(
-        TimedSpec(Comp(Indiv(metric_t::CENQ, queue1), op_t::GT, Indiv(metric_t::CENQ, queue2)),
-                  time_range_t(total_time - 1, total_time - 1),
-                  total_time));
-
-    cout << "base workload: " << endl << wl << endl;
-
-    rr->set_base_workload(wl);
-
-    // Query
-    cid_t queue1_id = rr->get_in_queues()[queue1]->get_id();
-    cid_t queue2_id = rr->get_in_queues()[queue2]->get_id();
-
-    Query query(query_quant_t::FORALL,
-                time_range_t(total_time - 1 - (period - 1), total_time - 1),
-                qdiff_t(queue2_id, queue1_id),
-                metric_t::CDEQ,
-                op_t::GE,
-                3);
-
-    rr->set_query(query);
-
-    cout << "cp setup: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s" << endl;
-
-    // generate base example
-    start_time = noww();
-    IndexedExample* base_eg = new IndexedExample();
-    qset_t target_queues;
-
-    bool res = rr->generate_base_example(base_eg, target_queues, in_queue_cnt);
-
-    if (!res) {
-        cout << "ERROR: couldn't generate base example" << endl;
-        return;
-    }
-
-    cout << "base example generation: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s"
-         << endl;
-
-
-    // Set shared config
-    DistsParams dists_params;
-    dists_params.in_queue_cnt = rr->in_queue_cnt();
-    dists_params.total_time = total_time;
-    dists_params.pkt_meta1_val_max = 2;
-    dists_params.pkt_meta2_val_max = 2;
-    dists_params.random_seed = 29663;
-
-    Dists* dists = new Dists(dists_params);
-    SharedConfig* config = new SharedConfig(total_time, rr->in_queue_cnt(), target_queues, dists);
-    bool config_set = rr->set_shared_config(config);
-    if (!config_set) return;
-
-    research_project(base_eg, rr, total_time, query, 10, good_examples_file, bad_examples_file, config, good_example_cnt, bad_example_cnt);
 }
 
 void fq_codel(string good_examples_file, string bad_examples_file) {
 
-    cout << "fq_codel" << endl;
-    time_typ start_time = noww();
+    vector<Workload> workloads;
 
-    unsigned int in_queue_cnt = 5;
-    unsigned int total_time = 14;
-    unsigned int query_thresh = (total_time / in_queue_cnt) + 3;
-    unsigned int last_queue = in_queue_cnt - 1;
+    unsigned int loop_count = 0;
 
-    unsigned int good_example_cnt = 50;
-    unsigned int bad_example_cnt = 50;
+    while(true) {
 
-    // Create contention point
-    Buggy2LRRScheduler* cp = new Buggy2LRRScheduler(in_queue_cnt, total_time);
+         if(loop_count >= 10) {
+            throw std::runtime_error("Loop count exceeded");
+        }
 
-    // Base Workload
-    Workload wl(in_queue_cnt * 5, in_queue_cnt, total_time);
-    for (unsigned int q = 0; q < last_queue; q++) {
-        wl.add_spec(
-            TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::GE, Time(1)), total_time, total_time));
+        cout << "fq_codel" << endl;
+        time_typ start_time = noww();
+
+        unsigned int in_queue_cnt = 5;
+        unsigned int total_time = 14;
+        unsigned int query_thresh = (total_time / in_queue_cnt) + 3;
+        unsigned int last_queue = in_queue_cnt - 1;
+
+        unsigned int good_example_cnt = 50;
+        unsigned int bad_example_cnt = 50;
+
+        // Create contention point
+        Buggy2LRRScheduler* cp = new Buggy2LRRScheduler(in_queue_cnt, total_time);
+
+        // Base Workload
+        Workload wl(in_queue_cnt * 5, in_queue_cnt, total_time);
+        for (unsigned int q = 0; q < last_queue; q++) {
+            wl.add_spec(
+                TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::GE, Time(1)), total_time, total_time));
+        }
+
+        for(Workload workload : workloads) {
+            cp->add_past_workload(workload);
+        }
+        cp->set_base_workload(wl);
+
+        // Query
+        cid_t query_qid = cp->get_in_queues()[last_queue]->get_id();
+        Query query(query_quant_t::FORALL,
+                    time_range_t(total_time - 1, total_time - 1),
+                    query_qid,
+                    metric_t::CDEQ,
+                    op_t::GE,
+                    query_thresh);
+
+        cp->set_query(query);
+
+        cout << "cp setup: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s" << endl;
+
+        // generate base example
+        start_time = noww();
+        IndexedExample* base_eg = new IndexedExample();
+        qset_t target_queues;
+
+        bool res = cp->generate_base_example(base_eg, target_queues, in_queue_cnt);
+
+        if (!res) {
+            cout << "ERROR: couldn't generate base example" << endl;
+            return;
+        }
+
+        cout << "base example generation: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s"
+             << endl;
+
+
+        // Set shared config
+        DistsParams dists_params;
+        dists_params.in_queue_cnt = cp->in_queue_cnt();
+        dists_params.total_time = total_time;
+        dists_params.pkt_meta1_val_max = 2;
+        dists_params.pkt_meta2_val_max = 2;
+        dists_params.random_seed = 4854;
+
+        Dists* dists = new Dists(dists_params);
+        SharedConfig* config = new SharedConfig(total_time, cp->in_queue_cnt(), target_queues, dists);
+        bool config_set = cp->set_shared_config(config);
+        if (!config_set) return;
+
+        workloads.push_back(research_project(base_eg, cp, total_time, query, 10, good_examples_file, bad_examples_file, config, good_example_cnt, bad_example_cnt));
     }
-
-    cp->set_base_workload(wl);
-
-    // Query
-    cid_t query_qid = cp->get_in_queues()[last_queue]->get_id();
-    Query query(query_quant_t::FORALL,
-                time_range_t(total_time - 1, total_time - 1),
-                query_qid,
-                metric_t::CDEQ,
-                op_t::GE,
-                query_thresh);
-
-    cp->set_query(query);
-
-    cout << "cp setup: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s" << endl;
-
-    // generate base example
-    start_time = noww();
-    IndexedExample* base_eg = new IndexedExample();
-    qset_t target_queues;
-
-    bool res = cp->generate_base_example(base_eg, target_queues, in_queue_cnt);
-
-    if (!res) {
-        cout << "ERROR: couldn't generate base example" << endl;
-        return;
-    }
-
-    cout << "base example generation: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s"
-         << endl;
-
-
-    // Set shared config
-    DistsParams dists_params;
-    dists_params.in_queue_cnt = cp->in_queue_cnt();
-    dists_params.total_time = total_time;
-    dists_params.pkt_meta1_val_max = 2;
-    dists_params.pkt_meta2_val_max = 2;
-    dists_params.random_seed = 4854;
-
-    Dists* dists = new Dists(dists_params);
-    SharedConfig* config = new SharedConfig(total_time, cp->in_queue_cnt(), target_queues, dists);
-    bool config_set = cp->set_shared_config(config);
-    if (!config_set) return;
-
-    research_project(base_eg, cp, total_time, query, 10, good_examples_file, bad_examples_file, config, good_example_cnt, bad_example_cnt);
 }
 
 void loom(string good_examples_file, string bad_examples_file) {
 
-    cout << "loom" << endl;
-    time_typ start_time = noww();
+    vector<Workload> workloads;
 
-    unsigned int nic_tx_queue_cnt = 4;
-    unsigned int per_core_flow_cnt = 3;
-    unsigned int query_time = 3;
+    while(true) {
+        cout << "loom" << endl;
+        time_typ start_time = noww();
 
-    unsigned int good_example_cnt = 50;
-    unsigned int bad_example_cnt = 50;
-    unsigned int total_time = 10;
+        unsigned int nic_tx_queue_cnt = 4;
+        unsigned int per_core_flow_cnt = 3;
+        unsigned int query_time = 3;
 
-    // Create contention point
-    LoomMQPrio* cp = new LoomMQPrio(nic_tx_queue_cnt, per_core_flow_cnt, total_time);
+        unsigned int good_example_cnt = 50;
+        unsigned int bad_example_cnt = 50;
+        unsigned int total_time = 10;
+
+        // Create contention point
+        LoomMQPrio* cp = new LoomMQPrio(nic_tx_queue_cnt, per_core_flow_cnt, total_time);
 
 
-    qset_t tenant1_qset;
-    qset_t tenant2_qset;
+        qset_t tenant1_qset;
+        qset_t tenant2_qset;
 
-    for (unsigned int i = 0; i < cp->in_queue_cnt(); i++) {
-        if (i % 3 == 0)
-            tenant1_qset.insert(i);
-        else
-            tenant2_qset.insert(i);
-    }
-
-    // Base Workload
-
-    Workload wl(20, cp->in_queue_cnt(), total_time);
-    wl.add_spec(TimedSpec(Comp(QSum(tenant1_qset, metric_t::CENQ), op_t::GE, Time(1)),
-                          total_time,
-                          total_time));
-    wl.add_spec(TimedSpec(Comp(QSum(tenant2_qset, metric_t::CENQ), op_t::GE, Time(1)),
-                          total_time,
-                          total_time));
-
-    for (unsigned int q = 0; q < cp->in_queue_cnt(); q++) {
-        if (q % 3 == 2) {
-            wl.add_spec(
-                TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::LE, 0u), total_time, total_time));
+        for (unsigned int i = 0; i < cp->in_queue_cnt(); i++) {
+            if (i % 3 == 0)
+                tenant1_qset.insert(i);
+            else
+                tenant2_qset.insert(i);
         }
+
+        // Base Workload
+
+        Workload wl(20, cp->in_queue_cnt(), total_time);
+        wl.add_spec(TimedSpec(Comp(QSum(tenant1_qset, metric_t::CENQ), op_t::GE, Time(1)),
+                              total_time,
+                              total_time));
+        wl.add_spec(TimedSpec(Comp(QSum(tenant2_qset, metric_t::CENQ), op_t::GE, Time(1)),
+                              total_time,
+                              total_time));
+
+        for (unsigned int q = 0; q < cp->in_queue_cnt(); q++) {
+            if (q % 3 == 2) {
+                wl.add_spec(
+                    TimedSpec(Comp(Indiv(metric_t::CENQ, q), op_t::LE, 0u), total_time, total_time));
+            }
+        }
+
+        for(Workload workload : workloads) {
+            cp->add_past_workload(workload);
+        }
+        cp->set_base_workload(wl);
+
+        // Query
+        Query query(query_quant_t::FORALL,
+                    time_range_t(total_time - 1 - query_time, total_time - 1),
+                    qdiff_t(cp->get_out_queue(1)->get_id(), cp->get_out_queue(0)->get_id()),
+                    metric_t::CENQ,
+                    op_t::GT,
+                    3u);
+
+        cp->set_query(query);
+
+        cout << "cp setup: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s" << endl;
+
+        // generate base example
+        start_time = noww();
+        IndexedExample* base_eg = new IndexedExample();
+        qset_t target_queues;
+
+        bool res = cp->generate_base_example(base_eg, target_queues, cp->in_queue_cnt());
+
+        if (!res) {
+            cout << "ERROR: couldn't generate base example" << endl;
+            return;
+        }
+
+        cout << "base example generation: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s"
+             << endl;
+
+
+        // Set shared config
+        DistsParams dists_params;
+        dists_params.in_queue_cnt = cp->in_queue_cnt();
+        dists_params.total_time = total_time;
+        dists_params.pkt_meta1_val_max = 3;
+        dists_params.pkt_meta2_val_max = 2;
+        dists_params.random_seed = 13388;
+
+        Dists* dists = new Dists(dists_params);
+        SharedConfig* config = new SharedConfig(total_time, cp->in_queue_cnt(), target_queues, dists);
+        bool config_set = cp->set_shared_config(config);
+        if (!config_set) return;
+
+        workloads.push_back(research_project(base_eg, cp, total_time, query, 24, good_examples_file, bad_examples_file, config, good_example_cnt, bad_example_cnt));
     }
-
-    cp->set_base_workload(wl);
-
-    // Query
-    Query query(query_quant_t::FORALL,
-                time_range_t(total_time - 1 - query_time, total_time - 1),
-                qdiff_t(cp->get_out_queue(1)->get_id(), cp->get_out_queue(0)->get_id()),
-                metric_t::CENQ,
-                op_t::GT,
-                3u);
-
-    cp->set_query(query);
-
-    cout << "cp setup: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s" << endl;
-
-    // generate base example
-    start_time = noww();
-    IndexedExample* base_eg = new IndexedExample();
-    qset_t target_queues;
-
-    bool res = cp->generate_base_example(base_eg, target_queues, cp->in_queue_cnt());
-
-    if (!res) {
-        cout << "ERROR: couldn't generate base example" << endl;
-        return;
-    }
-
-    cout << "base example generation: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s"
-         << endl;
-
-
-    // Set shared config
-    DistsParams dists_params;
-    dists_params.in_queue_cnt = cp->in_queue_cnt();
-    dists_params.total_time = total_time;
-    dists_params.pkt_meta1_val_max = 3;
-    dists_params.pkt_meta2_val_max = 2;
-    dists_params.random_seed = 13388;
-
-    Dists* dists = new Dists(dists_params);
-    SharedConfig* config = new SharedConfig(total_time, cp->in_queue_cnt(), target_queues, dists);
-    bool config_set = cp->set_shared_config(config);
-    if (!config_set) return;
-
-    research_project(base_eg, cp, total_time, query, 24, good_examples_file, bad_examples_file, config, good_example_cnt, bad_example_cnt);
 
 }
 
 void leaf_spine_bw(string good_examples_file, string bad_examples_file) {
-    cout << "leaf_spine_bw" << endl;
-    time_typ start_time = noww();
 
-    unsigned int leaf_cnt = 3;
-    unsigned int spine_cnt = 2;
-    unsigned int servers_per_leaf = 2;
-    unsigned int server_cnt = leaf_cnt * servers_per_leaf;
-    bool reduce_queues = true;
+    vector<Workload> workloads;
 
-    unsigned int src_server = 0;
-    unsigned int dst_server = (2 * servers_per_leaf) + 1;
-    unsigned int query_thresh = 4;
+    while(true) {
+        cout << "leaf_spine_bw" << endl;
+        time_typ start_time = noww();
 
-    unsigned int good_example_cnt = 50;
-    unsigned int bad_example_cnt = 50;
-    unsigned int total_time = 10;
+        unsigned int leaf_cnt = 3;
+        unsigned int spine_cnt = 2;
+        unsigned int servers_per_leaf = 2;
+        unsigned int server_cnt = leaf_cnt * servers_per_leaf;
+        bool reduce_queues = true;
 
-    // Create contention point
-    LeafSpine* cp = new LeafSpine(leaf_cnt, spine_cnt, servers_per_leaf, total_time, reduce_queues);
+        unsigned int src_server = 0;
+        unsigned int dst_server = (2 * servers_per_leaf) + 1;
+        unsigned int query_thresh = 4;
 
-    unsigned int in_queue_cnt = cp->in_queue_cnt();
+        unsigned int good_example_cnt = 50;
+        unsigned int bad_example_cnt = 50;
+        unsigned int total_time = 10;
 
-    // Base Workload
-    Workload wl(in_queue_cnt + 5, in_queue_cnt, total_time);
+        // Create contention point
+        LeafSpine* cp = new LeafSpine(leaf_cnt, spine_cnt, servers_per_leaf, total_time, reduce_queues);
 
-    wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, src_server), op_t::GE, Time(1)),
-                          total_time - 1,
-                          total_time));
+        unsigned int in_queue_cnt = cp->in_queue_cnt();
 
-    wl.add_spec(TimedSpec(Comp(Indiv(metric_t::DST, src_server), op_t::EQ, dst_server),
-                          total_time - 1,
-                          total_time));
+        // Base Workload
+        Workload wl(in_queue_cnt + 5, in_queue_cnt, total_time);
 
-    for (unsigned int q = 0; q < in_queue_cnt; q++) {
-        Same s(metric_t::DST, q);
-        wl.add_spec(TimedSpec(s, time_range_t(0, total_time - 1), total_time));
+        wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, src_server), op_t::GE, Time(1)),
+                              total_time - 1,
+                              total_time));
+
+        wl.add_spec(TimedSpec(Comp(Indiv(metric_t::DST, src_server), op_t::EQ, dst_server),
+                              total_time - 1,
+                              total_time));
+
+        for (unsigned int q = 0; q < in_queue_cnt; q++) {
+            Same s(metric_t::DST, q);
+            wl.add_spec(TimedSpec(s, time_range_t(0, total_time - 1), total_time));
+        }
+
+        qset_t unique_qset;
+        for (unsigned int q = 0; q < in_queue_cnt; q++)
+            unique_qset.insert(q);
+        Unique uniq(metric_t::DST, unique_qset);
+        wl.add_spec(TimedSpec(uniq, time_range_t(0, total_time - 1), total_time));
+
+        for(Workload workload : workloads) {
+            cp->add_past_workload(workload);
+        }
+        cp->set_base_workload(wl);
+
+        // Query
+        cid_t query_qid = cp->get_out_queue(dst_server)->get_id();
+        Query query(query_quant_t::FORALL,
+                    time_range_t(total_time - 1, total_time - 1),
+                    query_qid,
+                    metric_t::CENQ,
+                    op_t::LE,
+                    query_thresh);
+
+        cp->set_query(query);
+
+        cout << "cp setup: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s" << endl;
+
+        // generate base example
+        start_time = noww();
+        IndexedExample* base_eg = new IndexedExample();
+        qset_t target_queues;
+
+        bool res = cp->generate_base_example(base_eg, target_queues, cp->in_queue_cnt());
+
+        if (!res) {
+            cout << "ERROR: couldn't generate base example" << endl;
+            return;
+        }
+
+        cout << "base example generation: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s"
+             << endl;
+
+
+        // Set shared config
+        DistsParams dists_params;
+        dists_params.in_queue_cnt = cp->in_queue_cnt();
+        dists_params.total_time = total_time;
+        dists_params.pkt_meta1_val_max = server_cnt - 1;
+        dists_params.pkt_meta2_val_max = spine_cnt - 1;
+        dists_params.random_seed = 24212;
+
+        Dists* dists = new Dists(dists_params);
+        SharedConfig* config = new SharedConfig(total_time, cp->in_queue_cnt(), target_queues, dists);
+        bool config_set = cp->set_shared_config(config);
+        if (!config_set) return;
+
+        workloads.push_back(research_project(base_eg, cp, total_time, query, 24, good_examples_file, bad_examples_file, config, good_example_cnt, bad_example_cnt));
     }
-
-    qset_t unique_qset;
-    for (unsigned int q = 0; q < in_queue_cnt; q++)
-        unique_qset.insert(q);
-    Unique uniq(metric_t::DST, unique_qset);
-    wl.add_spec(TimedSpec(uniq, time_range_t(0, total_time - 1), total_time));
-
-    cp->set_base_workload(wl);
-
-    // Query
-    cid_t query_qid = cp->get_out_queue(dst_server)->get_id();
-    Query query(query_quant_t::FORALL,
-                time_range_t(total_time - 1, total_time - 1),
-                query_qid,
-                metric_t::CENQ,
-                op_t::LE,
-                query_thresh);
-
-    cp->set_query(query);
-
-    cout << "cp setup: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s" << endl;
-
-    // generate base example
-    start_time = noww();
-    IndexedExample* base_eg = new IndexedExample();
-    qset_t target_queues;
-
-    bool res = cp->generate_base_example(base_eg, target_queues, cp->in_queue_cnt());
-
-    if (!res) {
-        cout << "ERROR: couldn't generate base example" << endl;
-        return;
-    }
-
-    cout << "base example generation: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s"
-         << endl;
-
-
-    // Set shared config
-    DistsParams dists_params;
-    dists_params.in_queue_cnt = cp->in_queue_cnt();
-    dists_params.total_time = total_time;
-    dists_params.pkt_meta1_val_max = server_cnt - 1;
-    dists_params.pkt_meta2_val_max = spine_cnt - 1;
-    dists_params.random_seed = 24212;
-
-    Dists* dists = new Dists(dists_params);
-    SharedConfig* config = new SharedConfig(total_time, cp->in_queue_cnt(), target_queues, dists);
-    bool config_set = cp->set_shared_config(config);
-    if (!config_set) return;
-
-    research_project(base_eg, cp, total_time, query, 24, good_examples_file, bad_examples_file, config, good_example_cnt, bad_example_cnt);
 }
 
 void tbf(std::string good_examples_file, std::string bad_examples_file) {
-    unsigned int total_time = 6;
-    unsigned int start = 2;
-    unsigned int interval = 2;
 
-    unsigned int link_rate = 3;
+    vector<Workload> workloads;
 
-    TBFInfo info;
-    info.link_rate = link_rate;
-    info.max_tokens = 6;
-    info.max_enq = 10;
+    while(true) {
+        unsigned int total_time = 6;
+        unsigned int start = 2;
+        unsigned int interval = 2;
 
-    TBF* tbf = new TBF(total_time, info);
+        unsigned int link_rate = 3;
 
-    Workload wl(100, 1, total_time);
+        TBFInfo info;
+        info.link_rate = link_rate;
+        info.max_tokens = 6;
+        info.max_enq = 10;
 
-    for (uint i = 0; i < interval; i++) {
-        wl.add_spec(
-            TimedSpec(Comp(Indiv(metric_t::CENQ, 0), op_t::GE, (unsigned int) (i + 1) * link_rate),
-                      time_range_t(start + i, start + i),
-                      total_time));
+        TBF* tbf = new TBF(total_time, info);
+
+        Workload wl(100, 1, total_time);
+
+        for (uint i = 0; i < interval; i++) {
+            wl.add_spec(
+                TimedSpec(Comp(Indiv(metric_t::CENQ, 0), op_t::GE, (unsigned int) (i + 1) * link_rate),
+                          time_range_t(start + i, start + i),
+                          total_time));
+        }
+
+        for(Workload workload : workloads) {
+            tbf->add_past_workload(workload);
+        }
+        tbf->set_base_workload(wl);
+
+        cid_t queue_id = tbf->get_in_queue()->get_id();
+
+        Query query(query_quant_t::EXISTS,
+                    time_range_t(0, total_time - 1),
+                    queue_id,
+                    metric_t::DEQ,
+                    op_t::GT,
+                    link_rate);
+
+        tbf->set_query(query);
+
+        IndexedExample* base_eg = new IndexedExample();
+        qset_t target_queues;
+
+        bool res = tbf->generate_base_example(base_eg, target_queues, 1);
+
+        if (!res) {
+            cout << "ERROR: couldn't generate base example" << endl;
+            return;
+        }
+
+        // Set shared config
+        DistsParams dists_params;
+        dists_params.in_queue_cnt = tbf->in_queue_cnt();
+        dists_params.total_time = total_time;
+        dists_params.pkt_meta1_val_max = 2;
+        dists_params.pkt_meta2_val_max = 2;
+        dists_params.random_seed = 14748;
+
+        Dists* dists = new Dists(dists_params);
+        SharedConfig* config = new SharedConfig(total_time, tbf->in_queue_cnt(), target_queues, dists);
+        bool config_set = tbf->set_shared_config(config);
+        if (!config_set) return;
+
+        workloads.push_back(research_project(base_eg, tbf, total_time, query, 8, good_examples_file, bad_examples_file, config, 50, 50));
     }
-    tbf->set_base_workload(wl);
-
-    cid_t queue_id = tbf->get_in_queue()->get_id();
-
-    Query query(query_quant_t::EXISTS,
-                time_range_t(0, total_time - 1),
-                queue_id,
-                metric_t::DEQ,
-                op_t::GT,
-                link_rate);
-
-    tbf->set_query(query);
-
-    IndexedExample* base_eg = new IndexedExample();
-    qset_t target_queues;
-
-    bool res = tbf->generate_base_example(base_eg, target_queues, 1);
-
-    if (!res) {
-        cout << "ERROR: couldn't generate base example" << endl;
-        return;
-    }
-
-    // Set shared config
-    DistsParams dists_params;
-    dists_params.in_queue_cnt = tbf->in_queue_cnt();
-    dists_params.total_time = total_time;
-    dists_params.pkt_meta1_val_max = 2;
-    dists_params.pkt_meta2_val_max = 2;
-    dists_params.random_seed = 14748;
-
-    Dists* dists = new Dists(dists_params);
-    SharedConfig* config = new SharedConfig(total_time, tbf->in_queue_cnt(), target_queues, dists);
-    bool config_set = tbf->set_shared_config(config);
-    if (!config_set) return;
-
-    research_project(base_eg, tbf, total_time, query, 8, good_examples_file, bad_examples_file, config, 50, 50);
 
 }
 

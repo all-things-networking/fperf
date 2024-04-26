@@ -53,7 +53,11 @@ public:
     ContentionPoint* cp;
 
 
+
     void print_stats();
+    void clear_stats();
+
+
 
 private:
     InputOnlySolver* input_only_solver;

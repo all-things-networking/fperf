@@ -1528,7 +1528,22 @@ Workload research_project(IndexedExample* base_eg, ContentionPoint* cp, unsigned
                 std::cout << "Error with variable: " << (*all_vars)[i] << std::endl;
             }
         }
+    } else if (searchMode == "cost_test") {
 
+        // Create workload:
+        // [1, 2]: cenq(0, t) = 3
+
+
+        Workload wl(100, cp->in_queue_cnt(), total_time);
+        wl.clear();
+        wl.add_spec(TimedSpec(Comp(Indiv(metric_t::CENQ, 0), op_t::EQ, 3u), time_range_t(0, 1), total_time));
+
+        Search search(cp, query, max_spec, config, good_examples_file, bad_examples_file);
+        cout << "Original Workload: " << endl << wl << endl;
+        cout << "Num traces: " << search.indiv_equal_to_num_traces(wl) << endl;
+
+
+        return wl;
     } else {
         throw std::runtime_error("Invalid search mode");
     }

@@ -18,6 +18,7 @@
 #include "shared_config.hpp"
 #include "solver.hpp"
 #include "util.hpp"
+#include "visitor.hpp"
 
 using namespace std;
 
@@ -99,6 +100,8 @@ protected:
     vector<Queue*> out_queues;
     map<metric_t, map<cid_t, Metric*>> metrics;
 
+    ExpressionGeneratorVisitor expr_gen_visitor;
+
     void init();
 
 private:
@@ -145,21 +148,6 @@ private:
     expr get_expr(IndexedExample* eg, vector<metric_t>& metrics);
     expr get_expr(IndexedExample* eg);
     expr get_expr(Workload wl);
-    expr get_expr(TimedSpec tspec);
-    expr get_expr(Unique uniq, time_range_t time_range);
-    expr get_expr(Same same, time_range_t time_range);
-    expr get_expr(Incr incr, time_range_t time_range);
-    expr get_expr(Decr decr, time_range_t time_range);
-    expr get_expr(Comp comp, time_range_t time_range);
-    expr get_expr(Comp comp, unsigned int t);
-    m_val_expr_t get_expr(Expr* rhs, unsigned int t);
-    m_val_expr_t get_expr(MExpr* lhs, unsigned int t);
-    m_val_expr_t get_expr(Constant c, unsigned int t);
-    m_val_expr_t get_expr(Time time, unsigned int t);
-    m_val_expr_t get_expr(Indiv indiv, unsigned int t);
-    m_val_expr_t get_expr(QSum qsum, unsigned int t);
-
-    expr mk_op(expr lhs, Op op, expr rhs);
 
     /* *********** Workload Satisifes Example ************ */
     bool timedspec_satisfies_example(TimedSpec spec, IndexedExample* eg);

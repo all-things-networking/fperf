@@ -13,6 +13,7 @@
 #include <sstream>
 
 #include "util.hpp"
+#include "visitor.hpp"
 
 //************************************* RHS *************************************//
 
@@ -31,6 +32,10 @@ unsigned int Expr::ast_size() const {
         return m_expr->ast_size();
     }
     return 0u;
+}
+
+void Expr::accept(Visitor& visitor) {
+    visitor.visit(this);
 }
 
 ostream& operator<<(ostream& os, const Expr* rhs) {
@@ -140,6 +145,10 @@ unsigned int MExpr::ast_size() const {
     return 1u;
 }
 
+void MExpr::accept(Visitor& visitor) {
+    visitor.visit(this);
+}
+
 ostream& operator<<(ostream& os, const MExpr* m_expr) {
     const QSum* qsum = dynamic_cast<const QSum*>(m_expr);
     if (qsum) {
@@ -193,6 +202,10 @@ unsigned int Time::get_coeff() const {
     return coeff;
 }
 
+void Time::accept(Visitor& visitor) {
+    visitor.visit(*this);
+}
+
 ostream& operator<<(ostream& os, const Time* time) {
     if (time->coeff != 1) os << time->coeff;
     os << "t";
@@ -220,6 +233,10 @@ Constant::Constant(unsigned int value): value(value) {
 
 unsigned int Constant::get_value() const {
     return value;
+}
+
+void Constant::accept(Visitor& visitor) {
+    visitor.visit(*this);
 }
 
 ostream& operator<<(ostream& os, const Constant* c) {
@@ -261,6 +278,10 @@ metric_t QSum::get_metric() const {
     return metric;
 }
 
+void QSum::accept(Visitor& visitor) {
+    visitor.visit(*this);
+}
+
 ostream& operator<<(ostream& os, const QSum* qsum) {
     os << "SUM_[q in " << qsum->qset << "] " << qsum->metric << "(q ,t)";
     return os;
@@ -295,6 +316,10 @@ unsigned int Indiv::get_queue() const {
 
 metric_t Indiv::get_metric() const {
     return metric;
+}
+
+void Indiv::accept(Visitor& visitor) {
+    visitor.visit(*this);
 }
 
 ostream& operator<<(ostream& os, const Indiv* indiv) {
@@ -349,6 +374,10 @@ int Unique::type_id() const {
     return 5;
 }
 
+void Unique::accept(Visitor& visitor) {
+    visitor.visit(*this);
+}
+
 std::string Unique::to_string() const {
     stringstream ss;
     ss << "Unique[" << metric << "(" << qset << ", t)]";
@@ -388,6 +417,11 @@ bool Same::less_than(const WlSpec& other) const {
 int Same::type_id() const {
     return 2;
 }
+
+void Same::accept(Visitor& visitor) {
+    visitor.visit(*this);
+}
+
 
 std::string Same::to_string() const {
     stringstream ss;
@@ -429,6 +463,10 @@ int Incr::type_id() const {
     return 3;
 }
 
+void Incr::accept(Visitor& visitor) {
+    visitor.visit(*this);
+}
+
 std::string Incr::to_string() const {
     stringstream ss;
     ss << "Incr[" << metric << "(" << queue << ", t)]";
@@ -467,6 +505,10 @@ bool Decr::less_than(const WlSpec& other) const {
 
 int Decr::type_id() const {
     return 4;
+}
+
+void Decr::accept(Visitor& visitor) {
+    visitor.visit(*this);
 }
 
 std::string Decr::to_string() const {
@@ -784,6 +826,13 @@ int Comp::type_id() const {
     return 1;
 }
 
+void Comp::accept(Visitor& visitor) {
+    lhs->accept(visitor);
+    rhs->accept(visitor);
+    op.accept(visitor);
+    visitor.visit(*this);
+}
+
 std::string Comp::to_string() const {
     std::ostringstream os;
     if (is_all)
@@ -900,6 +949,11 @@ time_range_t TimedSpec::get_time_range() const {
 
 WlSpec* TimedSpec::get_wl_spec() const {
     return wl_spec;
+}
+
+void TimedSpec::accept(Visitor& visitor) {
+    visitor.set_time_range(time_range);
+    visitor.visit(*this);
 }
 
 ostream& operator<<(ostream& os, const TimedSpec& spec) {
@@ -1480,6 +1534,16 @@ string Workload::get_timeline_str() {
     }
     return ss.str();
 }
+
+void Workload::accept(Visitor& visitor) {
+    // Visit TimedSpecs
+    for (set<TimedSpec>::iterator it = all_specs.begin(); it != all_specs.end(); ++it) {
+        TimedSpec& modifiableSpec = const_cast<TimedSpec&>(*it);
+        modifiableSpec.accept(visitor);
+    }
+    visitor.visit(*this);
+}
+
 
 ostream& operator<<(ostream& os, const Workload& wl) {
     if (wl.is_empty())

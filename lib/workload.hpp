@@ -22,6 +22,7 @@
 #include "example.hpp"
 #include "metric.hpp"
 #include "util.hpp"
+class Visitor;
 
 /* --------------------------------------------------------------
 The Grammar:
@@ -48,6 +49,8 @@ public:
     virtual unsigned int ast_size() const;
     virtual bool applies_to_queue(unsigned int queue) const;
 
+    void accept(Visitor& visitor);
+
     virtual bool operator==(const Expr& other) const;
     virtual bool operator<(const Expr& other) const;
 };
@@ -63,6 +66,8 @@ public:
     unsigned int ast_size() const override;
     bool applies_to_queue(unsigned int queue) const override;
 
+    void accept(Visitor& visitor);
+
     virtual bool operator==(const MExpr& other) const;
     virtual bool operator<(const MExpr& other) const;
 };
@@ -77,6 +82,8 @@ class Time : public Expr {
 public:
     Time(unsigned int coeff);
     unsigned int get_coeff() const;
+
+    void accept(Visitor& visitor);
 
 private:
     unsigned int coeff;
@@ -94,6 +101,8 @@ class Constant : public Expr {
 public:
     Constant(unsigned int value);
     unsigned int get_value() const;
+
+    void accept(Visitor& visitor);
 
 private:
     unsigned int value;
@@ -117,6 +126,8 @@ public:
     qset_t get_qset() const;
     metric_t get_metric() const;
 
+    void accept(Visitor& visitor);
+
 private:
     qset_t qset;
     metric_t metric;
@@ -139,6 +150,8 @@ public:
 
     unsigned int get_queue() const;
     metric_t get_metric() const;
+
+    void accept(Visitor& visitor);
 
 private:
     metric_t metric;
@@ -186,6 +199,8 @@ public:
     // Override operators
     bool operator==(const WlSpec& other) const override;
 
+    void accept(Visitor& visitor);
+
 private:
     metric_t metric;
     qset_t qset;
@@ -207,6 +222,8 @@ public:
     metric_t get_metric() const;
 
     bool operator==(const WlSpec& other) const override;
+
+    void accept(Visitor& visitor);
 
 private:
     metric_t metric;
@@ -230,6 +247,8 @@ public:
 
     bool operator==(const WlSpec& other) const override;
 
+    void accept(Visitor& visitor);
+
 private:
     metric_t metric;
     unsigned int queue;
@@ -251,6 +270,8 @@ public:
     metric_t get_metric() const;
 
     bool operator==(const WlSpec& other) const override;
+
+    void accept(Visitor& visitor);
 
 private:
     metric_t metric;
@@ -279,6 +300,8 @@ public:
     Expr* get_rhs() const;
 
     bool operator==(const WlSpec& other) const override;
+
+    void accept(Visitor& visitor);
 
 private:
     MExpr* lhs;
@@ -311,6 +334,8 @@ public:
     WlSpec* get_wl_spec() const;
 
     void set_time_range_ub(unsigned int ub);
+
+    void accept(Visitor& visitor);
 
 protected:
     WlSpec* wl_spec;
@@ -356,6 +381,8 @@ public:
 
     friend ostream& operator<<(ostream& os, const Workload& wl);
     friend ostream& operator<<(ostream& os, const Workload* wl);
+
+    void accept(Visitor& visitor);
 
 private:
     unsigned int max_size;

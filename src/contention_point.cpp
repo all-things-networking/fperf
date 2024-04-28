@@ -18,7 +18,8 @@ ContentionPoint::ContentionPoint(unsigned int total_time):
 total_time(total_time),
 base_wl(Workload(0, 0, total_time)),
 base_wl_expr(expr(net_ctx.z3_ctx())),
-query_expr(expr(net_ctx.z3_ctx())) {
+query_expr(expr(net_ctx.z3_ctx())),
+expr_gen_visitor(ExpressionGeneratorVisitor(net_ctx, in_queues)){
 }
 
 // NOTE: the constructor of inherited classes
@@ -1721,18 +1722,6 @@ ostream& operator<<(ostream& os, const ContentionPoint& p) {
     return os;
 }
 
-expr ContentionPoint::mk_op(expr lhs, Op op, expr rhs) {
-    switch (op.get_type()) {
-        case Op::Type::GT: return lhs > rhs;
-        case Op::Type::GE: return lhs >= rhs;
-        case Op::Type::LT: return lhs < rhs;
-        case Op::Type::LE: return lhs <= rhs;
-        case Op::Type::EQ: return lhs == rhs;
-    }
-    cout << "FPerfModel::mk_op: should not reach here" << endl;
-    return lhs >= rhs;
-}
-
 unsigned int ContentionPoint::in_queue_cnt() {
     return (unsigned int) in_queues.size();
 }
@@ -1930,267 +1919,20 @@ expr ContentionPoint::get_expr(Query& query) {
     return query_expr;
 }
 
-expr ContentionPoint::get_expr(IndexedExample* eg, vector<metric_t>& metrics) {
-    expr_vector res_vec(net_ctx.z3_ctx());
-
-    for (unsigned int q = 0; q < in_queues.size(); q++) {
-        Queue* queue = in_queues[q];
-        for (unsigned int i = 0; i < metrics.size(); i++) {
-            Metric* m = queue->get_metric(metrics[i]);
-            for (unsigned int t = 0; t < total_time; t++) {
-                m_val_expr_t m_q_t = m->val(t);
-                metric_val eg_val;
-                m->eval(eg, t, q, eg_val);
-                if (eg_val.valid) {
-                    res_vec.push_back(m_q_t.first && (m_q_t.second == (int) eg_val.value));
-                } else {
-                    res_vec.push_back(!m_q_t.first);
-                }
-            }
-        }
-    }
-
-    return mk_and(res_vec);
-}
-
-expr ContentionPoint::get_expr(IndexedExample* eg) {
-    expr_vector res_vec(net_ctx.z3_ctx());
-
-    // enqs
-    for (unsigned int q = 0; q < in_queues.size(); q++) {
-        Queue* queue = in_queues[q];
-        for (unsigned int t = 0; t < total_time; t++) {
-            expr enq_q_t = queue->enq_cnt(t);
-            res_vec.push_back(enq_q_t == (int) eg->enqs[q][t]);
-        }
-    }
-
-    // enqs_meta1 and enqs_meta2
-    for (unsigned int q = 0; q < in_queues.size(); q++) {
-        Queue* queue = in_queues[q];
-        for (unsigned int t = 0; t < total_time; t++) {
-            for (unsigned int p = 0; p < eg->enqs_meta1[q][t].size(); p++) {
-                expr pkt = queue->enqs(p)[t];
-                expr val = net_ctx.pkt2val(pkt);
-                expr m1 = net_ctx.pkt2meta1(pkt);
-                expr m2 = net_ctx.pkt2meta2(pkt);
-
-                res_vec.push_back(val);
-                res_vec.push_back(m1 == (int) eg->enqs_meta1[q][t][p]);
-                res_vec.push_back(m2 == (int) eg->enqs_meta2[q][t][p]);
-            }
-        }
-    }
-
-    return mk_and(res_vec);
-}
-
 expr ContentionPoint::get_expr(Workload wl) {
+    // TODO: Move these if statements into the Visitor
     if (wl.is_empty()) return net_ctx.bool_val(false);
     if (wl.is_all()) return net_ctx.bool_val(true);
 
-    expr_vector res(net_ctx.z3_ctx());
-    set<TimedSpec> specs = wl.get_all_specs();
-    for (set<TimedSpec>::iterator it = specs.begin(); it != specs.end(); it++) {
-        res.push_back(get_expr(*it));
-    }
-    return mk_and(res);
-}
+    // expr_vector res(net_ctx.z3_ctx());
+    // set<TimedSpec> specs = wl.get_all_specs();
+    // for (set<TimedSpec>::iterator it = specs.begin(); it != specs.end(); it++) {
+    //     res.push_back(get_expr(*it));
+    // }
+    // return mk_and(res);
 
-expr ContentionPoint::get_expr(TimedSpec spec) {
-    time_range_t time_range = spec.get_time_range();
-    WlSpec* wl_spec = spec.get_wl_spec();
-
-    // Dynamic casting to determine the specific type of WlSpec
-    if (Comp* compSpec = dynamic_cast<Comp*>(wl_spec)) {
-        return get_expr(*compSpec, time_range);
-    } else if (Same* sameSpec = dynamic_cast<Same*>(wl_spec)) {
-        return get_expr(*sameSpec, time_range);
-    } else if (Incr* incrSpec = dynamic_cast<Incr*>(wl_spec)) {
-        return get_expr(*incrSpec, time_range);
-    } else if (Decr* decrSpec = dynamic_cast<Decr*>(wl_spec)) {
-        return get_expr(*decrSpec, time_range);
-    } else if (Unique* uniqSpec = dynamic_cast<Unique*>(wl_spec)) {
-        return get_expr(*uniqSpec, time_range);
-    } else {
-        cout << "ContentionPoint::get_expr(TimedSpec): Invalid WlSpec" << endl;
-        return net_ctx.bool_val(false);
-    }
-}
-
-expr ContentionPoint::get_expr(Unique uniq, time_range_t time_range) {
-    qset_t qset = uniq.get_qset();
-    metric_t metric = uniq.get_metric();
-    vector<unsigned int> queues(qset.begin(), qset.end());
-    unsigned int start = time_range.first;
-    unsigned int end = time_range.second;
-
-    expr_vector unique_metric(net_ctx.z3_ctx());
-
-    for (unsigned int t = start; t <= end; t++) {
-        for (unsigned int i = 0; i < queues.size(); i++) {
-            unsigned int q = queues[i];
-            Queue* queue = in_queues[q];
-            Metric* metric1 = queue->get_metric(metric);
-            m_val_expr_t metric1_val_expr = metric1->val(t);
-            expr m1_valid = metric1_val_expr.first;
-            expr m1_value = metric1_val_expr.second;
-
-            for (unsigned int j = i + 1; j < queues.size(); j++) {
-                unsigned int q2 = queues[j];
-                if (q2 == q) continue;
-                Queue* queue2 = in_queues[q2];
-                Metric* metric2 = queue2->get_metric(metric);
-                m_val_expr_t metric2_val_expr = metric2->val(t);
-                expr m2_valid = metric2_val_expr.first;
-                expr m2_value = metric2_val_expr.second;
-                unique_metric.push_back(implies(m1_valid && m2_valid, m1_value != m2_value));
-            }
-        }
-    }
-    expr constr = mk_and(unique_metric);
-    return constr;
-}
-
-expr ContentionPoint::get_expr(Same same, time_range_t time_range) {
-    Queue* queue = in_queues[same.get_queue()];
-    Metric* metric = queue->get_metric(same.get_metric());
-    m_val_expr_t initial_val_expr = metric->val(time_range.first);
-
-    expr valid_expr = initial_val_expr.first;
-    expr init_value_expr = initial_val_expr.second;
-
-    expr_vector res(net_ctx.z3_ctx());
-    res.push_back(valid_expr);
-    expr_vector no_enq(net_ctx.z3_ctx());
-
-    for (unsigned int t = time_range.first + 1; t <= time_range.second; t++) {
-        m_val_expr_t val_expr = metric->val(t);
-        res.push_back(val_expr.first);
-        res.push_back(val_expr.second == init_value_expr);
-        no_enq.push_back(queue->enq_cnt(t) == 0);
-    }
-
-    expr on_enq = mk_and(res);
-    return ite(mk_and(no_enq), net_ctx.bool_val(true), on_enq);
-}
-
-expr ContentionPoint::get_expr(Incr incr, time_range_t time_range) {
-    Queue* queue = in_queues[incr.get_queue()];
-    Metric* metric = queue->get_metric(incr.get_metric());
-    m_val_expr_t initial_val_expr = metric->val(time_range.first);
-
-    expr valid_expr = initial_val_expr.first;
-    expr value_expr = initial_val_expr.second;
-
-    expr_vector res(net_ctx.z3_ctx());
-    res.push_back(valid_expr);
-
-    for (unsigned int t = time_range.first + 1; t <= time_range.second; t++) {
-        m_val_expr_t val_expr = metric->val(t);
-        res.push_back(val_expr.first);
-        res.push_back(val_expr.second > value_expr);
-        value_expr = val_expr.second;
-    }
-
-    return mk_and(res);
-}
-
-expr ContentionPoint::get_expr(Decr decr, time_range_t time_range) {
-    Queue* queue = in_queues[decr.get_queue()];
-    Metric* metric = queue->get_metric(decr.get_metric());
-    m_val_expr_t initial_val_expr = metric->val(time_range.first);
-
-    expr valid_expr = initial_val_expr.first;
-    expr value_expr = initial_val_expr.second;
-
-    expr_vector res(net_ctx.z3_ctx());
-    res.push_back(valid_expr);
-
-    for (unsigned int t = time_range.first + 1; t <= time_range.second; t++) {
-        m_val_expr_t val_expr = metric->val(t);
-        res.push_back(val_expr.first);
-        res.push_back(val_expr.second < value_expr);
-        value_expr = val_expr.second;
-    }
-
-    return mk_and(res);
-}
-
-expr ContentionPoint::get_expr(Comp comp, time_range_t time_range) {
-    expr_vector res(net_ctx.z3_ctx());
-    for (unsigned int t = time_range.first; t <= time_range.second; t++) {
-        res.push_back(get_expr(comp, t));
-    }
-    return mk_and(res);
-}
-
-expr ContentionPoint::get_expr(Comp comp, unsigned int t) {
-    m_val_expr_t lhs = get_expr(comp.get_lhs(), t);
-    m_val_expr_t rhs = get_expr(comp.get_rhs(), t);
-    return (lhs.first && rhs.first && mk_op(lhs.second, comp.get_op(), rhs.second));
-}
-
-m_val_expr_t ContentionPoint::get_expr(Expr* rhs, unsigned int t) {
-    MExpr* lhs = dynamic_cast<MExpr*>(rhs);
-    if (lhs) {
-        return get_expr(lhs, t);
-    }
-    Time* time = dynamic_cast<Time*>(rhs);
-    if (time) {
-        return get_expr(*time, t);
-    }
-    Constant* constant = dynamic_cast<Constant*>(rhs);
-    if (constant) {
-        return get_expr(*constant, t);
-    }
-    throw std::runtime_error("ContentionPoint::get_expr: Invalid Rhs");
-}
-
-m_val_expr_t ContentionPoint::get_expr(MExpr* lhs, unsigned int t) {
-    QSum* qsum = dynamic_cast<QSum*>(lhs);
-    if (qsum) {
-        return get_expr(*qsum, t);
-    }
-    Indiv* indiv = dynamic_cast<Indiv*>(lhs);
-    if (indiv) {
-        return get_expr(*indiv, t);
-    }
-    throw std::runtime_error("ContentionPoint::get_expr: Invalid MExpr");
-}
-
-m_val_expr_t ContentionPoint::get_expr(Constant c, unsigned int t) {
-    (void) t;
-    return m_val_expr_t(net_ctx.bool_val(true), net_ctx.int_val(c.get_value()));
-}
-
-m_val_expr_t ContentionPoint::get_expr(Time time, unsigned int t) {
-    return m_val_expr_t(net_ctx.bool_val(true), net_ctx.int_val(time.get_coeff() * (t + 1)));
-}
-
-m_val_expr_t ContentionPoint::get_expr(Indiv indiv, unsigned int t) {
-    Queue* queue = in_queues[indiv.get_queue()];
-    Metric* metric = queue->get_metric(indiv.get_metric());
-    // TODO: This a temporary fix, after parametrizing search based on metrics we need to throw
-    // exception and stop the search if metric not exists
-    if (metric != nullptr)
-        return metric->val(t);
-    else
-        return {net_ctx.bool_val(false), net_ctx.int_val(0)};
-}
-
-m_val_expr_t ContentionPoint::get_expr(QSum qsum, unsigned int t) {
-    expr res = net_ctx.int_val(0);
-    expr_vector valid(net_ctx.z3_ctx());
-
-    qset_t qset = qsum.get_qset();
-    for (qset_t::iterator it = qset.begin(); it != qset.end(); it++) {
-        unsigned int q = *it;
-        m_val_expr_t val_expr = in_queues[q]->get_metric(qsum.get_metric())->val(t);
-        valid.push_back(val_expr.first);
-        res = res + val_expr.second;
-    }
-    return m_val_expr_t(mk_and(valid), res);
+    wl.accept(expr_gen_visitor);
+    return expr_gen_visitor.get_workload_expr();
 }
 
 

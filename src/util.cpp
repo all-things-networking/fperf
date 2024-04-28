@@ -92,6 +92,10 @@ bool Op::operator<(const Op& other) const {
     return type < other.type;
 }
 
+void Op::accept(Visitor& v) {
+    v.visit(*this);
+}
+
 //************************************* TIME RANGE *************************************//
 bool is_superset(time_range_t t1, time_range_t t2) {
     return t1.first <= t2.first && t1.second >= t2.second;
@@ -140,4 +144,16 @@ string banner(string b) {
     ss << "**********************************************";
     ss << "**********************************************" << endl;
     return ss.str();
+}
+
+expr mk_op(expr lhs, Op op, expr rhs) {
+    switch (op.get_type()) {
+        case Op::Type::GT: return lhs > rhs;
+        case Op::Type::GE: return lhs >= rhs;
+        case Op::Type::LT: return lhs < rhs;
+        case Op::Type::LE: return lhs <= rhs;
+        case Op::Type::EQ: return lhs == rhs;
+    }
+    cout << "FPerfModel::mk_op: should not reach here" << endl;
+    return lhs >= rhs;
 }

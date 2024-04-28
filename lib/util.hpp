@@ -23,6 +23,7 @@
 #include <string>
 
 #include "params.hpp"
+#include "visitor.hpp"
 
 using namespace z3;
 using namespace std::chrono;
@@ -64,6 +65,8 @@ public:
 
     void neg();
 
+    void accept(Visitor& v);
+
     bool operator==(const Op& other) const;
     bool operator<(const Op& other) const;
 
@@ -93,6 +96,8 @@ template <typename... Args> string format_string(const string& format, Args... a
     string s(vname);
     return s;
 }
+
+expr mk_op(expr lhs, Op op, expr rhs);
 
 #ifdef DEBUG
 #define DEBUG_MSG(str)                                                                             \

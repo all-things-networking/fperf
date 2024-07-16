@@ -78,7 +78,6 @@ public:
     Time(unsigned int coeff);
     unsigned int get_coeff() const;
 
-private:
     unsigned int coeff;
 
     friend ostream& operator<<(ostream& os, const Time* time);
@@ -95,7 +94,6 @@ public:
     Constant(unsigned int value);
     unsigned int get_value() const;
 
-private:
     unsigned int value;
 
     friend ostream& operator<<(ostream& os, const Constant* c);
@@ -117,7 +115,6 @@ public:
     qset_t get_qset() const;
     metric_t get_metric() const;
 
-private:
     qset_t qset;
     metric_t metric;
 
@@ -140,7 +137,6 @@ public:
     unsigned int get_queue() const;
     metric_t get_metric() const;
 
-private:
     metric_t metric;
     unsigned int queue;
 
@@ -280,7 +276,6 @@ public:
 
     bool operator==(const WlSpec& other) const override;
 
-private:
     MExpr* lhs;
     Op op;
     Expr* rhs;
@@ -312,7 +307,6 @@ public:
 
     void set_time_range_ub(unsigned int ub);
 
-protected:
     WlSpec* wl_spec;
     time_range_t time_range;
     unsigned int total_time;

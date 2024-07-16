@@ -38,7 +38,7 @@ public:
            deque<IndexedExample*>& good_ex,
            deque<IndexedExample*>& bad_ex);
 
-    void run();
+    Workload run();
 
     unsigned int cost(Workload wl);
 

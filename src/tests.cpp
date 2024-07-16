@@ -17,8 +17,9 @@
 #include "rr_scheduler.hpp"
 #include "search.hpp"
 #include "tbf.hpp"
+#include <ldd.h>
 
-void run(ContentionPoint* cp,
+Workload run(ContentionPoint* cp,
          IndexedExample* base_eg,
          unsigned int good_example_cnt,
          string good_examples_file,
@@ -179,7 +180,7 @@ void rr(string good_examples_file, string bad_examples_file) {
     bool config_set = rr->set_shared_config(config);
     if (!config_set) return;
 
-    run(rr,
+    Workload final_wl = run(rr,
         base_eg,
         good_example_cnt,
         good_examples_file,
@@ -188,6 +189,121 @@ void rr(string good_examples_file, string bad_examples_file) {
         query,
         10,
         config);
+
+    // LDD Testing
+    DdManager *cudd;
+    LddManager* ldd;
+    theory_t * t;
+
+    cout << "Creating the world...\n" << endl;
+    cudd = Cudd_Init (0, 0, CUDD_UNIQUE_SLOTS, 127, 0);
+
+    cout << "Initializing the theory...\n" << endl;
+    ldd = Ldd_Init (cudd, t);
+
+    // Calculate number of enqs = number of queues * timesteps
+    unsigned int num_enqs = in_queue_cnt * total_time;
+
+    // Create array of length num_enqs to represent coefficients of linterms
+    int* cf = new int[num_enqs];
+
+    /*
+     Variable ordering:
+        0: q0_t0, 1: q0_t1, 2: q0_t2, 3: q0_t3, 4: q0_t4, 5: q0_t5, 6: q0_t6,
+        7: q1_t0, 8: q1_t1, 9: q1_t2, 10: q1_t3, 11: q1_t4, 12: q1_t5, 13: q1_t6,
+        ...
+     */
+
+    // Create set of LDD constraints
+    set<lincons_t> ldd_constraints;
+
+    set<TimedSpec> specs = final_wl.get_all_specs();
+
+    // Loop through Workload constraints, create an ldd constraint for each of them
+    for (set<TimedSpec>::iterator it = specs.begin(); it != specs.end(); it++) {
+        // Loop through time range
+        for (unsigned int time = it->time_range.first; time <= it->time_range.second; time++) {
+            // Set all coefficients to 0
+            for (unsigned int i = 0; i < num_enqs; i++) {
+                cf[i] = 0;
+            }
+
+            // Create set of queues
+            qset_t queues;
+            WlSpec* wl_spec = it->wl_spec;
+            Comp* comp = dynamic_cast<Comp*>(wl_spec); // All specs are Comp objects
+            MExpr* lhs = comp->lhs;
+            if (dynamic_cast<Indiv*>(lhs)) {
+                Indiv* indiv = dynamic_cast<Indiv*>(lhs);
+                queues.insert(indiv->queue);
+            } else if (dynamic_cast<QSum*>(lhs)) {
+                QSum* qsum = dynamic_cast<QSum*>(lhs);
+                queues = qsum->qset;
+            }
+
+            // Set coefficients for queues in set
+            for(unsigned int q_id : queues) {
+                for (unsigned int t = 0; t < total_time; t++) {
+                    unsigned int idx = q_id * total_time + t;
+                    cf[idx] = 1;
+                }
+            }
+
+            // Get rhs constant value
+            unsigned int c = 0;
+            Expr* rhs = comp->rhs;
+            if(dynamic_cast<Constant*>(rhs)) {
+                Constant* constant = dynamic_cast<Constant*>(rhs);
+                c = constant->value;
+            } else if (dynamic_cast<Time*>(rhs)) {
+                Time* time_rhs = dynamic_cast<Time*>(rhs);
+                c = time * time_rhs->coeff;
+            }
+
+            // Get comparison operator
+            Op op = comp->op;
+            Op::Type op_type = op.type;
+
+            // Create ldd constraint:
+
+            //
+            linterm_t linear_term = t->create_linterm(cf, num_enqs);
+            for(unsigned int i = 0; i < num_enqs; i++) {
+                cf[i] = -cf[i];
+            }
+            linterm_t neg_linear_term = t->create_linterm(cf, num_enqs);
+
+
+            switch (op_type) {
+                case Op::Type::LE:
+                    ldd_constraints.insert(t->create_cons(linear_term, 0, t->create_int_cst(c)));
+                    break;
+                case Op::Type::LT:
+                    ldd_constraints.insert(t->create_cons(linear_term, 1, t->create_int_cst(c)));
+                    break;
+                case Op::Type::EQ:
+                    // In the EQ case, we must create two constraints:
+                    // linear_term <= c and -linear_term <= -c
+                    ldd_constraints.insert(t->create_cons(linear_term, 0, t->create_int_cst(c)));
+                    ldd_constraints.insert(t->create_cons(neg_linear_term, 0, t->create_int_cst(-c)));
+                    break;
+                case Op::Type::GE:
+                    // linear_term >= c is equivalent to -linear_term <= -c
+                    ldd_constraints.insert(t->create_cons(neg_linear_term, 0, t->create_int_cst(-c)));
+                    break;
+                case Op::Type::GT:
+                    // linear_term > c is equivalent to -linear_term < -c
+                    ldd_constraints.insert(t->create_cons(neg_linear_term, 1, t->create_int_cst(-c)));
+                    break;
+                default:
+                    break;
+            }
+
+        }
+    }
+
+
+
 }
 
 void fq_codel(string good_examples_file, string bad_examples_file) {
@@ -534,7 +650,7 @@ void tbf(std::string good_examples_file, std::string bad_examples_file) {
     run(tbf, base_eg, 50, good_examples_file, 50, bad_examples_file, query, 8, config);
 }
 
-void run(ContentionPoint* cp,
+Workload run(ContentionPoint* cp,
          IndexedExample* base_eg,
          unsigned int good_example_cnt,
          string good_examples_file,
@@ -592,5 +708,5 @@ void run(ContentionPoint* cp,
     Search search(cp, query, max_spec, config, good_examples, bad_examples);
 
     cout << "search setup: " << (get_diff_millisec(start_time, noww())) << " ms" << endl;
-    search.run();
+    return search.run();
 }

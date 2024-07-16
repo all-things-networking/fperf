@@ -67,7 +67,6 @@ public:
     bool operator==(const Op& other) const;
     bool operator<(const Op& other) const;
 
-private:
     Type type;
 };
 

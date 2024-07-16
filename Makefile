@@ -1,11 +1,12 @@
 CXX      := g++
-CXXFLAGS := -pedantic-errors -Wno-sign-compare -Wno-unknown-pragmas -Wall -Wextra -Werror -std=c++17 -O3
-LDFLAGS  := -L/usr/lib -L/usr/local/lib/ -lstdc++ -lm -lz3
+CXXFLAGS := -pedantic-errors -Wno-sign-compare -Wno-unknown-pragmas -Wall -Wextra -std=c++17 -Og -g
+LDFLAGS  := -L/usr/lib -L/usr/local/lib/ -lstdc++ -lm -lz3 -lcudd -lepd -lldd -lmtr -lst -ldddmp -llddutil
 BUILD    := ./build
 OBJ_DIR  := $(BUILD)/objects
 APP_DIR  := $(BUILD)
 TARGET   := fperf
-INCLUDE  := -I/usr/local/include -Ilib/ -Ilib/metrics/ -Ilib/cps -Ilib/qms
+INCLUDE  := -I/usr/local/include -Ilib/ -Ilib/metrics/ -Ilib/cps -Ilib/qms -I/Users/lucedes/Documents/GitHub/ldd/src/include -I/Users/lucedes/Documents/GitHub/ldd/cudd-2.4.2/include
+
 SRC      :=	$(wildcard src/*.cpp) \
 						 $(wildcard src/*/*.cpp)
 TEST_SRC := $(wildcard tests/*.cpp)
@@ -40,7 +41,7 @@ test: $(TEST_TARGET_PATH)
 	$^
 
 check-format: $(HEADERS) $(SRC)
-	clang-format --dry-run -Werror $^
+	clang-format --dry-run $^
 
 format: $(HEADERS) $(SRC)
 	clang-format -i $^

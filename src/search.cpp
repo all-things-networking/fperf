@@ -653,7 +653,7 @@ Workload Search::refine(Workload wl) {
     return wl;
 }
 
-void Search::run() {
+Workload Search::run() {
     DEBUG_MSG("target queues: " << target_queues << endl);
     time_typ start = noww();
 
@@ -672,6 +672,7 @@ void Search::run() {
         cout << refined_ans << endl << endl;
     }
 
+    return wl;
     // cout << "total Search::run time: " << get_diff_sec(start, noww()) << endl;
 }
 

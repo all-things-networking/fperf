@@ -670,9 +670,10 @@ Workload Search::run() {
         cout << "Solution " << i << endl;
         Workload refined_ans = refine(solutions[i]);
         cout << refined_ans << endl << endl;
+
+        return refined_ans; // TODO: Look into this. For now, Just return the first one. Don't know why there are multiple solutions
     }
 
-    return wl;
     // cout << "total Search::run time: " << get_diff_sec(start, noww()) << endl;
 }
 

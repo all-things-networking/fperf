@@ -18,6 +18,7 @@
 #include "search.hpp"
 #include "tbf.hpp"
 #include <ldd.h>
+#include <tvpi.h>
 
 Workload run(ContentionPoint* cp,
          IndexedExample* base_eg,
@@ -180,20 +181,45 @@ void rr(string good_examples_file, string bad_examples_file) {
     bool config_set = rr->set_shared_config(config);
     if (!config_set) return;
 
-    Workload final_wl = run(rr,
-        base_eg,
-        good_example_cnt,
-        good_examples_file,
-        bad_example_cnt,
-        bad_examples_file,
-        query,
-        10,
-        config);
+    // Workload final_wl = run(rr,
+    //     base_eg,
+    //     good_example_cnt,
+    //     good_examples_file,
+    //     bad_example_cnt,
+    //     bad_examples_file,
+    //     query,
+    //     10,
+    //     config);
+
+    // Set up Final Workload (don't need to perform search each time)
+    Workload final_wl(10, in_queue_cnt, total_time);
+
+    // Add specs
+    // [1, 5]: cenq(2, t) >= t
+    final_wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, 2), Op(Op::Type::GE), new Time(1)),
+                               time_range_t(0, 4),
+                               total_time));
+
+    // [1, 4]: SUM_[q in {0, 1, 3, 4, }] cenq(q ,t) <= 0
+    qset_t qset;
+    qset.insert(0);
+    qset.insert(1);
+    qset.insert(3);
+    qset.insert(4);
+    final_wl.add_spec(TimedSpec(new Comp(new QSum(qset, metric_t::CENQ), Op(Op::Type::LE), new Constant(0)),
+                               time_range_t(0, 3),
+                               total_time));
+
+    // Print final workload
+    cout << "Final workload: " << endl << final_wl << endl;
 
     // LDD Testing
     DdManager *cudd;
     LddManager* ldd;
     theory_t * t;
+
+    // I don't know what this does
+    t = tvpi_create_theory(3);
 
     cout << "Creating the world...\n" << endl;
     cudd = Cudd_Init (0, 0, CUDD_UNIQUE_SLOTS, 127, 0);
@@ -219,9 +245,27 @@ void rr(string good_examples_file, string bad_examples_file) {
 
     set<TimedSpec> specs = final_wl.get_all_specs();
 
-    // Loop through Workload constraints, create an ldd constraint for each of them
+    std::cout << "Adding non-zero constraints" << std::endl;
+    // Constrain each enq to be non-negative
+    for (unsigned int i = 0; i < num_enqs; i++) {
+        cf[i] = 0;
+    }
+    for (unsigned int i = 0; i < num_enqs; i++) {
+        // enq[i] >= 0 is equivalent to -enq[i] <= 0
+        int q = floor(i / total_time);
+        int time = i % total_time + 1;
+        std::cout << "Constraint: enq[" << q << "][" << time << "] >= 0" << std::endl;
+        cf[i] = -1;
+        linterm_t single_enq_term = t->create_linterm(cf, num_enqs);
+        ldd_constraints.insert(t->create_cons(single_enq_term, 0, t->create_int_cst(0)));
+        cf[i] = 0;
+    }
+
+    std::cout << "Adding workload constraints" << std::endl;
+    Loop through Workload constraints, create an ldd constraint for each of them
     for (set<TimedSpec>::iterator it = specs.begin(); it != specs.end(); it++) {
         // Loop through time range
+        std::cout << "Spec: " << *it << std::endl;
         for (unsigned int time = it->time_range.first; time <= it->time_range.second; time++) {
             // Set all coefficients to 0
             for (unsigned int i = 0; i < num_enqs; i++) {
@@ -251,22 +295,22 @@ void rr(string good_examples_file, string bad_examples_file) {
 
             // Get rhs constant value
             unsigned int c = 0;
-            Expr* rhs = comp->rhs;
-            if(dynamic_cast<Constant*>(rhs)) {
-                Constant* constant = dynamic_cast<Constant*>(rhs);
-                c = constant->value;
-            } else if (dynamic_cast<Time*>(rhs)) {
-                Time* time_rhs = dynamic_cast<Time*>(rhs);
-                c = time * time_rhs->coeff;
+            if (Expr* rhs = comp->rhs) {
+                if (auto* constant = dynamic_cast<Constant*>(rhs)) {
+                    c = constant->value;
+                } else if (auto* time_rhs = dynamic_cast<Time*>(rhs)) {
+                    c = time * time_rhs->coeff;
+                }
+            }else {
+                cout << "ERROR: no RHS in constraint" << endl;
+                return;
             }
 
             // Get comparison operator
             Op op = comp->op;
             Op::Type op_type = op.type;
 
-            // Create ldd constraint:
-
-            //
+            // Create ldd constraints:
             linterm_t linear_term = t->create_linterm(cf, num_enqs);
             for(unsigned int i = 0; i < num_enqs; i++) {
                 cf[i] = -cf[i];
@@ -302,8 +346,21 @@ void rr(string good_examples_file, string bad_examples_file) {
         }
     }
 
+    // Print LDD
+    cout << "LDD Constraints: " << endl;
+    for (lincons_t cons : ldd_constraints) {
+        LddNode* dd = Ldd_FromCons(ldd, cons);
+        Ldd_Ref(dd);
+        Ldd_PrintMinterm(ldd, dd);
+    }
 
+    // Ldd_DumpSmtLibV1(ldd, dd, NULL, 'd', stdout);
 
+    // Clean up
+    std::cout << "Destroying the world..." << std::endl;
+    Ldd_Quit (ldd);
+    tvpi_destroy_theory (t);
+    Cudd_Quit (cudd);
 }
 
 void fq_codel(string good_examples_file, string bad_examples_file) {

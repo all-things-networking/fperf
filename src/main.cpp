@@ -13,6 +13,8 @@
 #include "tests.hpp"
 #include "util.hpp"
 
+#include <ldd.h>
+
 #ifdef DEBUG
 bool debug = true;
 #else
@@ -31,6 +33,16 @@ map<string, e2e_test_func_t*> e2e_tests = {{"prio", prio},
 const string help_message = "Usage: ./fperf TEST_NAME";
 
 int main(int argc, const char* argv[]) {
+    theory_t * t;
+
+    DdManager *cudd;
+    cudd = Cudd_Init (0, 0, CUDD_UNIQUE_SLOTS, 127, 0);
+
+    LddManager* ldd;
+    ldd = Ldd_Init (cudd, t);
+
+
+
     vector<string> arguments(argv + 1, argv + argc);
 
     if (arguments.size() != 1) throw invalid_argument("Invalid number of arguments");

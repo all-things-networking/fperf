@@ -1,6 +1,6 @@
 CXX      := g++
-CXXFLAGS := -pedantic-errors -Wno-sign-compare -Wno-unknown-pragmas -Wall -Wextra -std=c++17 -Og -g
-LDFLAGS  := -L/usr/lib -L/usr/local/lib/ -lstdc++ -lm -lz3 -lcudd -lepd -lldd -lmtr -lst -ldddmp -llddutil
+CXXFLAGS := -pedantic-errors -Wno-sign-compare -Wno-unknown-pragmas -Wall -Wextra -std=c++17 -O0 -g
+LDFLAGS  := -L/usr/lib -L/usr/local/lib/ -lstdc++ -lm -lz3 -lcudd -lepd -lldd -lmtr -lst -ldddmp -llddutil -ltvpi -lgmp
 BUILD    := ./build
 OBJ_DIR  := $(BUILD)/objects
 APP_DIR  := $(BUILD)

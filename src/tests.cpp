@@ -262,7 +262,7 @@ void rr(string good_examples_file, string bad_examples_file) {
     }
 
     std::cout << "Adding workload constraints" << std::endl;
-    Loop through Workload constraints, create an ldd constraint for each of them
+    // Loop through Workload constraints, create an ldd constraint for each of them
     for (set<TimedSpec>::iterator it = specs.begin(); it != specs.end(); it++) {
         // Loop through time range
         std::cout << "Spec: " << *it << std::endl;

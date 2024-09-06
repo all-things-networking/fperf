@@ -23,7 +23,8 @@ void Ecmp::eval(const IndexedExample* eg, unsigned int time, unsigned int qind, 
 
     res.value = enqs_meta2[0];
     for (unsigned int i = 1; i < enqs_meta2.size(); i++) {
-        if (enqs_meta2[i] != res.value) {
+        // FIXME: change enqs_meta2 to unsigned int
+        if (enqs_meta2[i] != static_cast<int>(res.value)) {
             res.valid = false;
             return;
         }

@@ -47,7 +47,7 @@ void LeafForwardingQM::add_constrs(NetContext& net_ctx, map<string, expr>& const
         expr dst_spine = net_ctx.pkt2meta2(in_pkt);
 
         // Set deq_cnt for input queue
-        sprintf(constr_name, "%s_in_queue_deq_cnt_is_zero_or_one_at_%d", id.c_str(), t);
+        snprintf(constr_name,100, "%s_in_queue_deq_cnt_is_zero_or_one_at_%d", id.c_str(), t);
         expr constr_expr = implies(pkt_val, in_queue->deq_cnt(t) == 1) &&
                            implies(!pkt_val, in_queue->deq_cnt(t) == 0);
         constr_map.insert(named_constr(constr_name, constr_expr));
@@ -62,7 +62,7 @@ void LeafForwardingQM::add_constrs(NetContext& net_ctx, map<string, expr>& const
             if (output_voq_map.find(dst_port) == output_voq_map.end()) continue;
 
             unsigned int dst_queue = output_voq_map[dst_port];
-            sprintf(constr_name, "%s_forward_dst_%d_to_port%d(q%d)_at_%d", id.c_str(), dst,
+            snprintf(constr_name,100, "%s_forward_dst_%d_to_port%d(q%d)_at_%d", id.c_str(), dst,
         dst_port, dst_queue, t); constr_expr = implies(pkt_val && pkt_dst == (int) dst,
                                   out_queues[dst_queue]->enqs(0)[t] == in_pkt);
             constr_map.insert(named_constr(constr_name, constr_expr));
@@ -79,12 +79,12 @@ void LeafForwardingQM::add_constrs(NetContext& net_ctx, map<string, expr>& const
                 if (output_voq_map.find(dst_port) == output_voq_map.end()) continue;
                 unsigned int voq_ind = output_voq_map[dst_port];
 
-                sprintf(constr_name, "%s_forward_spine_%d_at_%d", id.c_str(), s, t);
+                snprintf(constr_name,100, "%s_forward_spine_%d_at_%d", id.c_str(), s, t);
                 constr_expr = implies(pkt_val && dst_outside && dst_spine == (int) s,
                                       out_queues[voq_ind]->enqs(0)[t] == in_pkt);
                 constr_map.insert(named_constr(constr_name, constr_expr));
 
-                sprintf(constr_name, "%s_dont_forward_spine_%d_at_%d", id.c_str(), s, t);
+                snprintf(constr_name,100, "%s_dont_forward_spine_%d_at_%d", id.c_str(), s, t);
 
                 constr_expr = implies(!dst_outside || dst_spine != (int) s,
                                       out_queues[voq_ind]->enqs(0)[t] == net_ctx.null_pkt());
@@ -99,12 +99,12 @@ void LeafForwardingQM::add_constrs(NetContext& net_ctx, map<string, expr>& const
             if (output_voq_map.find(dst_port) == output_voq_map.end()) continue;
 
             unsigned int voq_ind = output_voq_map[dst_port];
-            sprintf(constr_name, "%s_forward_dst_%d_at_%d", id.c_str(), dst, t);
+            snprintf(constr_name,100, "%s_forward_dst_%d_at_%d", id.c_str(), dst, t);
             constr_expr = implies(pkt_val && pkt_dst == (int) dst,
                                   out_queues[voq_ind]->enqs(0)[t] == in_pkt);
             constr_map.insert(named_constr(constr_name, constr_expr));
 
-            sprintf(constr_name, "%s_dont_forward_dst_%d_at_%d", id.c_str(), dst, t);
+            snprintf(constr_name,100, "%s_dont_forward_dst_%d_at_%d", id.c_str(), dst, t);
             constr_expr = implies(pkt_dst != (int) dst,
                                   out_queues[voq_ind]->enqs(0)[t] == net_ctx.null_pkt());
             constr_map.insert(named_constr(constr_name, constr_expr));
@@ -115,7 +115,7 @@ void LeafForwardingQM::add_constrs(NetContext& net_ctx, map<string, expr>& const
             if (output_voq_map.find(i) == output_voq_map.end()) continue;
 
             unsigned int voq_ind = output_voq_map[i];
-            sprintf(constr_name, "%s_no_match_port%d(q%d)_at_%d", id.c_str(), i, voq_ind, t);
+            snprintf(constr_name,100, "%s_no_match_port%d(q%d)_at_%d", id.c_str(), i, voq_ind, t);
             constr_expr = implies(pkt_dst != (int) ((leaf_id * servers_per_leaf) + i),
                                   out_queues[voq_ind]->enqs(0)[t] == net_ctx.null_pkt());
 
@@ -135,7 +135,7 @@ void LeafForwardingQM::add_constrs(NetContext& net_ctx, map<string, expr>& const
                     not_valid_dsts.push_back(pkt_dst != (int) dst);
                 }
             }
-            sprintf(constr_name, "%s_no_match_port%d(q%d)_at_%d", id.c_str(), port_id, voq_ind, t);
+            snprintf(constr_name,100, "%s_no_match_port%d(q%d)_at_%d", id.c_str(), port_id, voq_ind, t);
             constr_expr = implies(mk_and(not_valid_dsts),
                                   out_queues[voq_ind]->enqs(0)[t] == net_ctx.null_pkt());
             constr_map.insert(named_constr(constr_name, constr_expr));
@@ -154,8 +154,8 @@ void LeafForwardingQM::add_constrs(NetContext& net_ctx, map<string, expr>& const
                     unsigned int dst = (leaf_id * servers_per_leaf) + i;
                     meta_bounds.push_back(pkt_meta == (int) dst);
                 }
-                sprintf(
-                    constr_name, "%s_dst_meta_bounds_for_input_queue[%d][%d]", id.c_str(), p, t);
+                snprintf(
+                    constr_name,100, "%s_dst_meta_bounds_for_input_queue[%d][%d]", id.c_str(), p, t);
                 constr_expr = implies(pkt_val, mk_or(meta_bounds));
                 constr_map.insert(named_constr(constr_name, constr_expr));
             }
@@ -170,7 +170,7 @@ void LeafForwardingQM::add_constrs(NetContext& net_ctx, map<string, expr>& const
                     unsigned int dst = (leaf_id * servers_per_leaf) + i;
                     meta_bounds.push_back(pkt_meta == (int) dst);
                 }
-                sprintf(constr_name,
+                snprintf(constr_name,100,
                         "%s_dst_meta_bounds_for_input_queue_enq[%d][%d]",
                         id.c_str(),
                         p,
@@ -185,8 +185,8 @@ void LeafForwardingQM::add_constrs(NetContext& net_ctx, map<string, expr>& const
                 expr pkt_meta = net_ctx.pkt2meta2(pkt);
 
                 unsigned int spine_id = fw_id - servers_per_leaf;
-                sprintf(
-                    constr_name, "%s_flow_meta_bounds_for_input_queue[%d][%d]", id.c_str(), p, t);
+                snprintf(
+                    constr_name,100, "%s_flow_meta_bounds_for_input_queue[%d][%d]", id.c_str(), p, t);
                 constr_expr = implies(pkt_val, pkt_meta == (int) spine_id);
                 constr_map.insert(named_constr(constr_name, constr_expr));
             }
@@ -197,7 +197,7 @@ void LeafForwardingQM::add_constrs(NetContext& net_ctx, map<string, expr>& const
                 expr pkt_meta = net_ctx.pkt2meta2(pkt);
 
                 unsigned int spine_id = fw_id - servers_per_leaf;
-                sprintf(constr_name,
+                snprintf(constr_name,100,
                         "%s_flow_meta_bounds_for_input_queue_enq[%d][%d]",
                         id.c_str(),
                         p,
@@ -213,7 +213,7 @@ void LeafForwardingQM::add_constrs(NetContext& net_ctx, map<string, expr>& const
                 expr pkt_val = net_ctx.pkt2val(pkt);
                 expr pkt_meta = net_ctx.pkt2meta1(pkt);
 
-                sprintf(constr_name,
+                snprintf(constr_name,100,
                         "%s_dst_meta_bounds_for_input_queue_enq[%d][%d]",
                         id.c_str(),
                         p,
@@ -228,7 +228,7 @@ void LeafForwardingQM::add_constrs(NetContext& net_ctx, map<string, expr>& const
                 expr pkt_val = net_ctx.pkt2val(pkt);
                 expr pkt_meta = net_ctx.pkt2meta2(pkt);
 
-                sprintf(constr_name,
+                snprintf(constr_name,100,
                         "%s_flow_meta_bounds_for_input_queue_enq[%d][%d]",
                         id.c_str(),
                         p,
@@ -249,7 +249,7 @@ void LeafForwardingQM::add_constrs(NetContext& net_ctx, map<string, expr>& const
                     expr pkt_val = net_ctx.pkt2val(pkt);
                     expr pkt_meta = net_ctx.pkt2meta2(pkt);
 
-                    sprintf(constr_name, "%s_flow_meta_bounds_for_output_queue[%d][%d][%d]",
+                    snprintf(constr_name,100, "%s_flow_meta_bounds_for_output_queue[%d][%d][%d]",
             id.c_str(), voq_ind, p, t); constr_expr = implies(pkt_val, pkt_meta == (int) s);
                     constr_map.insert(named_constr(constr_name, constr_expr));
                 }
@@ -259,7 +259,7 @@ void LeafForwardingQM::add_constrs(NetContext& net_ctx, map<string, expr>& const
         // Don't enqueue into any port if packet is invalid
 
         for (unsigned int i = 0; i < out_queue_cnt(); i++) {
-            sprintf(constr_name, "%s_invalid_pkt_port_%d_at_%d", id.c_str(), i, t);
+            snprintf(constr_name,100, "%s_invalid_pkt_port_%d_at_%d", id.c_str(), i, t);
             constr_expr = implies(!pkt_val, out_queues[i]->enqs(0)[t] == net_ctx.null_pkt());
             constr_map.insert(named_constr(constr_name, constr_expr));
         }
@@ -267,7 +267,7 @@ void LeafForwardingQM::add_constrs(NetContext& net_ctx, map<string, expr>& const
         // Make sure nothing else gets pushed to the output queue
         for (unsigned int i = 0; i < out_queue_cnt(); i++) {
             for (unsigned int e = 1; e < out_queues[i]->max_enq(); e++) {
-                sprintf(constr_name, "%s_out_%d_enqs[%d][%d]_is_null", id.c_str(), i, e, t);
+                snprintf(constr_name,100, "%s_out_%d_enqs[%d][%d]_is_null", id.c_str(), i, e, t);
                 expr constr_expr = out_queues[i]->enqs(e)[t] == net_ctx.null_pkt();
                 constr_map.insert(named_constr(constr_name, constr_expr));
             }
@@ -281,7 +281,7 @@ void LeafForwardingQM::add_constrs(NetContext& net_ctx, map<string, expr>& const
                 expr pkt = queue->enqs(e)[t];
                 expr meta3 = net_ctx.pkt2meta3(pkt);
 
-                sprintf(constr_name, "%s_in_%d_enqs[%d][%d]_meta3_bound", id.c_str(), i, e, t);
+                snprintf(constr_name,100, "%s_in_%d_enqs[%d][%d]_meta3_bound", id.c_str(), i, e, t);
                 expr constr_expr = meta3 <= (int) t && meta3 >= 0;
                 constr_map.insert(named_constr(constr_name, constr_expr));
             }
@@ -293,7 +293,7 @@ void LeafForwardingQM::add_constrs(NetContext& net_ctx, map<string, expr>& const
                 expr pkt = queue->enqs(e)[t];
                 expr meta3 = net_ctx.pkt2meta3(pkt);
 
-                sprintf(constr_name, "%s_out_%d_enqs[%d][%d]_meta3_bound", id.c_str(), i, e, t);
+                snprintf(constr_name,100, "%s_out_%d_enqs[%d][%d]_meta3_bound", id.c_str(), i, e, t);
                 unsigned int meta3_bound = t;
                 expr constr_expr = meta3 <= (int) meta3_bound && meta3 >= 0;
                 constr_map.insert(named_constr(constr_name, constr_expr));
@@ -309,7 +309,7 @@ void LeafForwardingQM::add_constrs(NetContext& net_ctx, map<string, expr>& const
                     expr pkt = queue->enqs(e)[t];
                     expr meta3 = net_ctx.pkt2meta3(pkt);
 
-                    sprintf(constr_name, "%s_in_%d_enqs[%d][%d]_meta3_bound", id.c_str(), i, e, t);
+                    snprintf(constr_name,100, "%s_in_%d_enqs[%d][%d]_meta3_bound", id.c_str(), i, e, t);
                     unsigned int meta3_bound = 0;
                     if (t >= 2) meta3_bound = t - 2;
                     expr constr_expr = meta3 <= (int) meta3_bound && meta3 >= 0;
@@ -323,7 +323,7 @@ void LeafForwardingQM::add_constrs(NetContext& net_ctx, map<string, expr>& const
                     expr pkt = queue->enqs(e)[t];
                     expr meta3 = net_ctx.pkt2meta3(pkt);
 
-                    sprintf(constr_name, "%s_out_%d_enqs[%d][%d]_meta3_bound", id.c_str(), i, e, t);
+                    snprintf(constr_name,100, "%s_out_%d_enqs[%d][%d]_meta3_bound", id.c_str(), i, e, t);
                     unsigned int meta3_bound = 0;
                     if (t >= 3) meta3_bound = t - 3;
                     expr constr_expr = meta3 <= (int) meta3_bound && meta3 >= 0;
@@ -338,7 +338,7 @@ void LeafForwardingQM::add_constrs(NetContext& net_ctx, map<string, expr>& const
                     expr pkt = queue->enqs(e)[t];
                     expr meta3 = net_ctx.pkt2meta3(pkt);
 
-                    sprintf(constr_name, "%s_in_%d_enqs[%d][%d]_meta3_bound", id.c_str(), i, e, t);
+                    snprintf(constr_name,100, "%s_in_%d_enqs[%d][%d]_meta3_bound", id.c_str(), i, e, t);
                     expr constr_expr = meta3 <= (int) t && meta3 >= 0;
                     constr_map.insert(named_constr(constr_name, constr_expr));
                 }
@@ -350,7 +350,7 @@ void LeafForwardingQM::add_constrs(NetContext& net_ctx, map<string, expr>& const
                     expr pkt = queue->enqs(e)[t];
                     expr meta3 = net_ctx.pkt2meta3(pkt);
 
-                    sprintf(constr_name, "%s_out_%d_enqs[%d][%d]_meta3_bound", id.c_str(), i, e, t);
+                    snprintf(constr_name,100, "%s_out_%d_enqs[%d][%d]_meta3_bound", id.c_str(), i, e, t);
                     unsigned int meta3_bound = 0;
                     if (t >= 1) meta3_bound = t - 1;
                     expr constr_expr = meta3 <= (int) meta3_bound && meta3 >= 0;

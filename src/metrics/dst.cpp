@@ -23,7 +23,8 @@ void Dst::eval(const IndexedExample* eg, unsigned int time, unsigned int qind, m
 
     res.value = enqs_meta1[0];
     for (unsigned int i = 1; i < enqs_meta1.size(); i++) {
-        if (enqs_meta1[i] != res.value) {
+        // FIXME: change enqs_meta2 to unsigned int
+        if (enqs_meta1[i] != static_cast<int>(res.value)) {
             res.valid = false;
             return;
         }

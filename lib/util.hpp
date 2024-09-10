@@ -89,7 +89,7 @@ string banner(string b);
 
 template <typename... Args> string format_string(const string& format, Args... args) {
     char vname[100];
-    snprintf(vname,100, format.c_str(), args...);
+    snprintf(vname, 100, format.c_str(), args...);
     string s(vname);
     return s;
 }

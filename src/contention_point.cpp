@@ -273,7 +273,7 @@ void ContentionPoint::add_out_queue_constrs() {
                                           queue->deq_cnt(t) == (int) deq_bound));
 
             expr constr = mk_and(deq_cnt_vec);
-            snprintf(constr_name,100, "%s_deq_cnt_at_%d", queue->get_id().c_str(), t);
+            snprintf(constr_name, 100, "%s_deq_cnt_at_%d", queue->get_id().c_str(), t);
             add_constr(constr, constr_name);
             constr_map.insert(named_constr(constr_name, constr));
         }
@@ -535,7 +535,7 @@ bool ContentionPoint::generate_base_example(IndexedExample* base_eg,
     // Ensure there is a cap on the number of
     // empty queues to avoid trivial examples
     expr constr_expr = sum(empty_queues_expr_vec) <= (int) max_empty_queue;
-    snprintf(constr_name,100, "at_most_%d_empty_queues", max_empty_queue);
+    snprintf(constr_name, 100, "at_most_%d_empty_queues", max_empty_queue);
     z3_optimizer->add(constr_expr, constr_name);
 
     // First, maximize the total number of queues
@@ -615,7 +615,7 @@ void ContentionPoint::generate_good_examples(IndexedExample* base_eg,
 
         Metric* cenq_metric = in_queues[q]->get_metric(metric_t::CENQ);
         for (unsigned int t = 0; t < total_time; t++) {
-            snprintf(constr_name,100, "%d_is_zerod_queue[%d}", q, t);
+            snprintf(constr_name, 100, "%d_is_zerod_queue[%d}", q, t);
             expr constr_expr = cenq_metric->val(t).second == 0;
             z3_optimizer->add(constr_expr, constr_name);
         }
@@ -629,7 +629,7 @@ void ContentionPoint::generate_good_examples(IndexedExample* base_eg,
     // second to last time step (TODO: the exact constant
     // may need to be generalized.
     for (unsigned int q = 0; q < in_queues.size(); q++) {
-        snprintf(constr_name,100, "%d_example_trimming", q);
+        snprintf(constr_name, 100, "%d_example_trimming", q);
         expr constr_expr = in_queues[q]->enq_cnt(total_time - 1) == 0 &&
                            in_queues[q]->enq_cnt(total_time - 2) <= 1;
         z3_optimizer->add(constr_expr, constr_name);
@@ -695,7 +695,7 @@ void ContentionPoint::generate_good_examples(IndexedExample* base_eg,
                     // POP
                     z3_optimizer->pop();
                     // Make sure we don't get this example again
-                    snprintf(constr_name,100, "example_%d", i);
+                    snprintf(constr_name, 100, "example_%d", i);
                     z3_optimizer->add(not_this_example, constr_name);
 
 
@@ -743,7 +743,7 @@ void ContentionPoint::generate_bad_examples(unsigned int count, deque<IndexedExa
         if (target_queues.find(q) == target_queues.end()) {
             Metric* cenq_metric = in_queues[q]->get_metric(metric_t::CENQ);
             for (unsigned int t = 0; t < total_time; t++) {
-                snprintf(constr_name,100, "%d_is_zerod_queue[%d}", q, t);
+                snprintf(constr_name, 100, "%d_is_zerod_queue[%d}", q, t);
                 expr constr_expr = cenq_metric->val(t).second == 0;
                 z3_solver->add(constr_expr, constr_name);
             }
@@ -832,7 +832,7 @@ void ContentionPoint::generate_bad_examples(unsigned int count, deque<IndexedExa
                     z3_solver->pop();
 
                     // Make sure we don't get this example again
-                    snprintf(constr_name,100, "example_%d", i);
+                    snprintf(constr_name, 100, "example_%d", i);
                     z3_solver->add(not_this_example, constr_name);
 
 
@@ -870,7 +870,7 @@ void ContentionPoint::generate_good_examples_from_base_flow(deque<IndexedExample
         if (non_zero_queues.find(q) != non_zero_queues.end()) continue;
         Metric* cenq_metric = in_queues[q]->get_metric(metric_t::CENQ);
         for (unsigned int t = 0; t < total_time; t++) {
-            snprintf(constr_name,100, "%d_is_zerod_queue[%d}", q, t);
+            snprintf(constr_name, 100, "%d_is_zerod_queue[%d}", q, t);
             expr constr_expr = cenq_metric->val(t).second == 0;
             z3_optimizer->add(constr_expr, constr_name);
         }
@@ -879,7 +879,7 @@ void ContentionPoint::generate_good_examples_from_base_flow(deque<IndexedExample
 
     for (qset_t::iterator it = non_zero_queues.begin(); it != non_zero_queues.end(); it++) {
         unsigned int q = *it;
-        snprintf(constr_name,100, "%d_example_trimming", q);
+        snprintf(constr_name, 100, "%d_example_trimming", q);
         expr constr_expr = in_queues[q]->enq_cnt(total_time - 1) == 0 &&
                            in_queues[q]->enq_cnt(total_time - 2) <= 1;
         z3_optimizer->add(constr_expr, constr_name);
@@ -989,7 +989,7 @@ void ContentionPoint::generate_good_examples_from_base_flow(deque<IndexedExample
                     eg = new_eg;
 
                     z3_optimizer->pop();
-                    snprintf(constr_name,100, "example_%d", i);
+                    snprintf(constr_name, 100, "example_%d", i);
                     z3_optimizer->add(not_this_example, constr_name);
 
                     past_thresh.push_back(j);
@@ -1149,7 +1149,7 @@ void ContentionPoint::generate_good_examples_flow(deque<IndexedExample*>& exampl
         unsigned int queue = *it;
         Metric* cenq_metric = in_queues[queue]->get_metric(metric_t::CENQ);
         for (unsigned int t = 0; t < total_time; t++) {
-            snprintf(constr_name,100, "%d_is_zerod_queue[%d}", queue, t);
+            snprintf(constr_name, 100, "%d_is_zerod_queue[%d}", queue, t);
             expr constr_expr = cenq_metric->val(t).second == 0;
             z3_optimizer->add(constr_expr, constr_name);
         }
@@ -1157,7 +1157,7 @@ void ContentionPoint::generate_good_examples_flow(deque<IndexedExample*>& exampl
 
     for (qset_t::iterator it = target_queues.begin(); it != target_queues.end(); it++) {
         unsigned int q = *it;
-        snprintf(constr_name,100, "%d_example_trimming", q);
+        snprintf(constr_name, 100, "%d_example_trimming", q);
         expr constr_expr = in_queues[q]->enq_cnt(total_time - 1) == 0 &&
                            in_queues[q]->enq_cnt(total_time - 2) <= 1;
         z3_optimizer->add(constr_expr, constr_name);
@@ -1286,7 +1286,7 @@ void ContentionPoint::generate_good_examples_flow(deque<IndexedExample*>& exampl
                     eg = new_eg;
 
                     z3_optimizer->pop();
-                    snprintf(constr_name,100, "example_%d", i);
+                    snprintf(constr_name, 100, "example_%d", i);
                     z3_optimizer->add(not_this_example, constr_name);
 
                     past_thresh.push_back(j);
@@ -1342,7 +1342,7 @@ void ContentionPoint::generate_good_examples2(IndexedExample* base_eg,
 
         Metric* cenq_metric = in_queues[q]->get_metric(metric_t::CENQ);
         for (unsigned int t = 0; t < total_time; t++) {
-            snprintf(constr_name,100, "%d_is_zerod_queue[%d}", q, t);
+            snprintf(constr_name, 100, "%d_is_zerod_queue[%d}", q, t);
             expr constr_expr = cenq_metric->val(t).second == 0;
             z3_optimizer->add(constr_expr, constr_name);
         }
@@ -1356,7 +1356,7 @@ void ContentionPoint::generate_good_examples2(IndexedExample* base_eg,
     // second to last time step (TODO: the exact constant
     // may need to be generalized.
     for (unsigned int q = 0; q < in_queues.size(); q++) {
-        snprintf(constr_name,100, "%d_example_trimming", q);
+        snprintf(constr_name, 100, "%d_example_trimming", q);
         expr constr_expr = in_queues[q]->enq_cnt(total_time - 1) == 0 &&
                            in_queues[q]->enq_cnt(total_time - 2) <= 1;
         z3_optimizer->add(constr_expr, constr_name);
@@ -1469,7 +1469,7 @@ void ContentionPoint::generate_good_examples2(IndexedExample* base_eg,
                     eg = new_eg;
 
                     z3_optimizer->pop();
-                    snprintf(constr_name,100, "example_%d", i);
+                    snprintf(constr_name, 100, "example_%d", i);
                     z3_optimizer->add(not_this_example, constr_name);
 
                     past_thresh.push_back(j);

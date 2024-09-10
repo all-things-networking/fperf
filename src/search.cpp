@@ -796,7 +796,6 @@ void Search::pick_neighbors(Workload wl, vector<Workload>& neighbors) {
                             new_neighbors++;
                         }
                     }
-
                 }
             }
         }

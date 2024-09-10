@@ -1045,7 +1045,7 @@ void ContentionPoint::generate_good_examples_flow(deque<IndexedExample*>& exampl
         char constr_name[100];
         expr constr_expr = per_queue_enq_sum[q] >= min_cenq;
 
-        snprintf(constr_name, 100, "min_cenq_%d", q);
+        snprintf(constr_name,100, "min_cenq_%d", q);
         z3_optimizer->add(constr_expr, constr_name);
     }
     */
@@ -1169,7 +1169,7 @@ void ContentionPoint::generate_good_examples_flow(deque<IndexedExample*>& exampl
         unsigned int q = *it;
         for (unsigned int t = 0; t < total_time; t++){
             for (unsigned int p = 0; p < in_queues[q]->max_enq(); p++){
-                snprintf(constr_name, 100, "%d_test_%d_%d", q, t, p);
+                snprintf(constr_name,100, "%d_test_%d_%d", q, t, p);
                 expr pkt = in_queues[q]->enqs(p)[t];
                 expr constr_expr = implies(net_ctx.pkt2val(pkt),
                                            net_ctx.pkt2meta2(pkt) == 1);

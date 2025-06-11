@@ -43,7 +43,9 @@ void LoomNICEnqQM::constrs_if_not_taken(NetContext& net_ctx, map<string, expr>& 
     const unsigned int tenant2_spark = 2;
     const unsigned int tenant2_memcached = 3;
 
-
+    // Dequeue at most per_queue_share packets from each queue
+    // Finds a mapping between the first per_queue_share * in_queue_cnt elements in the output
+    // and first per_queue_share * in_queue_cnt elements of the input buffers
     for (unsigned int t = 0; t < total_time; t++) {
         for (unsigned int q = 0; q < in_queues.size(); q++) {
             for (unsigned int i = 0; i < per_queue_share; i++) {

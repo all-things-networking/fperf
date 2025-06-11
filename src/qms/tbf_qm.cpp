@@ -17,7 +17,8 @@ QueuingModule(id,
 
 void TBFQM::add_proc_vars(NetContext& net_ctx) {
     for (unsigned int t = 0; t < total_time; t++) {
-        string vname = format_string("%s_token_queue[%d]", id.c_str(), t);
+        // string vname = format_string("%s_token_queue[%d]", id.c_str(), t);
+        string vname = format("{}_token_queue[{}]", id.c_str(), t);
         token_queue.push_back(net_ctx.int_const(vname.data()));
     }
 }
@@ -34,7 +35,8 @@ void TBFQM::add_constrs(NetContext& net_ctx, std::map<std::string, expr>& constr
                                       net_ctx.pkt2val(in_queue->elem(i - 1)[t]);
             if (i < in_queue->size())
                 is_last_null_packet = is_last_null_packet && !net_ctx.pkt2val(in_queue->elem(i)[t]);
-            string constr_name = format_string("%s_deq_count_%d_%d", id.c_str(), t, i);
+            // string constr_name = format_string("%s_deq_count_%d_%d", id.c_str(), t, i);
+            string constr_name = format("{}_deq_count_{}_{}", id.c_str(), t, i);
             expr constr_expr = implies(is_last_null_packet,
                                        in_queue->deq_cnt(t) ==
                                            min(net_ctx.int_val(i), token_queue[t]));
@@ -43,7 +45,8 @@ void TBFQM::add_constrs(NetContext& net_ctx, std::map<std::string, expr>& constr
     }
 
     for (unsigned int t = 0; t < total_time; t++) {
-        string constr_name = format_string("%s_tokens_count_%d", id.c_str(), t);
+        // string constr_name = format_string("%s_tokens_count_%d", id.c_str(), t);
+        string constr_name = format("{}_tokens_count_{}", id.c_str(), t);
         expr constr_expr = net_ctx.bool_val(true);
         if (t == 0)
             constr_expr = token_queue[t] == 0;
@@ -57,7 +60,7 @@ void TBFQM::add_constrs(NetContext& net_ctx, std::map<std::string, expr>& constr
 
     for (unsigned int t = 0; t < total_time; t++) {
         for (unsigned int i = 0; i < out_queue->max_enq(); ++i) {
-            string constr_name = format_string("%s_output_from_%d_%d", id.c_str(), i, t);
+            string constr_name = format("{}_output_from_{}_{}", id.c_str(), i, t);
             expr constr_expr = net_ctx.bool_val(true);
             constr_expr = ite(in_queue->deq_cnt(t) >= net_ctx.int_val(i + 1),
                               out_queue->enqs(i)[t] == in_queue->elem(i)[t],

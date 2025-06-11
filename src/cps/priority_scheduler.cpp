@@ -15,12 +15,19 @@ PrioScheduler::PrioScheduler(unsigned int prio_levels, unsigned int total_time):
 ContentionPoint(total_time),
 prio_levels(prio_levels) {
     init();
+    buf_size = 10;
+}
+PrioScheduler::PrioScheduler(unsigned int prio_levels, unsigned int total_time, uint buf_size):
+buf_size(buf_size),
+ContentionPoint(total_time),
+prio_levels(prio_levels) {
+    init();
 }
 
 void PrioScheduler::add_nodes() {
     // add a priority qm
     QueueInfo info;
-    info.size = 10;
+    info.size = buf_size;
     info.max_enq = 4;
     info.max_deq = 1;
     info.type = queue_t::QUEUE;

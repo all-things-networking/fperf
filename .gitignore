@@ -1,8 +1,10 @@
 build
 *.log
+.DS_Store
 
 # For Windows/Visual Studio installations
 .vs/
 x64/
 fperf.*
 libz3.dll
+*.txt

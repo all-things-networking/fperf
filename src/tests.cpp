@@ -283,7 +283,7 @@ void loom(string good_examples_file, string bad_examples_file) {
     unsigned int total_time = 10;
 
     // Create contention point
-    LoomMQPrio* cp = new LoomMQPrio(nic_tx_queue_cnt, per_core_flow_cnt, total_time);
+    LoomMQPrio* cp = new LoomMQPrio(nic_tx_queue_cnt, per_core_flow_cnt, total_time, MAX_QUEUE_SIZE);
 
 
     qset_t tenant1_qset;

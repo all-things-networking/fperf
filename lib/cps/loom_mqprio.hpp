@@ -19,12 +19,14 @@ class LoomMQPrio : public ContentionPoint {
 public:
     LoomMQPrio(unsigned int nic_tx_queue_cnt,
                unsigned int per_core_flow_cnt,
-               unsigned int total_time);
+               unsigned int total_time,
+               unsigned int queue_size);
 
 private:
     unsigned int nic_tx_queue_cnt;
     unsigned int per_core_flow_cnt;
     unsigned int tenant_cnt = 2;
+    unsigned int queue_size;
 
     vector<CEnq*> cenq;
     vector<AIPG*> aipg;

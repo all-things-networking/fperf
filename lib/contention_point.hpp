@@ -47,6 +47,7 @@ public:
 
     solver_res_t solve();
     solver_res_t satisfy_query();
+    solver_res_t unsat_not_query();
     solver_res_t check_workload_without_query(Workload wl);
     solver_res_t check_workload_with_query(Workload wl, IndexedExample* eg);
 
@@ -81,7 +82,7 @@ public:
 
     friend ostream& operator<<(ostream& os, const ContentionPoint& p);
 
-protected:
+public:
     NetContext net_ctx;
     solver* z3_solver;
     optimize* z3_optimizer;

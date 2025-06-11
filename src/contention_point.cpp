@@ -331,11 +331,28 @@ solver_res_t ContentionPoint::satisfy_query() {
     }
 
     z3_solver->push();
+
     z3_solver->add(base_wl_expr, "base_wl");
     z3_solver->add(query_expr, "query");
     solver_res_t res = solve();
-
     z3_solver->pop();
+
+    return res;
+}
+
+solver_res_t ContentionPoint::unsat_not_query() {
+    if (!query_is_set) {
+        cout << "ContentionPoint::satisfy_query: Query is not set." << endl;
+        return solver_res_t::UNKNOWN;
+    }
+
+    z3_solver->push();
+
+    z3_solver->add(base_wl_expr, "base_wl");
+    z3_solver->add(!query_expr, "query");
+    solver_res_t res = solve();
+    z3_solver->pop();
+    cout << z3_solver->statistics() << endl;
 
     return res;
 }

@@ -13,6 +13,10 @@
 #include "tests.hpp"
 #include "util.hpp"
 
+#include "cps/priority_scheduler.hpp"
+
+#include "cps/loom_mqprio.hpp"
+
 #ifdef DEBUG
 bool debug = true;
 #else
@@ -21,30 +25,111 @@ bool debug = false;
 
 using namespace std;
 
-map<string, e2e_test_func_t*> e2e_tests = {{"prio", prio},
-                                           {"rr", rr},
-                                           {"fq_codel", fq_codel},
-                                           {"loom", loom},
-                                           {"leaf_spine_bw", leaf_spine_bw},
-                                           {"tbf", tbf}};
-
-const string help_message = "Usage: ./fperf TEST_NAME";
-
 int main(int argc, const char* argv[]) {
-    vector<string> arguments(argv + 1, argv + argc);
+    cout << "loom" << endl;
+    time_typ start_time = noww();
 
-    if (arguments.size() != 1) throw invalid_argument("Invalid number of arguments");
+    unsigned int nic_tx_queue_cnt = 4;
+    unsigned int per_core_flow_cnt = 3;
+    unsigned int query_time = 3;
+    if (argc < 2) throw runtime_error("No input argument");
+    // unsigned int buffer_size = std::stoi(argv[1]);
+    unsigned int buffer_size = 10;
+    cout << "buffer_size: " << buffer_size << endl;
+    unsigned int total_time = 10;
 
-    if (arguments[0] == "--help") {
-        cout << help_message << endl;
-        return 0;
+    unsigned int good_example_cnt = 50;
+    unsigned int bad_example_cnt = 50;
+    // unsigned int total_time = 10;
+
+    // Create contention point
+    LoomMQPrio* cp = new LoomMQPrio(nic_tx_queue_cnt, per_core_flow_cnt, total_time, buffer_size);
+
+
+    qset_t tenant1_qset;
+    qset_t tenant2_qset;
+
+    for (unsigned int i = 0; i < cp->in_queue_cnt(); i++) {
+        if (i % 3 == 0)
+            tenant1_qset.insert(i);
+        else
+            tenant2_qset.insert(i);
     }
 
-    string test_name = arguments[0];
-    if (e2e_tests.find(test_name) == e2e_tests.end())
-        throw invalid_argument("Unknown test: " + test_name);
 
-    e2e_tests.find(test_name)->second("", "");
+    Workload wl(20, cp->in_queue_cnt(), total_time);
+    // wl.add_spec(
+    //     TimedSpec(new Comp(new QSum(tenant1_qset, metric_t::CENQ), Op(Op::Type::GE), new
+    //     Time(1)),
+    //               total_time,
+    //               total_time));
+    // wl.add_spec(
+    //     TimedSpec(new Comp(new QSum(tenant2_qset, metric_t::CENQ), Op(Op::Type::GE), new
+    //     Time(1)),
+    //               total_time,
+    //               total_time));
+    //
+    // for (unsigned int q = 0; q < cp->in_queue_cnt(); q++) {
+    //     if (q % 3 == 2) {
+    //         wl.add_spec(
+    //             TimedSpec(new Comp(new Indiv(metric_t::CENQ, q), Op(Op::Type::LE), new
+    //             Constant(0)),
+    //                       total_time,
+    //                       total_time));
+    //     }
+    // }
 
-    return 0;
+    // WORKLOAD
+    // wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, 7), Op(Op::Type::GE), new Time(1)),
+    //                       total_time,
+    //                       total_time));
+    // wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, 10), Op(Op::Type::GE), new Time(1)),
+    //                       total_time,
+    //                       total_time));
+    //
+    // wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, 1), Op(Op::Type::GE), new Time(1)),
+    //                       total_time,
+    //                       total_time));
+    // wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, 4), Op(Op::Type::GE), new Time(1)),
+    //                       total_time,
+    //                       total_time));
+    // wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, 9), Op(Op::Type::GE), new Time(1)),
+    //                       total_time,
+    //                       total_time));
+    // wl.add_spec(TimedSpec(new Comp(new QSum({0u, 2u, 3u, 5u, 6u, 8u, 11u}, metric_t::CENQ),
+    //                                Op(Op::Type::LE),
+    //                                new Constant(0)),
+    //                       total_time,
+    //                       total_time));
+
+    // WORKLOAD
+    wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, 3), Op(Op::Type::GE), new Time(1)),
+                          total_time,
+                          total_time));
+    wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, 8), Op(Op::Type::GE), new Time(1)),
+                          total_time,
+                          total_time));
+    wl.add_spec(
+        TimedSpec(new Comp(new QSum({0u, 1u, 2u, 4u, 5u, 6u, 7u, 9u, 10u, 11u}, metric_t::CENQ),
+                           Op(Op::Type::LE),
+                           new Constant(0)),
+                  total_time,
+                  total_time));
+
+    cp->set_base_workload(wl);
+
+    Query query(query_quant_t::FORALL,
+                time_range_t(total_time - 1 - query_time, total_time - 1),
+                qdiff_t(cp->get_out_queue(1)->get_id(), cp->get_out_queue(0)->get_id()),
+                metric_t::CENQ,
+                Op(Op::Type::GT),
+                3u);
+    cp->set_query(query);
+
+
+    cout << "before:" << noww() - start_time << endl;
+    auto res = cp->unsat_not_query();
+    cout << res << endl;
+
+    // IndexedExample* base_eg = new IndexedExample();
 }

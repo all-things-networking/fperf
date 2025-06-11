@@ -19,8 +19,10 @@ using namespace std;
 class PrioScheduler : public ContentionPoint {
 public:
     PrioScheduler(unsigned int prio_levels, unsigned int total_time);
+    PrioScheduler(unsigned int prio_levels, unsigned int total_time, uint buf_size);
 
 private:
+    uint buf_size;
     unsigned int prio_levels;
     vector<CBlocked*> cblocked;
     vector<CEnq*> cenq;

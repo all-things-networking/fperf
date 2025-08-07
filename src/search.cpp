@@ -241,6 +241,9 @@ void Search::search(Workload wl) {
 
     round_no = 1;
 
+    const char* envVar = std::getenv("WL_FILE");
+    ofstream file(envVar, ios::trunc);
+
     while (!found) {
 
         /* ******************** check the current workload ******************** */
@@ -252,10 +255,7 @@ void Search::search(Workload wl) {
         }
         cout << "round " << round_no << endl;
         cout << wl << endl;
-
         // check if it is the answer
-
-
         Workload to_check(max_spec + in_queue_cnt, in_queue_cnt, total_time);
         to_check = wl;
         for (unsigned int q = 0; q < cp->in_queue_cnt(); q++) {

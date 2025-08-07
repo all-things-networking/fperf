@@ -12,16 +12,17 @@
 #include <sstream>
 
 PrioScheduler::PrioScheduler(unsigned int prio_levels, unsigned int total_time):
-ContentionPoint(total_time),
-prio_levels(prio_levels) {
+ContentionPoint(total_time, Z3_RANDOM_SEED),
+prio_levels(prio_levels),
+buf_size(MAX_QUEUE_SIZE) {
     init();
-    buf_size = 10;
 }
 PrioScheduler::PrioScheduler(unsigned int prio_levels, unsigned int total_time, uint buf_size):
 buf_size(buf_size),
-ContentionPoint(total_time),
+ContentionPoint(total_time, Z3_RANDOM_SEED),
 prio_levels(prio_levels) {
     init();
+    cout << "BUFFER SIZE: " << buf_size << endl;
 }
 
 void PrioScheduler::add_nodes() {
@@ -30,7 +31,7 @@ void PrioScheduler::add_nodes() {
     info.size = buf_size;
     info.max_enq = 4;
     info.max_deq = 1;
-    info.type = queue_t::QUEUE;
+    info.type = queue_t::IMM_QUEUE;
 
     cid_t m_id = "Prio";
 

@@ -28,8 +28,9 @@ void run(ContentionPoint* cp,
          unsigned int max_spec,
          SharedConfig* config);
 
-void prio(string good_examples_file, string bad_examples_file) {
-
+void prio(int buf_size) {
+    string good_examples_file = "";
+    string bad_examples_file = "";
     cout << "Prio" << endl;
     time_typ start_time = noww();
 
@@ -40,7 +41,7 @@ void prio(string good_examples_file, string bad_examples_file) {
     unsigned int bad_example_cnt = 50;
     unsigned int total_time = 7;
 
-    PrioScheduler* prio = new PrioScheduler(prio_levels, total_time);
+    PrioScheduler* prio = new PrioScheduler(prio_levels, total_time, buf_size);
 
     cid_t query_qid = prio->get_in_queues()[2]->get_id();
     Query query(query_quant_t::EXISTS,
@@ -49,8 +50,34 @@ void prio(string good_examples_file, string bad_examples_file) {
                 metric_t::CBLOCKED,
                 Op(Op::Type::GT),
                 query_thresh);
-
     prio->set_query(query);
+
+    Workload wl(100, 5, total_time);
+
+    wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, 2), Op(Op::Type::GE), new Constant(1)),
+                          time_range_t(0, total_time - 1),
+                          total_time));
+
+    wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, 0), Op(Op::Type::LE), new Constant(0)),
+                          time_range_t(0, total_time - 1),
+                          total_time));
+
+    wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, 3), Op(Op::Type::LE), new Constant(0)),
+                          time_range_t(0, total_time - 1),
+                          total_time));
+
+    wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, 1), Op(Op::Type::GE), new Constant(1)),
+                          time_range_t(0, total_time - 1),
+                          total_time));
+
+    wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, 1), Op(Op::Type::GE), new Time(1)),
+                          time_range_t(1, total_time - 1),
+                          total_time));
+
+    // prio->set_base_workload(wl);
+    auto model = prio->unsat_not_query();
+    // cout << wl << endl;
+    // return;
 
     cout << "cp setup: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s" << endl;
 
@@ -75,7 +102,7 @@ void prio(string good_examples_file, string bad_examples_file) {
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = 2;
     dists_params.pkt_meta2_val_max = 2;
-    dists_params.random_seed = 2000;
+    dists_params.random_seed = 3000;
 
     Dists* dists = new Dists(dists_params);
     SharedConfig* config = new SharedConfig(total_time, prio->in_queue_cnt(), target_queues, dists);
@@ -93,7 +120,10 @@ void prio(string good_examples_file, string bad_examples_file) {
         config);
 }
 
-void rr(string good_examples_file, string bad_examples_file) {
+void rr(int buf_size) {
+    string good_examples_file = "";
+    string bad_examples_file = "";
+    cout << "Prio" << endl;
 
     cout << "rr" << endl;
     time_typ start_time = noww();
@@ -108,7 +138,7 @@ void rr(string good_examples_file, string bad_examples_file) {
     unsigned int total_time = recur * period;
 
     // Create contention point
-    RRScheduler* rr = new RRScheduler(in_queue_cnt, total_time);
+    RRScheduler* rr = new RRScheduler(in_queue_cnt, total_time, buf_size);
 
     unsigned int queue1 = 1;
     unsigned int queue2 = 2;
@@ -190,7 +220,7 @@ void rr(string good_examples_file, string bad_examples_file) {
         config);
 }
 
-void fq_codel(string good_examples_file, string bad_examples_file) {
+void fq_codel(int buf_size) {
 
     cout << "fq_codel" << endl;
     time_typ start_time = noww();
@@ -199,6 +229,7 @@ void fq_codel(string good_examples_file, string bad_examples_file) {
     unsigned int total_time = 14;
     unsigned int query_thresh = (total_time / in_queue_cnt) + 3;
     unsigned int last_queue = in_queue_cnt - 1;
+    cout << "QUERY TRESH:" << query_thresh << endl;
 
     unsigned int good_example_cnt = 50;
     unsigned int bad_example_cnt = 50;
@@ -251,12 +282,15 @@ void fq_codel(string good_examples_file, string bad_examples_file) {
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = 2;
     dists_params.pkt_meta2_val_max = 2;
-    dists_params.random_seed = 4854;
+    dists_params.random_seed = 5854;
 
     Dists* dists = new Dists(dists_params);
     SharedConfig* config = new SharedConfig(total_time, cp->in_queue_cnt(), target_queues, dists);
     bool config_set = cp->set_shared_config(config);
     if (!config_set) return;
+
+    string good_examples_file = "";
+    string bad_examples_file = "";
 
     run(cp,
         base_eg,
@@ -269,7 +303,7 @@ void fq_codel(string good_examples_file, string bad_examples_file) {
         config);
 }
 
-void loom(string good_examples_file, string bad_examples_file) {
+void loom_mem(int buf_size) {
 
     cout << "loom" << endl;
     time_typ start_time = noww();
@@ -283,7 +317,116 @@ void loom(string good_examples_file, string bad_examples_file) {
     unsigned int total_time = 10;
 
     // Create contention point
-    LoomMQPrio* cp = new LoomMQPrio(nic_tx_queue_cnt, per_core_flow_cnt, total_time, MAX_QUEUE_SIZE);
+    LoomMQPrio* cp = new LoomMQPrio(nic_tx_queue_cnt, per_core_flow_cnt, total_time, buf_size, 500);
+
+
+    qset_t tenant1_qset;
+    qset_t tenant2_qset;
+
+    for (unsigned int i = 0; i < cp->in_queue_cnt(); i++) {
+        if (i % 3 == 0)
+            tenant1_qset.insert(i);
+        else
+            tenant2_qset.insert(i);
+    }
+
+    // Base Workload
+
+    Workload wl(20, cp->in_queue_cnt(), total_time);
+    wl.add_spec(
+        TimedSpec(new Comp(new QSum(tenant1_qset, metric_t::CENQ), Op(Op::Type::GE), new Time(1)),
+                  total_time,
+                  total_time));
+    wl.add_spec(
+        TimedSpec(new Comp(new QSum(tenant2_qset, metric_t::CENQ), Op(Op::Type::GE), new Time(1)),
+                  total_time,
+                  total_time));
+
+
+    // wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, 3), Op(Op::Type::GE), new Time(1)),
+    //                       total_time,
+    //                       total_time));
+    //
+    // wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, 8), Op(Op::Type::GE), new Time(1)),
+    //                       total_time,
+    //                       total_time));
+    //
+    // wl.add_spec(TimedSpec(new Comp(new QSum({0, 1, 2, 4, 5, 6, 7, 9, 10, 11}, metric_t::CENQ),
+    //                                Op(Op::Type::LE),
+    //                                new Constant(0)),
+    //                       total_time,
+    //                       total_time));
+
+    // for (unsigned int q = 0; q < cp->in_queue_cnt(); q++) {
+    //     if (q % 3 == 2) {
+    //         wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, q), Op(Op::Type::LE), 0u),
+    //                               total_time,
+    //                               total_time));
+    //     }
+    // }
+
+    cp->set_base_workload(wl);
+
+    // Query
+    Query query(query_quant_t::FORALL,
+                time_range_t(total_time - 1 - query_time, total_time - 1),
+                qdiff_t(cp->get_out_queue(1)->get_id(), cp->get_out_queue(0)->get_id()),
+                metric_t::CENQ,
+                Op(Op::Type::GT),
+                3u);
+
+    cp->set_query(query);
+
+    cout << "cp setup: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s" << endl;
+
+    // generate base example
+    start_time = noww();
+    IndexedExample* base_eg = new IndexedExample();
+    qset_t target_queues;
+
+    bool res = cp->generate_base_example(base_eg, target_queues, cp->in_queue_cnt());
+
+    if (!res) {
+        cout << "ERROR: couldn't generate base example" << endl;
+        return;
+    }
+
+    cout << "base example generation: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s"
+         << endl;
+
+
+    // Set shared config
+    DistsParams dists_params;
+    dists_params.in_queue_cnt = cp->in_queue_cnt();
+    dists_params.total_time = total_time;
+    dists_params.pkt_meta1_val_max = 3;
+    dists_params.pkt_meta2_val_max = 2;
+    dists_params.random_seed = 13388;
+
+    Dists* dists = new Dists(dists_params);
+    SharedConfig* config = new SharedConfig(total_time, cp->in_queue_cnt(), target_queues, dists);
+    bool config_set = cp->set_shared_config(config);
+    if (!config_set) return;
+
+    run(cp, base_eg, good_example_cnt, "", bad_example_cnt, "", query, 24, config);
+}
+
+
+void loom_non_mem(int buf_size) {
+
+    cout << "loom" << endl;
+    time_typ start_time = noww();
+
+    unsigned int nic_tx_queue_cnt = 4;
+    unsigned int per_core_flow_cnt = 3;
+    unsigned int query_time = 3;
+
+    unsigned int good_example_cnt = 50;
+    unsigned int bad_example_cnt = 50;
+    unsigned int total_time = 10;
+
+    // Create contention point
+    LoomMQPrio* cp = new LoomMQPrio(nic_tx_queue_cnt, per_core_flow_cnt, total_time, buf_size, 500);
 
 
     qset_t tenant1_qset;
@@ -359,15 +502,7 @@ void loom(string good_examples_file, string bad_examples_file) {
     bool config_set = cp->set_shared_config(config);
     if (!config_set) return;
 
-    run(cp,
-        base_eg,
-        good_example_cnt,
-        good_examples_file,
-        bad_example_cnt,
-        bad_examples_file,
-        query,
-        24,
-        config);
+    run(cp, base_eg, good_example_cnt, "", bad_example_cnt, "", query, 24, config);
 }
 
 void leaf_spine_bw(string good_examples_file, string bad_examples_file) {

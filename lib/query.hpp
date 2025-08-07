@@ -36,6 +36,7 @@ public:
     Op get_op();
     cid_t get_qid();
     unsigned int get_thresh();
+    friend ostream& operator<<(ostream& os, const Query& query);
 
 private:
     query_quant_t quant;

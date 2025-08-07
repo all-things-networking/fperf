@@ -61,3 +61,9 @@ cid_t Query::get_qid() {
     cout << "Query::get_qid: Invalid query" << endl;
     return "";
 }
+
+ostream& operator<<(ostream& os, const Query& query) {
+    os << "Query" << endl;
+    os << query.time_range;
+    return os;
+}

@@ -18,8 +18,9 @@
 LoomMQPrio::LoomMQPrio(unsigned int nic_tx_queue_cnt,
                        unsigned int per_core_flow_cnt,
                        unsigned int total_time,
-                       unsigned int queue_size):
-ContentionPoint(total_time),
+                       unsigned int queue_size,
+                       unsigned int random_seed):
+ContentionPoint(total_time, random_seed),
 nic_tx_queue_cnt(nic_tx_queue_cnt),
 per_core_flow_cnt(per_core_flow_cnt),
 queue_size(queue_size)

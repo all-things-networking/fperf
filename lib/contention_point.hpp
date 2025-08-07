@@ -23,8 +23,7 @@ using namespace std;
 
 class ContentionPoint : public Solver {
 public:
-    ContentionPoint(unsigned int total_time);
-
+    ContentionPoint(unsigned int total_time, unsigned int random_seed);
     void set_base_workload(Workload wl);
     Workload get_base_workload();
     expr get_base_wl_expr();
@@ -114,6 +113,7 @@ private:
     SharedConfig* shared_config = NULL;
     qset_t target_queues;
     bool shared_config_is_set = false;
+    unsigned int random_seed;
 
 
     virtual void add_nodes() = 0;

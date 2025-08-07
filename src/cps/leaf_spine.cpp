@@ -23,7 +23,7 @@ LeafSpine::LeafSpine(unsigned int leaf_cnt,
                      unsigned int servers_per_leaf,
                      unsigned int total_time,
                      bool reduce_queues):
-ContentionPoint(total_time),
+ContentionPoint(total_time, Z3_RANDOM_SEED),
 leaf_cnt(leaf_cnt),
 spine_cnt(spine_cnt),
 servers_per_leaf(servers_per_leaf),

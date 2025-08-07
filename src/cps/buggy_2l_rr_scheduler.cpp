@@ -12,17 +12,28 @@
 #include <sstream>
 
 Buggy2LRRScheduler::Buggy2LRRScheduler(unsigned int queue_cnt, unsigned int total_time):
-ContentionPoint(total_time),
-queue_cnt(queue_cnt) {
+ContentionPoint(total_time, Z3_RANDOM_SEED),
+queue_cnt(queue_cnt),
+buf_size(MAX_QUEUE_SIZE) {
+    init();
+}
+
+Buggy2LRRScheduler::Buggy2LRRScheduler(unsigned int queue_cnt,
+                                       unsigned int total_time,
+                                       int buf_size):
+ContentionPoint(total_time, Z3_RANDOM_SEED),
+queue_cnt(queue_cnt),
+buf_size(buf_size) {
     init();
 }
 
 void Buggy2LRRScheduler::add_nodes() {
     // add a 2l_rr qm
     QueueInfo info;
-    info.size = MAX_QUEUE_SIZE;
+    info.size = buf_size;
     info.max_enq = MAX_ENQ;
     info.max_deq = 1;
+    info.type = queue_t::IMM_QUEUE;
 
     cid_t m_id = "2LRR";
 

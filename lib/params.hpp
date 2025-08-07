@@ -28,14 +28,14 @@ const unsigned int MAX_SPEC_CNT_PER_QUEUE_WEIGHT = 1;
 const unsigned int AVG_SPEC_CNT_OVER_QUEUES = 1;
 const unsigned int AVG_TIME_RANGE_OVER_SPECS_WEIGHT = 1;
 
-const unsigned int Z3_RANDOM_SEED = 100;
+const unsigned int Z3_RANDOM_SEED = 300;
 const unsigned int MAX_SPEC = 6;
 const unsigned int LOCAL_SEARCH_THRESH = 10;
 const unsigned int RESET_THRESH_SLOW_PROGRESS = 20;
 const unsigned int RESET_THRESH_BACKTRACK = 10;
 const unsigned int LOCAL_SEARCH_MAX_HOPS = 3;
-//TODO: set it in terms of other parameters?
-//const unsigned int NEGLIGIBLE_PROGRESS = (5 * (BAD_EXAMPLE_WEIGHT) * EXAMPLE_WEIGHT_IN_COST);
+// TODO: set it in terms of other parameters?
+// const unsigned int NEGLIGIBLE_PROGRESS = (5 * (BAD_EXAMPLE_WEIGHT) * EXAMPLE_WEIGHT_IN_COST);
 const double NEGLIGIBLE_PROGRESS_FRAC = 0.003;
 const unsigned int MIN_CANDIDATES = 5;
 const unsigned int MAX_CANDIDATES = 1000;
@@ -59,7 +59,7 @@ const unsigned int DEFAULT_RHS_TIME_COEFF_MIN = 1;
 const unsigned int DEFAULT_RHS_TIME_COEFF_MAX = TOTAL_TIME;
 
 const vector<double> DEFAULT_TRF_SELECTION_WEIGHTS{1, 1};
-const vector<double> DEFAULT_WL_METRIC_SELECTION_WEIGHTS{1, 1, 1, 1};
+const vector<double> DEFAULT_WL_METRIC_SELECTION_WEIGHTS{1, 1};
 
 const unsigned int DEFAULT_COMP_RANGE_MIN = 0;
 const unsigned int DEFAULT_COMP_RANGE_MAX = 4;

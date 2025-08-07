@@ -25,7 +25,8 @@ max_enq_(max_enq),
 max_deq_(max_deq),
 total_time(total_time) {
     if (max_deq_ > size_) {
-        cout << "Queue::Queue: Invalid configuration parameters" << endl;
+        cout << "Queue::Queue: Invalid configuration parameters" << max_deq_ << " " << size_
+             << endl;
     }
     elems_ = new vector<expr>[size_];
     enqs_ = new vector<expr>[max_enq_];

@@ -13,16 +13,17 @@
 #include "cdeq.hpp"
 #include "cenq.hpp"
 #include "contention_point.hpp"
-#include "qsize.hpp"
 
 using namespace std;
 
 class RRScheduler : public ContentionPoint {
 public:
     RRScheduler(unsigned int queue_cnt, unsigned int total_time);
+    RRScheduler(unsigned int queue_cnt, unsigned int total_time, int buf_size);
 
 private:
     unsigned int queue_cnt;
+    int buf_size;
     vector<CEnq*> cenq;
     vector<CDeq*> cdeq;
     vector<AIPG*> aipg;

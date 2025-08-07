@@ -70,6 +70,7 @@ unsigned int Dists::trf() {
 }
 
 metric_t Dists::wl_metric() {
+    // return metric_t::CENQ;
     return (metric_t) wl_metric_dist(gen);
 }
 

@@ -19,9 +19,11 @@ using namespace std;
 class Buggy2LRRScheduler : public ContentionPoint {
 public:
     Buggy2LRRScheduler(unsigned int queue_cnt, unsigned int total_time);
+    Buggy2LRRScheduler(unsigned int queue_cnt, unsigned int total_time, int buf_size);
 
 private:
     unsigned int queue_cnt;
+    int buf_size;
     vector<CEnq*> cenq;
     vector<CDeq*> cdeq;
     vector<AIPG*> aipg;

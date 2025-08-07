@@ -14,8 +14,9 @@
 unsigned int INP_QUEUE_RANGE_MAX;
 unsigned int TIMESTEP_RANGE_MAX;
 
-ContentionPoint::ContentionPoint(unsigned int total_time):
+ContentionPoint::ContentionPoint(unsigned int total_time, unsigned int random_seed):
 total_time(total_time),
+random_seed(random_seed),
 base_wl(Workload(0, 0, total_time)),
 base_wl_expr(expr(net_ctx.z3_ctx())),
 query_expr(expr(net_ctx.z3_ctx())) {
@@ -40,7 +41,7 @@ void ContentionPoint::init() {
     params p(net_ctx.z3_ctx());
 
     p.set("unsat_core", true);
-    p.set("random_seed", Z3_RANDOM_SEED);
+    p.set("random_seed", random_seed);
     // p.set("random_seed", (unsigned)time(NULL));
 
     z3_solver = new solver(net_ctx.z3_ctx());
@@ -343,7 +344,6 @@ solver_res_t ContentionPoint::satisfy_query() {
 solver_res_t ContentionPoint::unsat_not_query() {
     if (!query_is_set) {
         cout << "ContentionPoint::satisfy_query: Query is not set." << endl;
-        return solver_res_t::UNKNOWN;
     }
 
     z3_solver->push();
@@ -351,9 +351,35 @@ solver_res_t ContentionPoint::unsat_not_query() {
     z3_solver->add(base_wl_expr, "base_wl");
     z3_solver->add(!query_expr, "query");
     solver_res_t res = solve();
-    z3_solver->pop();
-    cout << z3_solver->statistics() << endl;
+    if (res == solver_res_t::SAT) {
+        cout << "RESULT IS SAT!!!!!" << endl;
+        auto model = z3_solver->get_model();
+        cout << "ENQS:" << endl;
+        for (unsigned int i = 0; i < in_queue_cnt(); i++) {
+            for (int t = 0; t < total_time; ++t) {
+                cout << model.eval(in_queues[i]->enq_cnt(t)) << ", ";
+                expr not_empty = net_ctx.pkt2val(in_queues[0]->elem(0)[t]);
+            }
+            cout << endl;
+        }
+        cout << "DEQS:" << endl;
+        for (unsigned int i = 0; i < out_queue_cnt(); i++) {
+            for (int t = 0; t < total_time; ++t) {
+                cout << model.eval(out_queues[i]->enq_cnt(t)) << ", ";
+            }
+            cout << endl;
+        }
 
+        cout << "BLOG:" << endl;
+        for (unsigned int i = 0; i < in_queue_cnt(); i++) {
+            for (int t = 0; t < total_time; ++t) {
+                expr not_empty = net_ctx.pkt2val(in_queues[i]->elem(0)[t]);
+                cout << model.eval(not_empty) << ", ";
+            }
+            cout << endl;
+        }
+    }
+    z3_solver->pop();
     return res;
 }
 
@@ -390,6 +416,7 @@ solver_res_t ContentionPoint::check_workload_without_query(Workload wl) {
 }
 
 solver_res_t ContentionPoint::check_workload_with_query(Workload wl, IndexedExample* eg) {
+
     time_typ start_time = noww();
 
     solver_res_t res = solver_res_t::UNKNOWN;
@@ -405,7 +432,6 @@ solver_res_t ContentionPoint::check_workload_with_query(Workload wl, IndexedExam
     if (z3_res == unsat) res = solver_res_t::UNSAT;
     if (z3_res == sat) {
         res = solver_res_t::SAT;
-
         model m = z3_solver->get_model();
         populate_example_from_model(m, eg);
     }
@@ -422,6 +448,11 @@ solver_res_t ContentionPoint::check_workload_with_query(Workload wl, IndexedExam
         check_workload_with_query_max_time = milliseconds;
     }
     //-------------------------
+    const char* envVar = std::getenv("WL_FILE");
+
+    ofstream out_file(envVar, ios::app);
+    out_file << "### - Time: " << milliseconds << " Res: " << res << endl << wl << endl;
+    out_file.close();
 
     return res;
 }

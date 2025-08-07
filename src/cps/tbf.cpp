@@ -2,7 +2,9 @@
 #include <sstream>
 
 
-TBF::TBF(unsigned int total_time, TBFInfo info): ContentionPoint(total_time), info(info) {
+TBF::TBF(unsigned int total_time, TBFInfo info):
+ContentionPoint(total_time, Z3_RANDOM_SEED),
+info(info) {
     init();
 }
 

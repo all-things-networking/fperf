@@ -485,6 +485,10 @@ Comp::Comp(MExpr* lhs, Op op, Expr* rhs): lhs(lhs), op(op), rhs(rhs) {
     normalize();
 }
 
+Comp::Comp(MExpr* lhs, Op op, unsigned int const_val): lhs(lhs), op(op), rhs(new Constant(const_val)) {
+    normalize();
+}
+
 bool Comp::applies_to_queue(unsigned int queue) const {
     bool lhs_applies = lhs->applies_to_queue(queue);
     bool rhs_applies = rhs->applies_to_queue(queue);

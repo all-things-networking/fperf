@@ -235,7 +235,7 @@ void fq_codel(int buf_size) {
     unsigned int bad_example_cnt = 50;
 
     // Create contention point
-    Buggy2LRRScheduler* cp = new Buggy2LRRScheduler(in_queue_cnt, total_time);
+    Buggy2LRRScheduler* cp = new Buggy2LRRScheduler(in_queue_cnt, total_time, buf_size);
 
     // Base Workload
     Workload wl(in_queue_cnt * 5, in_queue_cnt, total_time);
@@ -505,7 +505,7 @@ void loom_non_mem(int buf_size) {
     run(cp, base_eg, good_example_cnt, "", bad_example_cnt, "", query, 24, config);
 }
 
-void leaf_spine_bw(string good_examples_file, string bad_examples_file) {
+void leaf_spine_bw(int buf_size) {
     cout << "leaf_spine_bw" << endl;
     time_typ start_time = noww();
 
@@ -596,6 +596,8 @@ void leaf_spine_bw(string good_examples_file, string bad_examples_file) {
     bool config_set = cp->set_shared_config(config);
     if (!config_set) return;
 
+    string good_examples_file = "";
+    string bad_examples_file = "";
     run(cp,
         base_eg,
         good_example_cnt,

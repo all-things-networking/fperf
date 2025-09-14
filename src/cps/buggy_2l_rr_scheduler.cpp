@@ -34,6 +34,7 @@ void Buggy2LRRScheduler::add_nodes() {
     info.max_enq = MAX_ENQ;
     info.max_deq = 1;
     info.type = queue_t::IMM_QUEUE;
+    cout << "BUFFER SIZE: " << buf_size << endl;
 
     cid_t m_id = "2LRR";
 

@@ -28,7 +28,7 @@ const unsigned int MAX_SPEC_CNT_PER_QUEUE_WEIGHT = 1;
 const unsigned int AVG_SPEC_CNT_OVER_QUEUES = 1;
 const unsigned int AVG_TIME_RANGE_OVER_SPECS_WEIGHT = 1;
 
-const unsigned int Z3_RANDOM_SEED = 300;
+const unsigned int Z3_RANDOM_SEED = 400;
 const unsigned int MAX_SPEC = 6;
 const unsigned int LOCAL_SEARCH_THRESH = 10;
 const unsigned int RESET_THRESH_SLOW_PROGRESS = 20;

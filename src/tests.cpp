@@ -52,33 +52,6 @@ void prio(int buf_size) {
                 query_thresh);
     prio->set_query(query);
 
-    Workload wl(100, 5, total_time);
-
-    wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, 2), Op(Op::Type::GE), new Constant(1)),
-                          time_range_t(0, total_time - 1),
-                          total_time));
-
-    wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, 0), Op(Op::Type::LE), new Constant(0)),
-                          time_range_t(0, total_time - 1),
-                          total_time));
-
-    wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, 3), Op(Op::Type::LE), new Constant(0)),
-                          time_range_t(0, total_time - 1),
-                          total_time));
-
-    wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, 1), Op(Op::Type::GE), new Constant(1)),
-                          time_range_t(0, total_time - 1),
-                          total_time));
-
-    wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, 1), Op(Op::Type::GE), new Time(1)),
-                          time_range_t(1, total_time - 1),
-                          total_time));
-
-    // prio->set_base_workload(wl);
-    auto model = prio->unsat_not_query();
-    // cout << wl << endl;
-    // return;
-
     cout << "cp setup: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s" << endl;
 
     // generate base example
@@ -102,7 +75,7 @@ void prio(int buf_size) {
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = 2;
     dists_params.pkt_meta2_val_max = 2;
-    dists_params.random_seed = 3000;
+    dists_params.random_seed = 2000;
 
     Dists* dists = new Dists(dists_params);
     SharedConfig* config = new SharedConfig(total_time, prio->in_queue_cnt(), target_queues, dists);

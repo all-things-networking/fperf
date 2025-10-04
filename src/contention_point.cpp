@@ -452,9 +452,20 @@ solver_res_t ContentionPoint::check_workload_with_query(Workload wl, IndexedExam
 
     ofstream out_file(envVar, ios::app);
     out_file << "### - Time: " << milliseconds << " Res: " << res << endl << wl << endl;
+    cout << "STATISTICS" << endl;
+    cout << stats_str() << endl;
     out_file.close();
 
     return res;
+}
+
+
+void ContentionPoint::check_model_alone() {
+    time_typ start_time = noww();
+    auto res = z3_solver->check();
+    cout << res << endl;
+    cout << "STATISTICS" << endl;
+    cout << stats_str() << endl;
 }
 
 expr ContentionPoint::get_random_eg_mod(IndexedExample* eg,

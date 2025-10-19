@@ -24,6 +24,12 @@ public:
               unsigned int spine_cnt,
               unsigned int servers_per_leaf,
               unsigned int total_time,
+              bool reduce_queues,
+              int buf_size);
+    LeafSpine(unsigned int leaf_cnt,
+              unsigned int spine_cnt,
+              unsigned int servers_per_leaf,
+              unsigned int total_time,
               bool reduce_queues);
 
 private:
@@ -45,6 +51,7 @@ private:
     vector<unsigned int> leaf_voq_output_map;
     vector<unsigned int> spine_voq_input_map;
     vector<unsigned int> spine_voq_output_map;
+    int buf_size;
 
     void add_nodes();
     void add_edges();

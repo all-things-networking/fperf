@@ -501,6 +501,9 @@ void leaf_spine_bw(int buf_size) {
 
     unsigned int in_queue_cnt = cp->in_queue_cnt();
 
+    cout << "Num in queue count: " << in_queue_cnt << endl;
+    cout << "Num out queue count: " << cp->out_queue_cnt() << endl;
+
     // Base Workload
     Workload wl(in_queue_cnt + 5, in_queue_cnt, total_time);
 
@@ -529,6 +532,7 @@ void leaf_spine_bw(int buf_size) {
 
     // Query
     cid_t query_qid = cp->get_out_queue(dst_server)->get_id();
+
     Query query(query_quant_t::FORALL,
                 time_range_t(total_time - 1, total_time - 1),
                 query_qid,

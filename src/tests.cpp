@@ -497,7 +497,8 @@ void leaf_spine_bw(int buf_size) {
     unsigned int total_time = 10;
 
     // Create contention point
-    LeafSpine* cp = new LeafSpine(leaf_cnt, spine_cnt, servers_per_leaf, total_time, reduce_queues);
+    LeafSpine* cp = new LeafSpine(
+        leaf_cnt, spine_cnt, servers_per_leaf, total_time, reduce_queues, buf_size);
 
     unsigned int in_queue_cnt = cp->in_queue_cnt();
 

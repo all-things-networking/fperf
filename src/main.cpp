@@ -31,5 +31,5 @@ int main(int argc, const char* argv[]) {
     // loom_non_mem(buf_size);
     // loom_mem(buf_size);
     // fq_codel(buf_size, rand_seed);
-    leaf_spine_bw(10);
+    leaf_spine_bw(buf_size);
 }

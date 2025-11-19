@@ -567,7 +567,7 @@ void leaf_spine_bw(int buf_size) {
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = server_cnt - 1;
     dists_params.pkt_meta2_val_max = spine_cnt - 1;
-    dists_params.random_seed = 24212;
+    dists_params.random_seed = rand_seed;
 
     Dists* dists = new Dists(dists_params);
     SharedConfig* config = new SharedConfig(total_time, cp->in_queue_cnt(), target_queues, dists);

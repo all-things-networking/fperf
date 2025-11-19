@@ -11,6 +11,8 @@
 
 #include "contention_point.hpp"
 
+#define DEBUG 0
+
 unsigned int INP_QUEUE_RANGE_MAX;
 unsigned int TIMESTEP_RANGE_MAX;
 
@@ -635,6 +637,7 @@ bool ContentionPoint::generate_base_example(IndexedExample* base_eg,
         DEBUG_MSG("target_queues: " << target_queues << endl);
     } else {
         cout << "Could not find base example. Solver returned: " << res << endl;
+        cout << z3_optimizer->unsat_core() << endl;
         z3_optimizer->pop();
         return false;
     }
@@ -2122,6 +2125,7 @@ expr ContentionPoint::get_expr(Same same, time_range_t time_range) {
     expr_vector res(net_ctx.z3_ctx());
     res.push_back(valid_expr);
     expr_vector no_enq(net_ctx.z3_ctx());
+    no_enq.push_back(queue->enq_cnt(0) == 0);
 
     for (unsigned int t = time_range.first + 1; t <= time_range.second; t++) {
         m_val_expr_t val_expr = metric->val(t);

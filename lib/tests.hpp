@@ -30,7 +30,7 @@ void loom_non_mem(int buf_size);
 
 void loom_mem(int buf_size);
 
-void leaf_spine_bw(int buf_size);
+void leaf_spine_bw(int buf_size, int rand_seed);
 
 void tbf(string good_examples_file = "", string bad_examples_file = "");
 

@@ -1113,6 +1113,7 @@ void Workload::normalize() {
 
     // TODO: move this to as a check in Search::pick_neighbors
     if (all_specs.size() > max_size) {
+        cout << "WL SIZE exceeds max:" << all_specs.size() << " / " << max_size << endl;
         empty = true;
         return;
     }

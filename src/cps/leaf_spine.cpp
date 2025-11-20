@@ -49,7 +49,7 @@ void LeafSpine::add_nodes() {
     info.size = buf_size;
     info.max_enq = MAX_ENQ;
     info.max_deq = 1;
-    info.type = queue_t::QUEUE;
+    info.type = queue_t::IMM_QUEUE;
 
     QueueInfo link_info;
     link_info.size = 1;

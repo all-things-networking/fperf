@@ -7,7 +7,7 @@ init:
 
 install-deps:
 	conan install . --build=missing -s compiler.cppstd=20
-	cp build/Release/generators/CMakePresets.json .
+	cp build/Release/generators/CMakePresets.json ./CMakeUserPresets.json
 
 build:
 	cmake --preset conan-release

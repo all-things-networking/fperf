@@ -407,7 +407,7 @@ solver_res_t ContentionPoint::check_wl_and_not_query(Workload wl) {
     //------------ Timing Stats
     time_typ end_time = noww();
     unsigned long long int milliseconds = get_diff_millisec(start_time, end_time);
-    const char* envVar = std::getenv("WL_FILE");
+    const char* envVar = std::getenv("FPERF_OUTPUT_WL_PATH");
 
     ofstream out_file(envVar, ios::app);
     out_file << "### - Time: " << milliseconds << " Res: " << res << endl << wl << endl;
@@ -483,7 +483,7 @@ solver_res_t ContentionPoint::check_workload_with_query(Workload wl, IndexedExam
         check_workload_with_query_max_time = milliseconds;
     }
     //-------------------------
-    const char* envVar = std::getenv("WL_FILE");
+    const char* envVar = std::getenv("FPERF_OUTPUT_WL_PATH");
 
     ofstream out_file(envVar, ios::app);
     out_file << "### - Time: " << milliseconds << " Res: " << res << endl << wl << endl;

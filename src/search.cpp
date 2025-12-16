@@ -241,7 +241,7 @@ void Search::search(Workload wl) {
 
     round_no = 1;
 
-    const char* envVar = std::getenv("WL_FILE");
+    const char* envVar = std::getenv("FPERF_OUTPUT_WL_PATH");
     ofstream file(envVar, ios::trunc);
 
     while (!found) {

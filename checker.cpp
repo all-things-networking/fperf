@@ -26,7 +26,7 @@ int main(int argc, const char* argv[]) {
     string test_case = argv[1];
     int buf_size = stoi(argv[2]);
     string input_file = argv[3];
-    const char* envVar = std::getenv("WL_FILE");
+    const char* envVar = std::getenv("FPERF_OUTPUT_WL_PATH");
     cout << "WL FILE:" << envVar << endl;
     if (test_case == "prio")
         check_prio(buf_size, input_file);

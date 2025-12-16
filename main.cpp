@@ -27,8 +27,8 @@ using namespace std;
 int main(int argc, const char* argv[]) {
     string test_case = argv[1];
     int buf_size = stoi(argv[2]);
-    const char* envVar = std::getenv("WL_FILE");
-    cout << "WL FILE:" << envVar << endl;
+    const char* envVar = std::getenv("FPERF_OUTPUT_WL_PATH");
+    cout << "FPERF WL FILE:" << envVar << endl;
     if (test_case == "prio")
         prio(buf_size);
     else if (test_case == "rr")

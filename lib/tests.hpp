@@ -24,7 +24,7 @@ void prio(int buf_size);
 
 void rr(int buf_size);
 
-void fq_codel(int buf_size, int rand_seed);
+void fq_codel(int buf_size);
 
 void loom_non_mem(int buf_size);
 

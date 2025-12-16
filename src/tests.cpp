@@ -193,7 +193,7 @@ void rr(int buf_size) {
         config);
 }
 
-void fq_codel(int buf_size, int rand_seed) {
+void fq_codel(int buf_size) {
 
     cout << "fq_codel" << endl;
     time_typ start_time = noww();
@@ -255,7 +255,7 @@ void fq_codel(int buf_size, int rand_seed) {
     dists_params.total_time = total_time;
     dists_params.pkt_meta1_val_max = 2;
     dists_params.pkt_meta2_val_max = 2;
-    dists_params.random_seed = rand_seed;
+    dists_params.random_seed = 5000;
 
     Dists* dists = new Dists(dists_params);
     SharedConfig* config = new SharedConfig(total_time, cp->in_queue_cnt(), target_queues, dists);

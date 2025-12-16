@@ -5,6 +5,7 @@
 #ifndef WL_PARSER_HPP
 #define WL_PARSER_HPP
 #include <vector>
+#include <string>
 
 
 class Workload;

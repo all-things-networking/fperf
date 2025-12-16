@@ -14,10 +14,10 @@ file(GLOB SRC_FILES src/*.cpp src/*/*.cpp)
 file(GLOB HPP_FILES src/*.hpp src/*/*.hpp)
 
 
-add_executable(search main.cpp ${SRC_FILES} ${HPP_FILES})
-target_link_libraries(search PRIVATE z3::libz3 antlr4_static)
-target_include_directories(search PRIVATE lib lib/metrics lib/qms lib/cps)
+add_executable(fperf-search main.cpp ${SRC_FILES} ${HPP_FILES})
+target_link_libraries(fperf-search PRIVATE z3::libz3 antlr4_static)
+target_include_directories(fperf-search PRIVATE lib lib/metrics lib/qms lib/cps)
 
-add_executable(checker checker.cpp ${SRC_FILES} ${HPP_FILES})
-target_link_libraries(checker PRIVATE z3::libz3 antlr4_static)
-target_include_directories(checker PRIVATE lib lib/metrics lib/qms lib/cps)
+add_executable(fperf-checker checker.cpp ${SRC_FILES} ${HPP_FILES})
+target_link_libraries(fperf-checker PRIVATE z3::libz3 antlr4_static)
+target_include_directories(fperf-checker PRIVATE lib lib/metrics lib/qms lib/cps)

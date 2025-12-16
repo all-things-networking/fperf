@@ -47,6 +47,7 @@ public:
     solver_res_t solve();
     solver_res_t satisfy_query();
     solver_res_t unsat_not_query();
+    solver_res_t check_wl_and_not_query(Workload wl);
     solver_res_t check_workload_without_query(Workload wl);
     solver_res_t check_workload_with_query(Workload wl, IndexedExample* eg);
     void check_model_alone();

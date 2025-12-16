@@ -383,6 +383,41 @@ solver_res_t ContentionPoint::unsat_not_query() {
     return res;
 }
 
+solver_res_t ContentionPoint::check_wl_and_not_query(Workload wl) {
+
+    time_typ start_time = noww();
+
+    solver_res_t res = solver_res_t::UNKNOWN;
+    z3_solver->push();
+
+    z3_solver->add(base_wl_expr, "base_wl");
+
+    expr wl_expr = get_expr(wl);
+    z3_solver->add(wl_expr, "workload");
+    z3_solver->add(!query_expr, "not_query");
+
+    check_result z3_res = z3_solver->check();
+    if (z3_res == unsat) res = solver_res_t::UNSAT;
+    if (z3_res == sat) {
+        res = solver_res_t::SAT;
+    }
+
+    z3_solver->pop();
+
+    //------------ Timing Stats
+    time_typ end_time = noww();
+    unsigned long long int milliseconds = get_diff_millisec(start_time, end_time);
+    const char* envVar = std::getenv("WL_FILE");
+
+    ofstream out_file(envVar, ios::app);
+    out_file << "### - Time: " << milliseconds << " Res: " << res << endl << wl << endl;
+    // cout << "STATISTICS" << endl;
+    // cout << stats_str() << endl;
+    out_file.close();
+
+    return res;
+}
+
 solver_res_t ContentionPoint::check_workload_without_query(Workload wl) {
     time_typ start_time = noww();
 

@@ -525,30 +525,7 @@ void leaf_spine_bw(int buf_size) {
     Unique* uniq = new Unique(metric_t::DST, unique_qset);
     wl.add_spec(TimedSpec(uniq, time_range_t(0, total_time - 1), total_time));
 
-
-    wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::ECMP, 0), Op(Op::Type::EQ), new Constant(0)),
-                          time_range_t(0, 4),
-                          total_time));
-    wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::ECMP, 1), Op(Op::Type::EQ), new Constant(0)),
-                          time_range_t(0, total_time - 1),
-                          total_time));
-    wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, 4), Op(Op::Type::LE), new Constant(0)),
-                          time_range_t(0, total_time - 1),
-                          total_time));
-    wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::DST, 1), Op(Op::Type::GE), new Constant(4)),
-                          time_range_t(6, 6),
-                          total_time));
-    // wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::DST, 1), Op(Op::Type::GE), new
-    // Constant(4)),
-    //                       time_range_t(5, 5),
-    //                       total_time));
-    // wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::ECMP, 1), Op(Op::Type::EQ), new
-    // Constant(0)),
-    //                       time_range_t(6, 9),
-    //                       total_time));
-    //
-    // cp->set_base_workload(wl);
-    // cout << wl << endl;
+    cp->set_base_workload(wl);
 
     // Query
     cid_t query_qid = cp->get_out_queue(dst_server)->get_id();
@@ -561,18 +538,12 @@ void leaf_spine_bw(int buf_size) {
 
     cp->set_query(query);
 
-    auto r = cp->check_base_wl_and_not_query();
-    cout << "RES:" << r << endl;
-    return;
-
-
     cout << "cp setup: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s" << endl;
 
     // generate base example
     start_time = noww();
     IndexedExample* base_eg = new IndexedExample();
     qset_t target_queues;
-
 
     bool res = cp->generate_base_example(base_eg, target_queues, cp->in_queue_cnt());
 
@@ -598,17 +569,7 @@ void leaf_spine_bw(int buf_size) {
     bool config_set = cp->set_shared_config(config);
     if (!config_set) return;
 
-    string good_examples_file = "";
-    string bad_examples_file = "";
-    run(cp,
-        base_eg,
-        good_example_cnt,
-        good_examples_file,
-        bad_example_cnt,
-        bad_examples_file,
-        query,
-        24,
-        config);
+    run(cp, base_eg, good_example_cnt, "", bad_example_cnt, "", query, 24, config);
 }
 
 void tbf(std::string good_examples_file, std::string bad_examples_file) {

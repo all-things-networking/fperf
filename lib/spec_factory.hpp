@@ -80,7 +80,6 @@ public:
 private:
     void initializeSpecs();
 
-    SharedConfig* shared_config = NULL;
     unsigned int total_time;
     unsigned int in_queue_cnt;
     qset_t target_queues;

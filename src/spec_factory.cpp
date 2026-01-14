@@ -15,9 +15,7 @@
 
 #include "util.hpp"
 
-SpecFactory::SpecFactory(SharedConfig* shared_config):
-shared_config(shared_config),
-dists(shared_config->get_dists()) {
+SpecFactory::SpecFactory(SharedConfig* shared_config): dists(shared_config->get_dists()) {
     total_time = shared_config->get_total_time();
     in_queue_cnt = shared_config->get_in_queue_cnt();
     target_queues = shared_config->get_target_queues();

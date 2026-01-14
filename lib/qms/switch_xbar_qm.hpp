@@ -74,7 +74,6 @@ private:
 class ReducedLeafXBarQM : public SwitchXBarQM {
 public:
     ReducedLeafXBarQM(cid_t id,
-                      unsigned int leaf_id,
                       unsigned int starting_qid,
                       unsigned int servers_per_leaf,
                       unsigned int spine_cnt,
@@ -88,7 +87,6 @@ public:
     void add_constrs(NetContext& net_ctx, map<string, expr>& constr_map);
 
 private:
-    unsigned int leaf_id;
     unsigned int starting_qid;
     unsigned int servers_per_leaf;
     unsigned int spine_cnt;

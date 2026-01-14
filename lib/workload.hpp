@@ -163,6 +163,7 @@ public:
     friend ostream& operator<<(ostream& os, const WlSpec* wl_spec);
     virtual bool operator==(const WlSpec& other) const = 0;
     bool operator<(const WlSpec& other) const;
+    virtual ~WlSpec() = default;
 
 protected:
     virtual string to_string() const = 0;

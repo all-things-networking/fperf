@@ -22,12 +22,14 @@ LeafSpine::LeafSpine(unsigned int leaf_cnt,
                      unsigned int spine_cnt,
                      unsigned int servers_per_leaf,
                      unsigned int total_time,
-                     bool reduce_queues):
+                     bool reduce_queues,
+                     int buf_size):
 ContentionPoint(total_time, Z3_RANDOM_SEED),
 leaf_cnt(leaf_cnt),
 spine_cnt(spine_cnt),
 servers_per_leaf(servers_per_leaf),
-reduce_queues(reduce_queues) {
+reduce_queues(reduce_queues),
+buf_size(buf_size) {
     leaf_port_cnt = servers_per_leaf + spine_cnt;
     spine_port_cnt = leaf_cnt;
     server_cnt = servers_per_leaf * leaf_cnt;
@@ -36,7 +38,7 @@ reduce_queues(reduce_queues) {
 
 void LeafSpine::add_nodes() {
     QueueInfo info;
-    info.size = MAX_QUEUE_SIZE;
+    info.size = buf_size;
     info.max_enq = MAX_ENQ;
     info.max_deq = 1;
     info.type = queue_t::QUEUE;
@@ -48,7 +50,7 @@ void LeafSpine::add_nodes() {
     link_info.type = queue_t::LINK;
 
     QueueInfo imm_info;
-    imm_info.size = 10;
+    imm_info.size = buf_size;
     imm_info.max_enq = 1;
     imm_info.max_deq = 1;
     imm_info.type = queue_t::IMM_QUEUE;

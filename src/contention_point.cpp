@@ -459,6 +459,30 @@ solver_res_t ContentionPoint::check_workload_with_query(Workload wl, IndexedExam
     return res;
 }
 
+solver_res_t ContentionPoint::check_base_wl_and_not_query() {
+
+    time_typ start_time = noww();
+
+    solver_res_t res = solver_res_t::UNKNOWN;
+    z3_solver->push();
+
+    z3_solver->add(base_wl_expr, "base_wl");
+    z3_solver->add(!query_expr, "not_query");
+
+    check_result z3_res = z3_solver->check();
+    if (z3_res == unsat) {
+        res = solver_res_t::UNSAT;
+        cout << z3_solver->unsat_core() << endl;
+    }
+    if (z3_res == sat) {
+        res = solver_res_t::SAT;
+    }
+
+    z3_solver->pop();
+
+    return res;
+}
+
 
 void ContentionPoint::check_model_alone() {
     time_typ start_time = noww();

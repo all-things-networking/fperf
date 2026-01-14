@@ -24,7 +24,8 @@ public:
               unsigned int spine_cnt,
               unsigned int servers_per_leaf,
               unsigned int total_time,
-              bool reduce_queues);
+              bool reduce_queues,
+              int buf_size);
 
 private:
     unsigned int leaf_cnt;
@@ -34,6 +35,7 @@ private:
     unsigned int spine_port_cnt;
     unsigned int server_cnt;
     bool reduce_queues;
+    int buf_size;
 
     vector<CEnq*> cenq;
     vector<AIPG*> aipg;

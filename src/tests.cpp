@@ -384,7 +384,6 @@ void loom_mem(int buf_size) {
     run(cp, base_eg, good_example_cnt, "", bad_example_cnt, "", query, 24, config);
 }
 
-
 void loom_non_mem(int buf_size) {
 
     cout << "loom" << endl;
@@ -497,12 +496,13 @@ void leaf_spine_bw(int buf_size) {
     unsigned int total_time = 10;
 
     // Create contention point
-    LeafSpine* cp = new LeafSpine(leaf_cnt, spine_cnt, servers_per_leaf, total_time, reduce_queues);
+    LeafSpine* cp = new LeafSpine(
+        leaf_cnt, spine_cnt, servers_per_leaf, total_time, reduce_queues, buf_size);
 
     unsigned int in_queue_cnt = cp->in_queue_cnt();
 
     // Base Workload
-    Workload wl(in_queue_cnt + 5, in_queue_cnt, total_time);
+    Workload wl(in_queue_cnt + 50, in_queue_cnt, total_time);
 
     wl.add_spec(
         TimedSpec(new Comp(new Indiv(metric_t::CENQ, src_server), Op(Op::Type::GE), new Time(1)),
@@ -525,7 +525,30 @@ void leaf_spine_bw(int buf_size) {
     Unique* uniq = new Unique(metric_t::DST, unique_qset);
     wl.add_spec(TimedSpec(uniq, time_range_t(0, total_time - 1), total_time));
 
-    cp->set_base_workload(wl);
+
+    wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::ECMP, 0), Op(Op::Type::EQ), new Constant(0)),
+                          time_range_t(0, 4),
+                          total_time));
+    wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::ECMP, 1), Op(Op::Type::EQ), new Constant(0)),
+                          time_range_t(0, total_time - 1),
+                          total_time));
+    wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::CENQ, 4), Op(Op::Type::LE), new Constant(0)),
+                          time_range_t(0, total_time - 1),
+                          total_time));
+    wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::DST, 1), Op(Op::Type::GE), new Constant(4)),
+                          time_range_t(6, 6),
+                          total_time));
+    // wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::DST, 1), Op(Op::Type::GE), new
+    // Constant(4)),
+    //                       time_range_t(5, 5),
+    //                       total_time));
+    // wl.add_spec(TimedSpec(new Comp(new Indiv(metric_t::ECMP, 1), Op(Op::Type::EQ), new
+    // Constant(0)),
+    //                       time_range_t(6, 9),
+    //                       total_time));
+    //
+    // cp->set_base_workload(wl);
+    // cout << wl << endl;
 
     // Query
     cid_t query_qid = cp->get_out_queue(dst_server)->get_id();
@@ -538,12 +561,18 @@ void leaf_spine_bw(int buf_size) {
 
     cp->set_query(query);
 
+    auto r = cp->check_base_wl_and_not_query();
+    cout << "RES:" << r << endl;
+    return;
+
+
     cout << "cp setup: " << (get_diff_millisec(start_time, noww()) / 1000.0) << " s" << endl;
 
     // generate base example
     start_time = noww();
     IndexedExample* base_eg = new IndexedExample();
     qset_t target_queues;
+
 
     bool res = cp->generate_base_example(base_eg, target_queues, cp->in_queue_cnt());
 

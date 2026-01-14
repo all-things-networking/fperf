@@ -49,6 +49,7 @@ public:
     solver_res_t unsat_not_query();
     solver_res_t check_workload_without_query(Workload wl);
     solver_res_t check_workload_with_query(Workload wl, IndexedExample* eg);
+    solver_res_t check_base_wl_and_not_query();
     void check_model_alone();
 
     bool generate_base_example(IndexedExample* eg, qset_t& target_queues, unsigned int max_queue);

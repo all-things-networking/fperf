@@ -59,7 +59,7 @@ const unsigned int DEFAULT_RHS_TIME_COEFF_MIN = 1;
 const unsigned int DEFAULT_RHS_TIME_COEFF_MAX = TOTAL_TIME;
 
 const vector<double> DEFAULT_TRF_SELECTION_WEIGHTS{1, 1};
-const vector<double> DEFAULT_WL_METRIC_SELECTION_WEIGHTS{1, 1};
+const vector<double> DEFAULT_WL_METRIC_SELECTION_WEIGHTS{1, 0, 1, 1};
 
 const unsigned int DEFAULT_COMP_RANGE_MIN = 0;
 const unsigned int DEFAULT_COMP_RANGE_MAX = 4;

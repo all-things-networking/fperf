@@ -451,12 +451,13 @@ solver_res_t ContentionPoint::check_workload_with_query(Workload wl, IndexedExam
     const char* envVar = std::getenv("WL_FILE");
 
     ofstream out_file(envVar, ios::app);
-    if (wl.is_empty())
+    if (wl.is_empty()) {
         out_file << "### - Time: " << milliseconds << " Res: " << res << endl
                  << wl << endl
                  << "EMPTYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY" << endl;
-    else
+    } else {
         out_file << "### - Time: " << milliseconds << " Res: " << res << endl;
+    }
     cout << "STATISTICS" << endl;
     cout << stats_str() << endl;
     out_file.close();

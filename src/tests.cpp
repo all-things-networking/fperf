@@ -502,7 +502,7 @@ void leaf_spine_bw(int buf_size) {
     unsigned int in_queue_cnt = cp->in_queue_cnt();
 
     // Base Workload
-    Workload wl(in_queue_cnt + 50, in_queue_cnt, total_time);
+    Workload wl(in_queue_cnt, in_queue_cnt, total_time);
 
     wl.add_spec(
         TimedSpec(new Comp(new Indiv(metric_t::CENQ, src_server), Op(Op::Type::GE), new Time(1)),

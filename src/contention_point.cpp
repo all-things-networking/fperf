@@ -456,7 +456,7 @@ solver_res_t ContentionPoint::check_workload_with_query(Workload wl, IndexedExam
                  << wl << endl
                  << "EMPTYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY" << endl;
     } else {
-        out_file << "### - Time: " << milliseconds << " Res: " << res << endl;
+        out_file << "### - Time: " << milliseconds << " Res: " << res << endl << wl << endl;
     }
     cout << "STATISTICS" << endl;
     cout << stats_str() << endl;
